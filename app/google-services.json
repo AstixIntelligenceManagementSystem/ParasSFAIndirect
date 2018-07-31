@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "498171702427",
+    "firebase_url": "https://parassfaindirect.firebaseio.com",
+    "project_id": "parassfaindirect",
+    "storage_bucket": "parassfaindirect.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498171702427:android:3526bbc2a1bec21a",
+        "android_client_info": {
+          "package_name": "project.astix.com.parassfaindirect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498171702427-3el01k0temt93e40fm529tviagkfet1e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_5uFTqF7HlOZWr5G9_eCq5KM0ivD1bOE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
