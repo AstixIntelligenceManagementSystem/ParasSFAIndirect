@@ -64,8 +64,8 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
     public LocationManager locationManager;
     public Location location;
 
-    private final long startTime = 31000;
-    private final long interval = 10000;
+    private final long startTime = 10000;
+    private final long interval = 1000;
     public CoundownClass countDownTimer;
     public boolean isGPSEnabled = false;
     public String FusedLocationLatitude="0";
@@ -228,7 +228,7 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
         @Override
         public void onTick(long millisUntilFinished) {
             System.out.println("Shivam"+FusedLocationAccuracy);
-            if(FusedLocationAccuracy!=null){
+          /*  if(FusedLocationAccuracy!=null){
                 if(Double.parseDouble(FusedLocationAccuracy)<checkAccuracy && (!FusedLocationAccuracy.equals("0"))){
                     System.out.println("Shivam"+"ontickFInish "+millisUntilFinished+":"+ FusedLocationAccuracy);
 
@@ -236,7 +236,7 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
                     countDownTimer.cancel();
 
                 }
-            }
+            }*/
 
         }
 

@@ -4722,7 +4722,7 @@ public void loadPurchaseProductDefault()
 						/*StandardRate=Double.parseDouble(hmapProductMRP.get(ProductID))/((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
 						StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
 						StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);*/
-					((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(""+hmapProductStandardRate.get(ProductID));
+					//((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(""+hmapProductStandardRate.get(ProductID));
 						if(PriceApplyDiscountLevelType!=0)
 					{
 

@@ -3675,7 +3675,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 			int PCateIdDetails = Integer.parseInt(vRow.getTag().toString().split(Pattern.quote("_"))[0]);
 			String ProductID = ((TextView) (vRow).findViewById(R.id.tvProdctName)).getTag().toString().split(Pattern.quote("_"))[1];
-			((TextView) (vRow).findViewById(R.id.txtVwRate)).setText("" + hmapProductStandardRate.get(ProductID).toString());
+			//((TextView) (vRow).findViewById(R.id.txtVwRate)).setText("" + hmapProductStandardRate.get(ProductID).toString());
 			int LastStockQty=0;
 			int LastExecutionQty=0;
 			int CurrentStockQty=0;
