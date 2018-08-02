@@ -103,7 +103,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	private static final long INTERVAL = 1000 * 10;
 	private static final long FASTEST_INTERVAL = 1000 * 5;
 	private static final long MIN_TIME_BW_UPDATES = 1000  * 1; //1 second
-	private final long startTime = 30000;
+	private final long startTime = 10000;
 	private final long interval = 200;
 	public int flgTransferStatus=0;
 	public String VisitTimeInSideStore="NA";
@@ -5509,13 +5509,13 @@ public void loadPurchaseProductDefault()
 							 else
 							 {
 								 dbengine.close();
-								/* appLocationService=new AppLocationService();
+								appLocationService=new AppLocationService();
 								 
-								*//* pm = (PowerManager) getSystemService(POWER_SERVICE);
-								 *//**//*  wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+								/* pm = (PowerManager) getSystemService(POWER_SERVICE);
+								   wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
 							                | PowerManager.ACQUIRE_CAUSES_WAKEUP
 							                | PowerManager.ON_AFTER_RELEASE, "INFO");
-							        wl.acquire();*//*
+							        wl.acquire();*/
 							       
 							        
 							        pDialog2STANDBY=ProgressDialog.show(ProductInvoiceReview.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.genTermRetrivingLocation), true);
@@ -5541,10 +5541,10 @@ public void loadPurchaseProductDefault()
 								 countDownTimer2 = new CoundownClass2(startTime, interval);
 						         countDownTimer2.start();
 
-								*/
 
-								 LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
-								 llaaa.locationRetrievingAndDistanceCalculating(ProductInvoiceReview.this,false,20);
+
+							/*	 LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
+								 llaaa.locationRetrievingAndDistanceCalculating(ProductInvoiceReview.this,false,20);*/
 
 							 }
 							

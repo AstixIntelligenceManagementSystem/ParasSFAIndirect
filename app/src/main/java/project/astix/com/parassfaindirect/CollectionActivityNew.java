@@ -74,7 +74,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class CollectionActivityNew extends BaseActivity  implements DatePickerDialog.OnDateSetListener, LocationListener,GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,InterfaceClass
+        GoogleApiClient.OnConnectionFailedListener
 {
 /* For Location Srvices Start*/
 public String VisitTimeInSideStore="NA";
@@ -123,7 +123,7 @@ LocationRequest mLocationRequest;
     private static final long INTERVAL = 1000 * 10;
     private static final long FASTEST_INTERVAL = 1000 * 5;
     private static final long MIN_TIME_BW_UPDATES = 1000  * 1; //1 second
-    private final long startTime = 30000;
+    private final long startTime = 10000;
     private final long interval = 200;
 
     public  int flgLocationServicesOnOffOrderReview=0;
@@ -1262,13 +1262,13 @@ Double OverAllAmountCollected=0.0;
                                        else
                                        {
                                            dbengine.close();
-                                          /* appLocationService=new AppLocationService();
+                                           appLocationService=new AppLocationService();
 
-								*//* pm = (PowerManager) getSystemService(POWER_SERVICE);
-								 *//**//*  wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+								/* pm = (PowerManager) getSystemService(POWER_SERVICE);
+								  wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
 							                | PowerManager.ACQUIRE_CAUSES_WAKEUP
 							                | PowerManager.ON_AFTER_RELEASE, "INFO");
-							        wl.acquire();*//*
+							        wl.acquire();*/
 
 
                                            pDialog2STANDBY=ProgressDialog.show(CollectionActivityNew.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.genTermRetrivingLocation), true);
@@ -1294,11 +1294,11 @@ Double OverAllAmountCollected=0.0;
                                            countDownTimer2 = new CoundownClass2(startTime, interval);
                                            countDownTimer2.start();
 
-*/
-                                           LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
+
+                                        /*   LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
                                            llaaa.locationRetrievingAndDistanceCalculating(CollectionActivityNew.this,false,20);
 
-
+*/
                                        }
 
 
@@ -1889,52 +1889,6 @@ Double OverAllAmountCollected=0.0;
 
     }
 
-    @Override
-    public void testFunctionOne(String fnLati, String fnLongi, String finalAccuracy, String fnAccurateProvider, String GpsLat, String GpsLong, String GpsAccuracy, String NetwLat, String NetwLong, String NetwAccuracy, String FusedLat, String FusedLong, String FusedAccuracy, String AllProvidersLocation, String GpsAddress, String NetwAddress, String FusedAddress, String FusedLocationLatitudeWithFirstAttempt, String FusedLocationLongitudeWithFirstAttempt, String FusedLocationAccuracyWithFirstAttempt, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, String address, String pincode, String city, String state) {
-
-        if(!checkLastFinalLoctionIsRepeated(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy)))
-        {
-
-            fnCreateLastKnownFinalLocation(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy));
-            UpdateLocationAndProductAllData();
-        }
-        else
-        {countSubmitClicked++;
-            if(countSubmitClicked==1)
-            {
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(CollectionActivityNew.this);
-
-                // Setting Dialog Title
-                alertDialog.setTitle(getText(R.string.genTermNoDataConnection));
-                alertDialog.setIcon(R.drawable.error_info_ico);
-                alertDialog.setCancelable(false);
-                // Setting Dialog Message
-                alertDialog.setMessage(CollectionActivityNew.this.getResources().getString(R.string.AlertSameLoc));
-
-                // On pressing Settings button
-                alertDialog.setPositiveButton(CollectionActivityNew.this.getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        countSubmitClicked++;
-                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(intent);
-                    }
-                });
-
-                // Showing Alert Message
-                alertDialog.show();
-
-
-
-            }
-            else
-            {
-                UpdateLocationAndProductAllData();
-            }
-
-
-        }
-
-    }
 
 
     private class FullSyncDataNow extends AsyncTask<Void, Void, Void> {

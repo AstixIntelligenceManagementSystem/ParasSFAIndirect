@@ -33912,8 +33912,16 @@ close();
 
                     for (int i = 0; i <= (cursor.getCount() - 1); i++)
                     {
-                        TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
-                        cursor.moveToNext();
+                        if(cursor.getString(0)!=null)
+                        {
+                            TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
+                            cursor.moveToNext();
+                        }
+                        else
+                        {
+                            TotCollectionAmt=0.0;
+                        }
+
                     }
                 }
             }
