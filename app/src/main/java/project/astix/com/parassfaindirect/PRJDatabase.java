@@ -30155,7 +30155,8 @@ String fetchdate=fnGetDateTimeString();
 //tv_GrossInvVal
         open();
         Double dblMaxCollectionAmount = 0.0;
-        Cursor	cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
+        //Cursor	cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
+        Cursor	cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader", null); //order by AutoIdOutlet Desc
         try
         {
             if(cursor.getCount()>0)
@@ -33835,7 +33836,97 @@ close();
 
         }
     }
+    public Double  fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(String StoreID)
+    {
+        open();
+        Double TotCollectionAmt=0.0;
+        try {
 
+            Cursor cursor = db.rawQuery("SELECT  SUM(IFNULL(Amount,0.0)) from tblAllCollectionData  where tblAllCollectionData.StoreID='"+StoreID +"'", null);
+            if(cursor.getCount()>0){
+                if (cursor.moveToFirst()){
+                    TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
+                }
+            }
+        }catch(Exception e)
+        {
+
+        }
+        finally
+        {
+            if(cursor!=null)
+            {
+                cursor.close();;
+            }
+            close();
+            // return flag;
+        }
+        return TotCollectionAmt;
+    }
+
+
+    public Double  fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(String StoreID)
+    {
+        open();
+        Double TotCollectionAmt=0.0;
+        try {
+
+            Cursor cursor = db.rawQuery("SELECT  SUM(IFNULL(InvoiceVal,0.0)) from tblInvoiceHeader inner join tblAllCollectionData ON tblInvoiceHeader.StoreVisitCode=tblAllCollectionData.StoreVisitCode where tblInvoiceHeader.StoreID = '"+StoreID +"'", null);
+            if(cursor.getCount()>0){
+                if (cursor.moveToFirst()){
+                    TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
+                }
+            }
+        }catch(Exception e)
+        {
+
+        }
+        finally
+        {
+            if(cursor!=null)
+            {
+                cursor.close();;
+            }
+            close();
+            // return flag;
+        }
+        return TotCollectionAmt;
+    }
+
+
+
+    public Double fetch_Store_AllOustandings(String StoreID)
+    {
+//tv_GrossInvVal
+        open();
+        Double TotCollectionAmt=0.0;
+
+        Cursor	cursor = db.rawQuery("SELECT SUM(ifnull(tblInvoiceLastVisitDetails.OutstandingAmt,'0.0')) from tblInvoiceLastVisitDetails WHERE tblInvoiceLastVisitDetails.StoreID='"+StoreID+"'", null); //order by AutoIdOutlet Desc
+        String InvoiceLastVisitDetails[]= new String[cursor.getCount()];
+        try
+        {
+            if(cursor.getCount()>0)
+            {
+                if (cursor.moveToFirst())
+                {
+
+                    for (int i = 0; i <= (cursor.getCount() - 1); i++)
+                    {
+                        TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
+                        cursor.moveToNext();
+                    }
+                }
+            }
+            return TotCollectionAmt;
+        }
+        finally
+        {
+            if(cursor!=null) {
+                cursor.close();
+            }
+            close();
+        }
+    }
 }
 
 

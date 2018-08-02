@@ -274,8 +274,23 @@ Double OverAllAmountCollected=0.0;
         cntInvoceValue=Double.parseDouble(new DecimalFormat("##.##").format(cntInvoceValue));
         tv_cntInvoceValue.setText(" : "+String.format("%.2f", cntInvoceValue));
 
+
+        Double cntAllOustandings=dbengine.fetch_Store_AllOustandings(storeID);
+        cntAllOustandings=Double.parseDouble(new DecimalFormat("##.##").format(cntAllOustandings));
+
+
+        Double cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(storeID);
+        cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotCollectionAmtAgainstStoreIrespectiveOfVisit));
+
+
+
+
+        Double cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(storeID);
+        cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit));
+
+
         tv_totOutstandingValue=(TextView) findViewById(R.id.tv_totOutstandingValue);
-        Double totOutstandingValue=outstandingvalue+cntInvoceValue;
+        Double totOutstandingValue=cntAllOustandings+cntInvoceValue+cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit-cntTotCollectionAmtAgainstStoreIrespectiveOfVisit;
         totOutstandingValue=Double.parseDouble(new DecimalFormat("##.##").format(totOutstandingValue));
         tv_totOutstandingValue.setText(" : "+String.format("%.2f", totOutstandingValue));
 

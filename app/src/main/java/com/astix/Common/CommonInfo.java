@@ -33,8 +33,8 @@ public class CommonInfo
 	public static String VersionDownloadAPKName="ParasSFA.apk";
 	public static String DATABASE_NAME = "DbParasSFAApp";
 	public static int AnyVisit = 0;
-	public static int DATABASE_VERSIONID = 13;      // put this field value based on value in table on the server
-	public static String AppVersionID = "1.9";   // put this field value based on value in table on the server
+	public static int DATABASE_VERSIONID = 16;      // put this field value based on value in table on the server
+	public static String AppVersionID = "1.12";   // put this field value based on value in table on the server
 	public static int Application_TypeID = 8; //1=Parag Store Mapping,2=Parag SFA Indirect,3=Parag SFA Direct
 	public static String OrderSyncPath="http://103.20.212.194/ReadXML_ParasLive/DefaultSFA.aspx";
 	public static String ImageSyncPath="http://103.20.212.194/ReadXML_ParasImagesLive/Default.aspx";

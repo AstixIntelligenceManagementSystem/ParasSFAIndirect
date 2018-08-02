@@ -493,7 +493,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 Year = calendar.get(Calendar.YEAR) ;
                 Month = calendar.get(Calendar.MONTH);
                 Day = calendar.get(Calendar.DAY_OF_MONTH);
-                datePickerDialog = DatePickerDialog.newInstance(DSR_Registration.this, Year-24, Month, Day);
+                datePickerDialog = DatePickerDialog.newInstance(DSR_Registration.this, Year-13, Month, Day);
 
                 datePickerDialog.setThemeDark(false);
 
@@ -508,7 +508,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 // datePickerDialog.setMinDate(calendar);
 
               //  datePickerDialog.setMinDate(calendarForSetDate);
-                calendarForSetDate.set(Year - 24, Month, Day);
+                calendarForSetDate.set(Year - 13, Month, Day);
                 datePickerDialog.setMaxDate(calendarForSetDate);
                 datePickerDialog.setAccentColor(Color.parseColor("#544f88"));
 
