@@ -840,7 +840,7 @@ private InputFilter filter = new InputFilter() {
 				}
 
 			ll_local_area.setVisibility(View.GONE);
-			ll_address_section.setVisibility(View.GONE);
+			ll_address_section.setVisibility(View.VISIBLE);
 		}
 		  //if(section==AddNewStore_DynamicSectionWise.hmapSctnId_GrpId.size())
 		    /*{

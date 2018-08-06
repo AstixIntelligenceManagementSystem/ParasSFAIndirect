@@ -50,6 +50,13 @@
 
 </RelativeLayout>
 
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
 	<LinearLayout android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
@@ -589,8 +596,35 @@
                               android:layout_marginTop="5dp"
                               android:text="0.00"/>
                       </LinearLayout>
-                      
 
+
+
+		<View android:layout_width="match_parent"
+			android:layout_height="1dp"
+			android:layout_marginBottom="10dp"
+			android:background="#868686"/>
+		<LinearLayout android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#000"
+				android:textSize="11sp"
+				android:layout_margin="5dp"
+				android:text="Self Credit Amt:-"/>
+			<EditText android:layout_width="100dp"
+				android:layout_height="30dp"
+				android:textColor="#000"
+				android:textSize="11sp"
+				android:background="@drawable/edit_text_bg"
+				android:maxLength="5"
+				android:paddingLeft="10dp"
+				android:inputType="numberDecimal"
+				android:id="@+id/et_SelfCreditNote"
+				android:layout_marginBottom="5dp"
+				android:layout_marginTop="5dp"
+				android:text="0.00"/>
+		</LinearLayout>
    
 </LinearLayout>
 	<LinearLayout
@@ -642,5 +676,6 @@
 
 
 	</LinearLayout>
-
+		</LinearLayout>
+	</ScrollView>
 </LinearLayout>

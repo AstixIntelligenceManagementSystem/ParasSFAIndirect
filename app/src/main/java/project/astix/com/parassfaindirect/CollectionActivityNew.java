@@ -74,7 +74,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class CollectionActivityNew extends BaseActivity  implements DatePickerDialog.OnDateSetListener, LocationListener,GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener
+        GoogleApiClient.OnConnectionFailedListener,InterfaceClass
 {
 /* For Location Srvices Start*/
 public String VisitTimeInSideStore="NA";
@@ -185,6 +185,7 @@ Double OverAllAmountCollected=0.0;
     public String SN;
     public String strGlobalOrderID="0";
     int flgOrderType=0;
+    public EditText et_SelfCreditNote;
     TextView tv_outstandingvalue,tv_MinCollectionvalue,tv_cntInvoceValue,tv_totOutstandingValue;
 
     HashMap<String,Integer> hmapDistPrdctStockCount =new HashMap<String,Integer>();
@@ -344,8 +345,10 @@ Double OverAllAmountCollected=0.0;
             }
         });
 
-
-
+        Double valSelfCreditNote=0.0;
+        valSelfCreditNote=dbengine.fnGetStoreVisitSelfCreditNote(storeIDGlobal,StoreVisitCode);
+        valSelfCreditNote=Double.parseDouble(new DecimalFormat("##.##").format(valSelfCreditNote));
+        et_SelfCreditNote.setText(""+valSelfCreditNote);
     }
 
     public void fetchData()
@@ -455,12 +458,16 @@ Double OverAllAmountCollected=0.0;
     public void EdittextInitialization()
     {
 
+        et_SelfCreditNote=(EditText) findViewById(R.id.et_SelfCreditNote);
         amountEdittextFirst=(EditText) findViewById(R.id.amountEdittextFirst);
         amountEdittextSecond=(EditText) findViewById(R.id.amountEdittextSecond);
         amountEdittextThird=(EditText) findViewById(R.id.amountEdittextThird);
 
         checqueNoEdittextSecond=(EditText) findViewById(R.id.checqueNoEdittextSecond);
         checqueNoEdittextThird=(EditText) findViewById(R.id.checqueNoEdittextThird);
+
+
+
         amountEdittextFirst.addTextChangedListener(new TextWatcher()
         {
 
@@ -1262,10 +1269,10 @@ Double OverAllAmountCollected=0.0;
                                        else
                                        {
                                            dbengine.close();
-                                           appLocationService=new AppLocationService();
+                                         appLocationService=new AppLocationService();
 
 								/* pm = (PowerManager) getSystemService(POWER_SERVICE);
-								  wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+								   wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
 							                | PowerManager.ACQUIRE_CAUSES_WAKEUP
 							                | PowerManager.ON_AFTER_RELEASE, "INFO");
 							        wl.acquire();*/
@@ -1295,10 +1302,10 @@ Double OverAllAmountCollected=0.0;
                                            countDownTimer2.start();
 
 
-                                        /*   LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
-                                           llaaa.locationRetrievingAndDistanceCalculating(CollectionActivityNew.this,false,20);
+                                          // LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
+                                          // llaaa.locationRetrievingAndDistanceCalculating(CollectionActivityNew.this,false,20);
 
-*/
+
                                        }
 
 
@@ -1344,7 +1351,12 @@ Double OverAllAmountCollected=0.0;
         String ChequeNoThirdString="0";
         String DateThirdString="0";
         String BankThirdString="0";
-
+        Double valSelfCreditNote=0.0;
+        if(!TextUtils.isEmpty(et_SelfCreditNote.getText().toString()));
+        {
+            valSelfCreditNote=Double.parseDouble(et_SelfCreditNote.getText().toString());
+            valSelfCreditNote=Double.parseDouble(new DecimalFormat("##.##").format(valSelfCreditNote));
+        }
 
         // First row data
         if(!TextUtils.isEmpty(amountEdittextFirst.getText().toString()))
@@ -1449,8 +1461,6 @@ Double OverAllAmountCollected=0.0;
                     ChequeNoSecondString, DateSecondString, BankSecondString,
                     paymentModeThirdString, AmountThirdString,
                     ChequeNoThirdString, DateThirdString, BankThirdString,strGlobalOrderID);*/
-
-
             dbengine.close();
         }
         else
@@ -1459,7 +1469,7 @@ Double OverAllAmountCollected=0.0;
         }
 
 
-
+        dbengine.UpdateStoreVisitSelfCreditNote(storeIDGlobal,StoreVisitCode,valSelfCreditNote);
 
 
       /*  Intent ide=new Intent(CollectionActivityNew.this,ProductOrderReview.class);
@@ -1535,8 +1545,41 @@ Double OverAllAmountCollected=0.0;
         OverAllAmountCollectedLimit=Double.parseDouble(new DecimalFormat("##.##").format(OverAllAmountCollectedLimit));
         OverAllAmountCollected=Double.parseDouble(new DecimalFormat("##.##").format(OverAllAmountCollected));
 
-        Double MinCollectionvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
+      /*  Double MinCollectionvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
         MinCollectionvalue=Double.parseDouble(new DecimalFormat("##.##").format(MinCollectionvalue));
+*/
+
+
+        Double cntInvoceValue=dbengine.fetch_Store_InvValAmount(storeID,TmpInvoiceCodePDA);
+        cntInvoceValue=Double.parseDouble(new DecimalFormat("##.##").format(cntInvoceValue));
+
+
+        Double cntAllOustandings=dbengine.fetch_Store_AllOustandings(storeID);
+        cntAllOustandings=Double.parseDouble(new DecimalFormat("##.##").format(cntAllOustandings));
+
+
+        Double cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(storeID);
+        cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotCollectionAmtAgainstStoreIrespectiveOfVisit));
+
+
+
+
+        Double cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(storeID);
+        cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit));
+
+
+        Double totOutstandingValue=cntAllOustandings+cntInvoceValue+cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit-cntTotCollectionAmtAgainstStoreIrespectiveOfVisit;
+        totOutstandingValue=Double.parseDouble(new DecimalFormat("##.##").format(totOutstandingValue));
+
+
+        Double valSelfCreditNote=0.0;
+        if(!TextUtils.isEmpty(et_SelfCreditNote.getText().toString()));
+        {
+            valSelfCreditNote=Double.parseDouble(et_SelfCreditNote.getText().toString());
+            valSelfCreditNote=Double.parseDouble(new DecimalFormat("##.##").format(valSelfCreditNote));
+        }
+
+
         if(ll_collectionMandatory.getVisibility()==View.VISIBLE && cb_collection.isChecked()==false && lnCollection.getVisibility()==View.VISIBLE && OverAllAmountCollected==0.0)
         {
             showAlertSingleButtonError("If there is no Collection for today then  please Tick on 'No Collection Today' before click on Submit");
@@ -1547,15 +1590,27 @@ Double OverAllAmountCollected=0.0;
         }
         else
         {
-            if(Math.ceil(OverAllAmountCollected) < Math.ceil(MinCollectionvalue))
+           // if(Math.ceil(OverAllAmountCollected) < Math.ceil(MinCollectionvalue))
+            if(Math.ceil(OverAllAmountCollected) < Math.ceil(totOutstandingValue))
             {
                 // showAlertSingleButtonError("Collection Amount can not be less then "+MinCollectionvalue);
                 showAlertSingleAfterCostumValidationForAmountCollection("Collected amount is less than the minimum collection amount , current invoice cannot be made.\nClick CANCEL & EXIT to close Invoice and exit current visit. \nClick on UPDATE PAYMENT to update Collection amount.");
                 return false;
             }
-            else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(MinCollectionvalue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
+            //else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(MinCollectionvalue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
+            //else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(totOutstandingValue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
+            else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(totOutstandingValue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
             {
-                return true;
+                if(Math.ceil(valSelfCreditNote)<=Math.ceil(totOutstandingValue))
+                {
+                    return true;
+                }
+                else
+                {
+                    showAlertSingleButtonError("Self Credit Amt can not be greater then overall Total Outstanding.");
+                    return false;
+                }
+
             }
             else
             {
@@ -1889,6 +1944,52 @@ Double OverAllAmountCollected=0.0;
 
     }
 
+    @Override
+    public void testFunctionOne(String fnLati, String fnLongi, String finalAccuracy, String fnAccurateProvider, String GpsLat, String GpsLong, String GpsAccuracy, String NetwLat, String NetwLong, String NetwAccuracy, String FusedLat, String FusedLong, String FusedAccuracy, String AllProvidersLocation, String GpsAddress, String NetwAddress, String FusedAddress, String FusedLocationLatitudeWithFirstAttempt, String FusedLocationLongitudeWithFirstAttempt, String FusedLocationAccuracyWithFirstAttempt, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, String address, String pincode, String city, String state) {
+
+        if(!checkLastFinalLoctionIsRepeated(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy)))
+        {
+
+            fnCreateLastKnownFinalLocation(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy));
+            UpdateLocationAndProductAllData();
+        }
+        else
+        {countSubmitClicked++;
+            if(countSubmitClicked==1)
+            {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(CollectionActivityNew.this);
+
+                // Setting Dialog Title
+                alertDialog.setTitle(getText(R.string.genTermNoDataConnection));
+                alertDialog.setIcon(R.drawable.error_info_ico);
+                alertDialog.setCancelable(false);
+                // Setting Dialog Message
+                alertDialog.setMessage(CollectionActivityNew.this.getResources().getString(R.string.AlertSameLoc));
+
+                // On pressing Settings button
+                alertDialog.setPositiveButton(CollectionActivityNew.this.getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        countSubmitClicked++;
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(intent);
+                    }
+                });
+
+                // Showing Alert Message
+                alertDialog.show();
+
+
+
+            }
+            else
+            {
+                UpdateLocationAndProductAllData();
+            }
+
+
+        }
+
+    }
 
 
     private class FullSyncDataNow extends AsyncTask<Void, Void, Void> {

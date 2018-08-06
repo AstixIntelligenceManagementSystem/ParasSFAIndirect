@@ -1672,7 +1672,164 @@ public class SyncMaster extends Activity
 
 				}
 
+				// Sync StoreCheckPic
 
+				try
+				{
+
+					try
+					{
+
+						db.open();
+						NoOfOutletID = db.getAllStoreIDIntblStoreCheckIn();
+						db.close();
+
+					} catch (Exception e)
+					{
+						// TODO Auto-generated catch block
+						db.close();
+						e.printStackTrace();
+					}
+
+					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
+					{
+						db.open();
+						int NoOfImages = db.getExistingPicNosForStoreCheckIn(NoOfOutletID[chkCountstore].toString());
+						String[] NoOfImgsPath = db.getImgsPathForStoreCheckIn(NoOfOutletID[chkCountstore].toString());
+						db.close();
+
+						fp2s = new String[2];
+
+						for(int syCOUNT = 0; syCOUNT < NoOfImages; syCOUNT++)
+						{
+							fp2s[0] = NoOfImgsPath[syCOUNT];
+							fp2s[1] = NoOfOutletID[chkCountstore];
+
+							// New Way
+
+							fnameIMG = fp2s[0];
+							UploadingImageName=fp2s[0];
+
+
+							String stID = fp2s[1];
+							String currentImageFileName=fnameIMG;
+
+							boolean isImageExist=false;
+							for (int i = 0; i < listFile.length; i++)
+							{
+								FilePathStrings = listFile[i].getAbsolutePath();
+								if(listFile[i].getName().equals(fnameIMG))
+								{
+									fnameIMG=listFile[i].getAbsolutePath();
+									isImageExist=true;
+									break;
+								}
+							}
+							if(isImageExist)
+							{
+							/*	Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
+								ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+								String image_str=  BitMapToString(bmp);
+								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+*/
+								ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+								String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
+								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+
+								try
+								{
+									stream.flush();
+								}
+								catch (IOException e1)
+								{
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								try
+								{
+									stream.close();
+								}
+								catch (IOException e1)
+								{
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+
+								long syncTIMESTAMP = System.currentTimeMillis();
+								Date datefromat = new Date(syncTIMESTAMP);
+								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS",Locale.ENGLISH);
+								String onlyDate=df.format(datefromat);
+
+
+								nameValuePairs.add(new BasicNameValuePair("image", image_str));
+								nameValuePairs.add(new BasicNameValuePair("FileName",currentImageFileName));
+								nameValuePairs.add(new BasicNameValuePair("comment","NA"));
+								nameValuePairs.add(new BasicNameValuePair("storeID",stID));
+								nameValuePairs.add(new BasicNameValuePair("date",onlyDate));
+								nameValuePairs.add(new BasicNameValuePair("routeID",routeID));
+
+								try
+								{
+
+									HttpParams httpParams = new BasicHttpParams();
+									HttpConnectionParams.setSoTimeout(httpParams, 0);
+									HttpClient httpclient = new DefaultHttpClient(httpParams);
+									HttpPost httppost = new HttpPost(CommonInfo.ImageSyncPath.trim());
+
+
+									httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+									HttpResponse response = httpclient.execute(httppost);
+									String the_string_response = convertResponseToString(response);
+
+									System.out.println("Sunil Doing Testing Response after sending Image" + the_string_response);
+
+									//  if(serverResponseCode == 200)
+									if(the_string_response.equals("Abhinav"))
+									{
+
+										System.out.println("Sunil Doing Testing Response after sending Image inside if" + the_string_response);
+										db.updateImageRecordsSyncdForStoreCheckIN(UploadingImageName.toString().trim());
+										// String file_dj_path = Environment.getExternalStorageDirectory() + "/RSPLSFAImages/"+UploadingImageName.toString().trim();
+										String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder + "/" +UploadingImageName.toString().trim();
+
+										File fdelete = new File(file_dj_path);
+										if (fdelete.exists())
+										{
+											if (fdelete.delete())
+											{
+												//Log.e("-->", "file Deleted :" + file_dj_path);
+												callBroadCast();
+											}
+											else
+											{
+												//Log.e("-->", "file not Deleted :" + file_dj_path);
+											}
+										}
+						            	/* File file = new File(UploadingImageName.toString().trim());
+							         	    file.delete();  */
+									}
+
+								}catch(Exception e)
+								{
+									IMGsyOK = 1;
+
+								}
+							}
+
+
+						}
+
+
+					}
+
+				}
+				catch(Exception e)
+				{
+					IMGsyOK = 1;
+
+				}
 
 				// Sync Signature And selfi Images
 

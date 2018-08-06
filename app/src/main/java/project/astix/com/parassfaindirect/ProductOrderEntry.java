@@ -7138,15 +7138,22 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 		     else if(isReturnClkd==2)
 		     {
+				 Intent fireBackDetPg = new Intent(ProductOrderEntry.this,ActualVisitStock.class);
+				 //Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch_RecycleView.class);
+				 fireBackDetPg.putExtra("storeID", storeID);
+				 fireBackDetPg.putExtra("SN", SN);
+				 fireBackDetPg.putExtra("imei", imei);
+				 fireBackDetPg.putExtra("userdate", date);
+				 fireBackDetPg.putExtra("pickerDate", pickerDate);
 		    	 //Intent fireBackDetPg=new Intent(ProductOrderSearch.this,POSMaterialActivity.class);
-		    	Intent fireBackDetPg=new Intent(ProductOrderEntry.this,LastVisitDetails.class);
+		    	/*Intent fireBackDetPg=new Intent(ProductOrderEntry.this,LastVisitDetails.class);
 			    fireBackDetPg.putExtra("storeID", storeID);
 			    fireBackDetPg.putExtra("SN", SN);
 			    fireBackDetPg.putExtra("bck", 1);
 			    fireBackDetPg.putExtra("imei", imei);
 			    fireBackDetPg.putExtra("userdate", date);
 			    fireBackDetPg.putExtra("pickerDate", pickerDate);
-			    //fireBackDetPg.putExtra("rID", routeID);
+			    //fireBackDetPg.putExtra("rID", routeID);*/
 			    startActivity(fireBackDetPg);
 			    finish();
 		     }

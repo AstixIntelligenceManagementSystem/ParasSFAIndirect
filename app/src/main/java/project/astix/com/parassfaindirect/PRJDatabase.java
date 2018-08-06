@@ -40,7 +40,8 @@ public class PRJDatabase
     private static final String DATABASE_TABLE_tblStoreCountDetails = "tblStoreCountDetails";
     private static final String DATABASE_TABLE_tblPreAddedStores = "tblPreAddedStores";
     private static final String DATABASE_TABLE_tblPreAddedStoresDataDetails = "tblPreAddedStoresDataDetails";
-
+    private static final String DATABASE_TABLE_tblStoreCheckInPic = "tblStoreCheckInPic";
+    private static final String DATABASE_CREATE_TABLE_tblStoreCheckInPic = "create table tblStoreCheckInPic (StoreID text null,imageName text null,picClkdPath text null,clkdDateTime,Sstat integer null);";
     private static final String DATABASE_CREATE_TABLE_tblUserName = "create table tblUserName (UserName text null);";
     private static final String DATABASE_CREATE_TABLE_tblStoreCountDetails = "create table tblStoreCountDetails (TotStoreAdded int null,TodayStoreAdded int null);";
     private static final String DATABASE_CREATE_TABLE_tblPreAddedStores = "create table tblPreAddedStores (StoreID text null,StoreName text null,LatCode text null,LongCode text null,DateAdded text null,DistanceNear int null,flgOldNewStore int null,flgReMap int null,Sstat int null,RouteID int null,RouteNodeType int null);";
@@ -79,7 +80,7 @@ public class PRJDatabase
     private static final String DATABASE_TABLE_STOREVISIT="tblStoreVisitMstr";
     private static final String  DATABASE_TABLE_INVOICE_HEADER = "tblInvoiceHeader";//DATABASE_TABLE_MAIN32,DATABASE_CREATE_TABLE_32
     private static final String DATABASE_CREATE_TABLE_INVOICE_HEADER = "create table tblInvoiceHeader (StoreVisitCode text not null,InvoiceNumber int not null,TmpInvoiceCodePDA text null, StoreID text not null, InvoiceDate string not null, TotalBeforeTaxDis real not null, TaxAmt real not null, TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null, Sstat integer not null, InvAfterDis real not null, AddDis real not null,  NoCoupon int null, TotalCoupunAmount real null,TransDate string not null,FlgInvoiceType text not null,flgWholeSellApplicable int null,flgProcessedInvoice int not null,CycleID  int not null);";
-    private static final String DATABASE_CREATE_TABLE_STOREVISIT="create table tblStoreVisitMstr(IMEINumber text null,StoreVisitCode text null,StoreID text not null, Sstat integer not null, ForDate string not null, ActualLatitude text null, ActualLongitude text null,VisitTimeOutSideStore text null,VisitTimeInSideStore text null,VisitTimeCheckStore text null, VisitEndTS text null, LocProvider text null, Accuracy text null,BateryLeftStatus text null,StoreClose integer null,StoreNextDay integer null,ISNewStore int null,IsNewStoreDataCompleteSaved int null,flgFromWhereSubmitStatus int null,flgSubmitFromQuotation int null,flgLocationServicesOnOff int null,flgGPSOnOff int null,flgNetworkOnOff int null,flgFusedOnOff int null,flgInternetOnOffWhileLocationTracking int null,flgStoreOrder int null,flgRetailerCreditBalnce integer null,VisitTypeStatus text null,flgVisitCollectionMarkedStatus int null);";
+    private static final String DATABASE_CREATE_TABLE_STOREVISIT="create table tblStoreVisitMstr(IMEINumber text null,StoreVisitCode text null,StoreID text not null, Sstat integer not null, ForDate string not null, ActualLatitude text null, ActualLongitude text null,VisitTimeOutSideStore text null,VisitTimeInSideStore text null,VisitTimeCheckStore text null, VisitEndTS text null, LocProvider text null, Accuracy text null,BateryLeftStatus text null,StoreClose integer null,StoreNextDay integer null,ISNewStore int null,IsNewStoreDataCompleteSaved int null,flgFromWhereSubmitStatus int null,flgSubmitFromQuotation int null,flgLocationServicesOnOff int null,flgGPSOnOff int null,flgNetworkOnOff int null,flgFusedOnOff int null,flgInternetOnOffWhileLocationTracking int null,flgStoreOrder int null,flgRetailerCreditBalnce integer null,VisitTypeStatus text null,flgVisitCollectionMarkedStatus int null,SelfCreditNote real null);";
     private static final String  DATABASE_TABLE_DayCheckIn = "tblDayCheckIn";//DATABASE_TABLE_MAIN32,DATABASE_CREATE_TABLE_32
     private static final String DATABASE_CREATE_TABLE_DayCheckIn = "create table tblDayCheckIn (DateOfDayCheckIn text not null,flgDayDayCheckIn int not null);";
     private static final String DATABASE_TABLE_NewAddedStoreLocationDetails="tblNewAddedStoreLocationDetails";
@@ -4928,6 +4929,7 @@ public class PRJDatabase
 
     public void reCreateDB()
     {
+        db.execSQL("DELETE FROM  tblStoreCheckInPic");
 
         db.execSQL("DELETE FROM  tblActualVisitStock");
         db.execSQL("DELETE FROM tblAttandanceDetails");
@@ -12653,6 +12655,7 @@ public class PRJDatabase
 
 
             int affected = db.update("tblStoreList", values, "StoreID=?",new String[] { sID });
+            int affected62 = db.update("tblStoreCheckInPic", values, "StoreID=?",new String[] { sID });
           //  int affected1 = db.update("tblLatLongDetails", values, "StoreID=?",new String[] { sID });
 
             int affected26 = db.update("tblRateDistribution", values,"StoreId=?", new String[] { sID });
@@ -21317,6 +21320,21 @@ open();
 
     }
 
+    public void UpdateStoreCheckinFlg(String sID, int flag2set)
+    {
+        try
+        {
+            final ContentValues values = new ContentValues();
+            values.put("Sstat", flag2set);
+            int affected1 = db.update("tblStoreCheckInPic", values,"StoreID=?", new String[] { sID });
+        }
+        catch (Exception ex)
+        {
+            Log.e(TAG, ex.toString());
+        }
+
+    }
+
     public String[] getAllStoreIDIntblStoreMaterialPhotoDetail()
     {
 
@@ -27767,12 +27785,66 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
+    public String[] getAllStoreIDIntblStoreCheckIn()
+    {
+
+        int SnamecolumnIndex1 = 0;
+
+
+        Cursor cursor = db.rawQuery("SELECT DISTINCT(StoreID) FROM tblStoreCheckInPic where Sstat=5", null);
+        //Cursor cursor = db.rawQuery("SELECT StoreID FROM tblStoreMaterialPhotoDetail", null);
+        try
+        {
+            String StoreName[] = new String[cursor.getCount()];
+
+            if (cursor.moveToFirst())
+            {
+                for (int i = 0; i <= (cursor.getCount() - 1); i++)
+                {
+                    StoreName[i] = (String) cursor.getString(SnamecolumnIndex1).toString();
+                    cursor.moveToNext();
+                }
+            }
+
+            return StoreName;
+        }
+        finally
+        {
+            cursor.close();
+        }
+
+    }
+
     public int getExistingPicNosForNewAddedStore(String StoreID)
     {
 
         int ScodecolumnIndex = 0;
 
         Cursor cursor = db.rawQuery("SELECT Count(StoreID) FROM tableImage where StoreID='" + StoreID + "'", null);
+        try {
+            int strProdStockQty = 0;
+            if (cursor.moveToFirst()) {
+
+                for (int i = 0; i <= (cursor.getCount() - 1); i++) {
+                    if (!cursor.isNull(ScodecolumnIndex)) {
+                        strProdStockQty = Integer.parseInt(cursor.getString(ScodecolumnIndex).toString());
+                        cursor.moveToNext();
+                    }
+
+                }
+            }
+            return strProdStockQty;
+        } finally {
+            cursor.close();
+        }
+    }
+
+    public int getExistingPicNosForStoreCheckIn(String StoreID)
+    {
+
+        int ScodecolumnIndex = 0;
+
+        Cursor cursor = db.rawQuery("SELECT Count(StoreID) FROM tblStoreCheckInPic where StoreID='" + StoreID + "'", null);
         try {
             int strProdStockQty = 0;
             if (cursor.moveToFirst()) {
@@ -27819,6 +27891,34 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
+    public String[] getImgsPathForStoreCheckIn(String StoreID)
+    {
+
+        int SnamecolumnIndex1 = 0;
+
+        Cursor cursor = db.rawQuery("SELECT imageName FROM tblStoreCheckInPic WHERE StoreID ='"+ StoreID + "'", null);
+        try
+        {
+
+            String StoreName[] = new String[cursor.getCount()];
+
+            if (cursor.moveToFirst())
+            {
+
+                for (int i = 0; i <= (cursor.getCount() - 1); i++)
+                {
+
+                    StoreName[i] = (String) cursor.getString(SnamecolumnIndex1).toString();
+                    cursor.moveToNext();
+                }
+            }
+            return StoreName;
+        } finally {
+            cursor.close();
+        }
+
+    }
+
     public void updateImageRecordsSyncdForNewAddedStore(String PhotoName)
     {
 
@@ -27830,6 +27930,30 @@ String fetchdate=fnGetDateTimeString();
             values.put("Sstat", 4);
 
             int affected3 = db.update("tableImage", values, "imageName=?",new String[] { PhotoName });
+        }
+        catch (Exception ex)
+        {
+            Log.e(TAG, ex.toString());
+        }
+        finally
+        {
+            close();
+        }
+
+
+    }
+
+    public void updateImageRecordsSyncdForStoreCheckIN(String PhotoName)
+    {
+
+        try
+        {
+            open();
+            //System.out.println("Sunil Doing Testing Response after sending Image inside BD" + PhotoName);
+            final ContentValues values = new ContentValues();
+            values.put("Sstat", 4);
+
+            int affected3 = db.update("tblStoreCheckInPic", values, "imageName=?",new String[] { PhotoName });
         }
         catch (Exception ex)
         {
@@ -30155,8 +30279,8 @@ String fetchdate=fnGetDateTimeString();
 //tv_GrossInvVal
         open();
         Double dblMaxCollectionAmount = 0.0;
-        //Cursor	cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
-        Cursor	cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader", null); //order by AutoIdOutlet Desc
+        //Cursor   cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
+        Cursor cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader", null); //order by AutoIdOutlet Desc
         try
         {
             if(cursor.getCount()>0)
@@ -30189,6 +30313,9 @@ String fetchdate=fnGetDateTimeString();
             close();
         }
     }
+
+
+
 
     public double fnGetStoretblLastOutstanding(String storeID)
     {
@@ -30534,6 +30661,7 @@ String fetchdate=fnGetDateTimeString();
             //tblOutletQuestAnsMstr
             ////// System.out.println("Updating Status for Store ID: " + sID);
             int affected = db.update("tblStoreList", values, "StoreID=?",new String[] { sID });
+            int affected61 = db.update("tblStoreCheckInPic", values, "StoreID=?",new String[] { sID });
             int affected121 = db.update("tblNewAddedStoreLocationDetails", values, "StoreID=?",new String[] { sID });
             //int affected2 = db.update("tblTransac", values, "StoreID=?",new String[] { sID });
 
@@ -30893,7 +31021,7 @@ String fetchdate=fnGetDateTimeString();
             //flgFromWhereSubmitStatus
             if(cursor.getCount()>0)
             {
-                	int affected = db.update(DATABASE_TABLE_STOREVISIT, initialValues, "StoreID=? AND StoreVisitCode=?",new String[] {StoreID,StoreVisitCode});
+                int affected = db.update(DATABASE_TABLE_STOREVISIT, initialValues, "StoreID=? AND StoreVisitCode=?",new String[] {StoreID,StoreVisitCode});
             }
             else
             {
@@ -30912,7 +31040,7 @@ String fetchdate=fnGetDateTimeString();
                 initialValues.put("StoreClose", StoreClose);
                 initialValues.put("StoreNextDay", StoreNextDay);
                 initialValues.put("ISNewStore", ISNewStore);
-               // initialValues.put("IsNewStoreDataCompleteSaved", IsNewStoreDataCompleteSaved);
+                // initialValues.put("IsNewStoreDataCompleteSaved", IsNewStoreDataCompleteSaved);
                 initialValues.put("flgSubmitFromQuotation", flgSubmitFromQuotation);
                 initialValues.put("flgLocationServicesOnOff", flgLocationServicesOnOff);
                 initialValues.put("flgGPSOnOff", flgGPSOnOff);
@@ -30924,6 +31052,7 @@ String fetchdate=fnGetDateTimeString();
                 initialValues.put("flgInternetOnOffWhileLocationTracking", flgInternetOnOffWhileLocationTracking);
                 initialValues.put("VisitTypeStatus", VisitTypeStatus);
                 initialValues.put("flgVisitCollectionMarkedStatus", flgVisitCollectionMarkedStatus);
+                initialValues.put("SelfCreditNote", 0.0);
 
                 db.insert(DATABASE_TABLE_STOREVISIT, null, initialValues);
             }
@@ -30931,6 +31060,8 @@ String fetchdate=fnGetDateTimeString();
             close();
         }
     }
+
+
 
     public LinkedHashMap<String, String> fngetStoreBasicDetails(String StoreID)
     {
@@ -32195,6 +32326,7 @@ close();
 
             try
             {
+                db.execSQL(DATABASE_CREATE_TABLE_tblStoreCheckInPic);
                 db.execSQL(DATABASE_CREATE_TABLE_tblUserName);
                 db.execSQL(DATABASE_CREATE_TABLE_tblStoreCountDetails);
                 db.execSQL(DATABASE_CREATE_TABLE_tblPreAddedStores);
@@ -32465,6 +32597,8 @@ close();
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             try
             {
+                db.execSQL("DROP TABLE IF EXISTS tblStoreCheckInPic");
+
                 db.execSQL("DROP TABLE IF EXISTS tblUserName");
                 db.execSQL("DROP TABLE IF EXISTS tblStoreCountDetails");
                 db.execSQL("DROP TABLE IF EXISTS tblPreAddedStores");
@@ -32678,6 +32812,7 @@ close();
             final ContentValues values = new ContentValues();
             values.put("Sstat", flag2set);//
             int affected1 = db.update("tblStoreList", values,"Sstat=?", new String[] { "3" });
+            int affected61 = db.update("tblStoreCheckInPic", values,"Sstat=?", new String[] { "3" });
             int affected20 = db.update("tblActualVisitStock", values,"Sstat=?", new String[] { "3" });
             int affected2 = db.update("tblNewAddedStoreLocationDetails", values,"Sstat=?", new String[] { "3" });
             int affected3 = db.update("tblNewStoreListEntries", values,"Sstat=?", new String[] { "3" });
@@ -33842,7 +33977,7 @@ close();
         Double TotCollectionAmt=0.0;
         try {
 
-            Cursor cursor = db.rawQuery("SELECT  SUM(IFNULL(Amount,0.0)) from tblAllCollectionData  where tblAllCollectionData.StoreID='"+StoreID +"'", null);
+            Cursor cursor = db.rawQuery("SELECT  IFNULL(SUM(Amount),0.0) from tblAllCollectionData  where tblAllCollectionData.StoreID='"+StoreID +"'", null);
             if(cursor.getCount()>0){
                 if (cursor.moveToFirst()){
                     TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
@@ -33871,7 +34006,7 @@ close();
         Double TotCollectionAmt=0.0;
         try {
 
-            Cursor cursor = db.rawQuery("SELECT  SUM(IFNULL(InvoiceVal,0.0)) from tblInvoiceHeader inner join tblAllCollectionData ON tblInvoiceHeader.StoreVisitCode=tblAllCollectionData.StoreVisitCode where tblInvoiceHeader.StoreID = '"+StoreID +"'", null);
+            Cursor cursor = db.rawQuery("SELECT  IFNULL(SUM(InvoiceVal),0.0) from tblInvoiceHeader inner join tblAllCollectionData ON tblInvoiceHeader.StoreVisitCode=tblAllCollectionData.StoreVisitCode where tblInvoiceHeader.StoreID = '"+StoreID +"'", null);
             if(cursor.getCount()>0){
                 if (cursor.moveToFirst()){
                     TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
@@ -33895,13 +34030,14 @@ close();
 
 
 
+
     public Double fetch_Store_AllOustandings(String StoreID)
     {
 //tv_GrossInvVal
         open();
         Double TotCollectionAmt=0.0;
 
-        Cursor	cursor = db.rawQuery("SELECT SUM(ifnull(tblInvoiceLastVisitDetails.OutstandingAmt,'0.0')) from tblInvoiceLastVisitDetails WHERE tblInvoiceLastVisitDetails.StoreID='"+StoreID+"'", null); //order by AutoIdOutlet Desc
+        Cursor cursor = db.rawQuery("SELECT ifnull(SUM(tblInvoiceLastVisitDetails.OutstandingAmt),'0.0') from tblInvoiceLastVisitDetails WHERE tblInvoiceLastVisitDetails.StoreID='"+StoreID+"'", null); //order by AutoIdOutlet Desc
         String InvoiceLastVisitDetails[]= new String[cursor.getCount()];
         try
         {
@@ -33912,16 +34048,8 @@ close();
 
                     for (int i = 0; i <= (cursor.getCount() - 1); i++)
                     {
-                        if(cursor.getString(0)!=null)
-                        {
-                            TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
-                            cursor.moveToNext();
-                        }
-                        else
-                        {
-                            TotCollectionAmt=0.0;
-                        }
-
+                        TotCollectionAmt=Double.parseDouble(cursor.getString(0).toString());
+                        cursor.moveToNext();
                     }
                 }
             }
@@ -33935,6 +34063,118 @@ close();
             close();
         }
     }
+
+
+    public void insertStoreCheckInPic(String storeId,LinkedHashMap<String,String> hmapPicData)
+    {
+        open();
+        db.beginTransaction();
+
+        ContentValues value=new ContentValues();
+        for(Map.Entry<String,String> entry:hmapPicData.entrySet())
+        {
+            value.put("StoreID",storeId);
+            value.put("imageName",entry.getKey());
+            value.put("picClkdPath",entry.getValue().split(Pattern.quote("^"))[0]);
+            value.put("clkdDateTime",entry.getValue().split(Pattern.quote("^"))[1]);
+            value.put("Sstat",1);
+            db.insert(DATABASE_TABLE_tblStoreCheckInPic,null,value);
+
+        }
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        close();
+    }
+
+    public void validateStoreCheckIn(String StoreID,String imgName)
+    {
+        open();
+        try
+        {
+            Cursor cur=db.rawQuery("Select imageName from tblStoreCheckInPic where StoreID='"+StoreID+"' and imageName='"+imgName+"'",null);
+
+            if(cur.getCount()>0)
+            {
+                db.delete(DATABASE_TABLE_tblStoreCheckInPic,"StoreID=? and imageName=?",
+                        new String[] {StoreID,imgName});
+            }
+        }
+        catch (SQLiteException ex)
+        {
+            System.out.println("validate pic..."+ex);
+        }
+        finally {
+            close();
+        }
+    }
+
+    public ArrayList<String> getImageNameForStoreCheckIn(String StoreID)
+    {
+        open();
+        ArrayList<String> list=new ArrayList<>();
+        try
+        {
+
+            Cursor cur=db.rawQuery("Select imageName from tblStoreCheckInPic where StoreID='"+StoreID+"'",null);
+            if(cur.getCount()>0)
+            {
+                if(cur.moveToFirst())
+                {
+                    for(int i=0;i<cur.getCount();i++)
+                    {
+                        list.add(cur.getString(0));
+                        cur.moveToNext();
+                    }
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error tblCategoryPhotoDetails = "+e.toString());
+        }
+        finally
+        {
+            close();
+            return list;
+        }
+
+    }
+
+    public Double fnGetStoreVisitSelfCreditNote(String StoreID,String StoreVisitCode) {
+
+        Double valSelfCreditNote=0.0;
+        open();
+        Cursor cursor2 = db.rawQuery("SELECT ifnull(SelfCreditNote,0.0) FROM tblStoreVisitMstr Where StoreID='"+StoreID+"' AND StoreVisitCode='"+StoreVisitCode+"'", null);
+        try {
+            if(cursor2.getCount()>0) {
+                if (cursor2.moveToFirst()) {
+                    valSelfCreditNote = Double.parseDouble(cursor2.getString(0));
+                }
+            }
+
+        }
+        catch(Exception ex)
+        {
+
+        } finally{
+            if(cursor2!=null) {
+                cursor2.close();
+            }
+            close();
+        }
+        return valSelfCreditNote;
+    }
+
+    public void UpdateStoreVisitSelfCreditNote(String StoreID,String StoreVisitCode,Double SelfCreditNote)
+    {
+        open();
+        final ContentValues values = new ContentValues();
+        values.put("SelfCreditNote", SelfCreditNote);
+        int affected = db.update("tblStoreVisitMstr", values, "StoreID=? AND StoreVisitCode=?",new String[] {StoreID,StoreVisitCode });
+        close();
+    }
+
 }
 
 

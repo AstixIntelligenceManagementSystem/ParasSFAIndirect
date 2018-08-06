@@ -1094,6 +1094,8 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                // dbengine.UpdateStoreImage(stIDneeded, 5);
 
                 dbengine.UpdateStoreMaterialphotoFlag(stIDneeded.trim(), 5);
+                dbengine.UpdateStoreCheckinFlg(stIDneeded.trim(), 5);
+
                 dbengine.UpdateStoreReturnphotoFlag(stIDneeded.trim(), 5);
                 dbengine.UpdateStoreClosephotoFlag(stIDneeded.trim(), 5);
 
