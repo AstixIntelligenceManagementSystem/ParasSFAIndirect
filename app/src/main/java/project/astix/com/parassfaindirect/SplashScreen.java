@@ -327,7 +327,7 @@ public class SplashScreen extends BaseActivity implements  TaskListner
       //  imei="352801088236109";
 
 
-      //  imei="354010084603910";  // paras imei like Godrej
+       imei="354010084603910";  // paras imei like Godrej
         CommonInfo.imei = imei;
         sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
         Date date1 = new Date();
