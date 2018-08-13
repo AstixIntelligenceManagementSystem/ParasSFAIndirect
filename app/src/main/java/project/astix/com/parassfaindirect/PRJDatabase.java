@@ -450,7 +450,7 @@ public class PRJDatabase
     private static final String DATABASE_CREATE_TABLE_11 = "create table tblPdaDate (PdaDate text null);";
     private static final String DATABASE_CREATE_TABLE_12 = "create table tblDayStartEndDetails (IMEINo text null,SyncTime text null,RouteID text null,EndTime text null,DayEndFlag int null,ChangeRouteFlg int null,ForDate text null,AppVersionID string null,Sstat int null);";//,AppVersionID int null//, VersionNo string null
     private static final String DATABASE_CREATE_TABLE_13 = "create table tblStoreList(IMEINumber text null,AutoIdStore INTEGER PRIMARY KEY AUTOINCREMENT not null,StoreID text not null, StoreName string not null,OwnerName text null,StoreContactNo text null,StoreAddress text null,StoreType string not null,chainID integer null,StoreLatitude real not null, StoreLongitude real not null, LastVisitDate string not null, LastTransactionDate string not null, Sstat integer not null,ISNewStore int null,StoreRouteID int null,RouteNodeType int null,StoreCatNodeId int null,PaymentStage text null,flgHasQuote int null,flgAllowQuotation int null,flgGSTCapture text null,flgGSTCompliance text null,GSTNumber text null,flgGSTRecordFromServer int null,DistanceNear int null,flgStoreOrder int null,StoreCity text null,StorePinCode text not null,StoreState text null,OutStanding float null,OverDue float null,DBR text null,flgRuleTaxVal integer null,flgTransType integer null,StoreCatType text null,IsNewStoreDataCompleteSaved int null,StoreClose int null,SalesPersonName text null,SalesPersonContact text null,IsComposite int null);";//
-    private static final String DATABASE_CREATE_TABLE_14 = "create table tblProductList(CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real null, ProductRLP real null, ProductTaxAmount real null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null,SearchField text null,ManufacturerID int null,RptUnitName text null,PerbaseUnit text null);";
+    private static final String DATABASE_CREATE_TABLE_14 = "create table tblProductList(CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real null, ProductRLP real null, ProductTaxAmount real null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null,SearchField text null,ManufacturerID int null,RptUnitName text null,PerbaseUnit text null,HSNCode text null);";
     private static final String DATABASE_CREATE_TABLE_ProductSegementMap = "create table tblProductSegementMap(ProductID text  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,BusinessSegmentId int null,flgPriceAva int null,flgWholeSellApplicable int null,PriceRangeWholeSellApplicable real null,StandardRateWholeSale real null,StandardRateBeforeTaxWholeSell real null,StandardTaxWholeSale real null);";
 
 
@@ -13549,7 +13549,7 @@ public class PRJDatabase
 			Double RetMarginPer, Double VatTax,Double StandardRate,Double StandardRateBeforeTax,
 			Double StandardTax,int CatOrdr,int PrdOrdr,int StoreCatNodeId,String SearchField)*/
     public static long saveSOAPdataProductList(String CategoryID,String ProductID, String ProductShortName,
-                                        String DisplayUnit, Double CalculateKilo, String KGLiter,int CatOrdr,int PrdOrdr,int StoreCatNodeId,String SearchField,int ManufacturerID,String RptUnitName,String PerbaseUnit)
+                                        String DisplayUnit, Double CalculateKilo, String KGLiter,int CatOrdr,int PrdOrdr,int StoreCatNodeId,String SearchField,int ManufacturerID,String RptUnitName,String PerbaseUnit,String HSNCode)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -13576,7 +13576,7 @@ public class PRJDatabase
         initialValues.put("ManufacturerID", ManufacturerID);
         initialValues.put("RptUnitName", RptUnitName);
         initialValues.put("PerbaseUnit", PerbaseUnit);
-
+        initialValues.put("HSNCode", HSNCode);
         // text null,
         return db.insert(DATABASE_TABLE_MAIN14, null, initialValues);
     }
@@ -34366,7 +34366,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         ArrayList<String> arrProductInvoiceDetailsForPrint=new ArrayList<String>();
         Cursor cursor21=null;
         try {
-            cursor21 = db.rawQuery("SELECT tblInvoiceDetails.ProdID,0 AS HSNCode,ifnull(tblInvoiceDetails.ProductShortName,'NA') AS ProductShortName,ifnull(tblInvoiceDetails.ProductPrice,'0') AS ProductPrice,ifnull(tblProductSegementMap.VatTax,'0') AS VatTax,ifnull(tblInvoiceDetails.OrderQty,'0') AS OrderQty,ifnull(tblInvoiceDetails.LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails inner join tblProductSegementMap on tblInvoiceDetails.ProdID=tblProductSegementMap.ProductID Where StoreID='"+StoreID+"' AND tblInvoiceDetails.StoreVisitCode='"+StoreVisitCode+"' AND tblInvoiceDetails.OrderQty>0", null);
+            cursor21 = db.rawQuery("SELECT tblInvoiceDetails.ProdID,ifnull(tblProductList.HSNCode,'') AS HSNCode,ifnull(tblInvoiceDetails.ProductShortName,'NA') AS ProductShortName,ifnull(tblInvoiceDetails.ProductPrice,'0') AS ProductPrice,ifnull(tblProductSegementMap.VatTax,'0') AS VatTax,ifnull(tblInvoiceDetails.OrderQty,'0') AS OrderQty,ifnull(tblInvoiceDetails.LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails inner join tblProductSegementMap on tblInvoiceDetails.ProdID=tblProductSegementMap.ProductID inner join tblProductList on tblProductList.ProductID=tblInvoiceDetails.ProdID Where StoreID='"+StoreID+"' AND tblInvoiceDetails.StoreVisitCode='"+StoreVisitCode+"' AND tblInvoiceDetails.OrderQty>0", null);
             if(cursor21.getCount()>0)
             {
                 if (cursor21.moveToFirst())

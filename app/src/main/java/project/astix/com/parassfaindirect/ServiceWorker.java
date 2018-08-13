@@ -6273,6 +6273,7 @@ String RouteType="0";
 				int ManufacturerID=0;
 				String rptUnitName="";
 				String perbaseUnit="0";
+				String HSNCode="";
 				Element element = (Element) tblPrdctMstrNode.item(i);
 
 				if(!element.getElementsByTagName("CatID").equals(null))
@@ -6448,9 +6449,23 @@ String RouteType="0";
 
 					}
 				}
+				if(!element.getElementsByTagName("HSNCode").equals(null))
+				{
+
+					NodeList HSNCodeNode = element.getElementsByTagName("HSNCode");
+					Element     line = (Element) HSNCodeNode.item(0);
+
+					if(HSNCodeNode.getLength()>0)
+					{
+
+						HSNCode=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+
 
 				//SearchField
-				dbengine.saveSOAPdataProductList(CatID,ProductID,ProductShortName,DisplayUnit,CalculateKilo,KGLiter,CatOrdr,PrdOrdr,StoreCatNodeId,SearchField,ManufacturerID,rptUnitName,perbaseUnit);
+				dbengine.saveSOAPdataProductList(CatID,ProductID,ProductShortName,DisplayUnit,CalculateKilo,KGLiter,CatOrdr,PrdOrdr,StoreCatNodeId,SearchField,ManufacturerID,rptUnitName,perbaseUnit,HSNCode);
 
 
 			}
