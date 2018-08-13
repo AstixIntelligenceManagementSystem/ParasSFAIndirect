@@ -34226,7 +34226,21 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         hmapWareHouseDetails.put("WarehouseDetails",arrWareHouseDetails);
 
         //--------------Ware House Details Ends Here--------------------------------
+        //--------------Store  Details Starts Here--------------------------------
+
+        LinkedHashMap<String,ArrayList<String>> hmapStoreBasicDetails=fnGetStoreDetailsDataForPrint(VisitCode,StoreID);
+
+        //--------------Store Details Starts Here--------------------------------
+
+        //--------------Store Invoice  Details Starts Here--------------------------------
+
+        LinkedHashMap<String,ArrayList<String>> hmapInvoiceRecodsToPrint=fnGetInvoiceListForPrint(VisitCode,StoreID);
+
+        //--------------Store Invoice Details Starts Here--------------------------------
+
         arrResult.add(hmapWareHouseDetails);
+        arrResult.add(hmapStoreBasicDetails);
+        arrResult.add(hmapInvoiceRecodsToPrint);
         return arrResult;
     }
 
@@ -34317,13 +34331,10 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
     }
 
 
-    public static ArrayList<HashMap<String,ArrayList<String>>> fnGetStoreDetailsDataForPrint(String StoreVisitCode,String StoreID)
+    public static LinkedHashMap<String,ArrayList<String>> fnGetStoreDetailsDataForPrint(String StoreVisitCode,String StoreID)
     {
-        HashMap<String,ArrayList<String>> hmapStoreBasicDetails=new HashMap<String,ArrayList<String>>();
-        HashMap<String,ArrayList<String>> hmapStoreCompleteDetails=new HashMap<String,ArrayList<String>>();
+        LinkedHashMap<String,ArrayList<String>> hmapStoreBasicDetails=new LinkedHashMap<String,ArrayList<String>>();
         ArrayList<String> arrStoreDetails=new ArrayList<String>();
-        ArrayList<HashMap<String,ArrayList<String>>> arrStoreRecodesToPrint=new ArrayList<HashMap<String,ArrayList<String>>>();
-        HashMap<String,ArrayList<String>> hmapPurchasedProductListAgainstInvoice=new HashMap<String,ArrayList<String>>();
         Cursor cursor2=null;
         try {
             cursor2 = db.rawQuery("SELECT StoreName,ifnull(StoreAddress,'') AS StoreAddress,ifnull(StoreState,'') AS StoreState,ifnull(StoreCity,'') AS StoreCity,ifnull(StorePinCode,'') AS StorePinCode,ifnull(StoreContactNo,'') AS StoreContactNo,ifnull(GSTNumber,'NA') AS GSTNumber FROM tblStoreList Where StoreID='"+StoreID+"'", null);
@@ -34341,10 +34352,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
                 }
             }
             hmapStoreBasicDetails.put("StoreDetails",arrStoreDetails);
-            arrStoreRecodesToPrint.add(hmapStoreBasicDetails);
-            hmapPurchasedProductListAgainstInvoice=fnGetInvoiceListForPrint(StoreVisitCode,StoreID);
-            arrStoreRecodesToPrint.add(hmapPurchasedProductListAgainstInvoice);
-            return arrStoreRecodesToPrint;
+            return hmapStoreBasicDetails;
         } finally {
             if(cursor2!=null)
             {
@@ -34352,9 +34360,9 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
             }
         }
     }
-    public static HashMap<String,ArrayList<String>> fnGetInvoiceListForPrint(String StoreVisitCode,String StoreID)
+    public static LinkedHashMap<String,ArrayList<String>> fnGetInvoiceListForPrint(String StoreVisitCode,String StoreID)
     {
-        HashMap<String,ArrayList<String>> hmapInvoiceRecodsToPrint=new HashMap<String,ArrayList<String>>();
+        LinkedHashMap<String,ArrayList<String>> hmapInvoiceRecodsToPrint=new LinkedHashMap<String,ArrayList<String>>();
         ArrayList<String> arrProductInvoiceDetailsForPrint=new ArrayList<String>();
         Cursor cursor21=null;
         try {
@@ -34363,7 +34371,6 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
             {
                 if (cursor21.moveToFirst())
                 {
-
                     for(int i=0;i<cursor21.getCount();i++)
                     {
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(1));
