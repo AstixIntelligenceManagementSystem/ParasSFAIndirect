@@ -34366,7 +34366,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         ArrayList<String> arrProductInvoiceDetailsForPrint=new ArrayList<String>();
         Cursor cursor21=null;
         try {
-            cursor21 = db.rawQuery("SELECT tblInvoiceDetails.ProdID,0 AS HSNCode,ifnull(tblInvoiceDetails.ProductShortName,'NA') AS ProductShortName,ifnull(tblInvoiceDetails.ProductPrice,'0') AS ProductPrice,ifnull(tblProductSegementMap.RetMarginPer,'0') AS RetMarginPer,ifnull(tblInvoiceDetails.OrderQty,'0') AS OrderQty,ifnull(tblInvoiceDetails.LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails inner join tblProductSegementMap on tblInvoiceDetails.ProdID=tblProductSegementMap.ProductID Where StoreID='"+StoreID+"' AND tblInvoiceDetails.StoreVisitCode='"+StoreVisitCode+"' AND tblInvoiceDetails.OrderQty>0", null);
+            cursor21 = db.rawQuery("SELECT tblInvoiceDetails.ProdID,0 AS HSNCode,ifnull(tblInvoiceDetails.ProductShortName,'NA') AS ProductShortName,ifnull(tblInvoiceDetails.ProductPrice,'0') AS ProductPrice,ifnull(tblProductSegementMap.VatTax,'0') AS VatTax,ifnull(tblInvoiceDetails.OrderQty,'0') AS OrderQty,ifnull(tblInvoiceDetails.LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails inner join tblProductSegementMap on tblInvoiceDetails.ProdID=tblProductSegementMap.ProductID Where StoreID='"+StoreID+"' AND tblInvoiceDetails.StoreVisitCode='"+StoreVisitCode+"' AND tblInvoiceDetails.OrderQty>0", null);
             if(cursor21.getCount()>0)
             {
                 if (cursor21.moveToFirst())
