@@ -60,6 +60,7 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 {
     public static final String REG_ID = "regId";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    public static SharedPreferences sPrefVanStockChanged;
     public String[] xmlForWeb = new String[1];
     public String newfullFileName;
     public int syncFLAG = 0;
@@ -242,9 +243,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 
     public void getPrevioisDateData()
     {
-        dbengine.open();
+        //dbengine.open();
         String getPDADate=dbengine.fnGetPdaDate();
-        dbengine.close();
+        //dbengine.close();
         if(!getPDADate.equals(""))
         {
             /*Date date2 = new Date();
@@ -274,9 +275,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
                         }
                         else
                         {
-                            dbengine.open();
+                            //dbengine.open();
                             dbengine.reCreateDB();
-                            dbengine.close();
+                            //dbengine.close();
                             CheckUpdateVersion cuv = new CheckUpdateVersion();
                             cuv.execute();
                         }
@@ -329,19 +330,29 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 
        imei="354010084603910";  // paras imei like Godrej
         CommonInfo.imei = imei;
+
+        if(dbengine.isDBOpen()==false)
+        {
+            dbengine.open();
+        }
+
         sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
+        sPrefVanStockChanged = getSharedPreferences(CommonInfo.sPrefVanLoadedUnloaded, 0);
         Date date1 = new Date();
         sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
         fDate = sdf.format(date1).toString().trim();
+        if (sPrefVanStockChanged.contains("isVanLoadedUnloaded")) {
+            CommonInfo.VanLoadedUnloaded = 1;
+        }
 
       /*  int checkDataNotSync = dbengine.CheckUserDoneGetStoreOrNot();
 
 
        if (checkDataNotSync == 1)
         {
-            dbengine.open();
+            //dbengine.open();
             String rID = dbengine.GetActiveRouteID();
-            dbengine.close();
+            //dbengine.close();
 
             // Date date=new Date();
             sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
@@ -379,9 +390,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
             int checkDataNotSync = dbengine.CheckUserDoneGetStoreOrNot();
             if (checkDataNotSync == 1)
             {
-                dbengine.open();
+                //dbengine.open();
                 String rID = dbengine.GetActiveRouteID();
-                dbengine.close();
+                //dbengine.close();
 
                 // Date date=new Date();
                 Date date3 = new Date();
@@ -705,9 +716,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
             public void onClick(DialogInterface dialog, int which)
             {
                 dialog.dismiss();
-                dbengine.open();
+                //dbengine.open();
                 dbengine.reTruncateRouteMstrTbl();
-                dbengine.close();
+                //dbengine.close();
                 finish();
 
             }
@@ -751,18 +762,18 @@ public class SplashScreen extends BaseActivity implements  TaskListner
                     public void onClick(DialogInterface dialog, int which)
                     {
                         dialog.dismiss();
-                        dbengine.open();
+                        //dbengine.open();
                         int cntRoute=dbengine.counttblCountRoute();
-                        dbengine.close();
+                        //dbengine.close();
                         if(cntRoute==0)
                         {
                             finish();
                         }
                         else
                         {
-                            dbengine.open();
+                            //dbengine.open();
                             serverDateForSPref=	dbengine.fnGetServerDate();
-                            dbengine.close();
+                            //dbengine.close();
 
                             if(sPref.contains("DatePref"))
                             {
@@ -1037,9 +1048,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 
             if(serverResponseCode == 200)
             {
-							  /* dbengine.open();
+							  /* //dbengine.open();
 							   dbengine.upDateXMLFileFlag(fileUri, 4);
-							   dbengine.close();*/
+							   //dbengine.close();*/
 
                 //new File(dir, fileUri).delete();
                 syncFLAG=1;
@@ -1053,9 +1064,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
                 String FileSyncFlag=pref.getString(fileUri, ""+1);
 
                 delXML(xmlForWeb[0].toString());
-							   		/*dbengine.open();
+							   		/*//dbengine.open();
 						            dbengine.deleteXMLFileRow(fileUri);
-						            dbengine.close();*/
+						            //dbengine.close();*/
 
             }
             else
@@ -1096,9 +1107,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-          /*  dbengine.open();
+          /*  //dbengine.open();
             dbengine.reCreateDB();
-            dbengine.close();*/
+            //dbengine.close();*/
         }
 
         @Override
@@ -1144,9 +1155,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
             else
                 {
 
-                dbengine.open();
+                //dbengine.open();
                 int checkUserAuthenticate = dbengine.FetchflgUserAuthenticated();
-                dbengine.close();
+                //dbengine.close();
 
                 if (checkUserAuthenticate == 0)   // 0 means-->New user        1 means-->Exist User
                 {
@@ -1156,10 +1167,10 @@ public class SplashScreen extends BaseActivity implements  TaskListner
                 }
                 else
                  {
-                    dbengine.open();
+                    //dbengine.open();
                     String getPDADate = dbengine.fnGetPdaDate();
                     String getServerDate = dbengine.fnGetServerDate();
-                    dbengine.close();
+                    //dbengine.close();
                     if (!getPDADate.equals(""))
                     {
                         if(!getServerDate.equals(getPDADate))
@@ -1216,9 +1227,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 
     public void afterversioncheck()
     {
-        dbengine.open();
+        //dbengine.open();
         int check=dbengine.FetchVersionDownloadStatus();  // 0 means-->new version installed  1 means-->new version not install
-        dbengine.close();
+        //dbengine.close();
         if(check==1)
         {
             showNewVersionAvailableAlert();
@@ -1232,9 +1243,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 
             if (checkDataNotSync == 1)
             {
-                dbengine.open();
+                //dbengine.open();
                 String rID = dbengine.GetActiveRouteID();
-                dbengine.close();
+                //dbengine.close();
 
                 // Date date=new Date();
                 Date date1 = new Date();
@@ -1254,25 +1265,25 @@ public class SplashScreen extends BaseActivity implements  TaskListner
             else
             {
 
-                dbengine.open();
+                //dbengine.open();
                 dbengine.maintainSplashPDADate();
                 String getPDADate=dbengine.fnGetPdaDate();
                 String getServerDate=dbengine.fnGetServerDate();
 
-                dbengine.close();
+                //dbengine.close();
                 if(!getServerDate.equals(getPDADate))
                 {
                     showAlertBox(getResources().getString(R.string.phnDateError));
-                    dbengine.open();
+                    //dbengine.open();
                     dbengine.reCreateDB();
-                    dbengine.close();
+                    //dbengine.close();
                     return;
                 }
 
-                dbengine.open();
+                //dbengine.open();
                 dbengine.fnFinaldropRoutesTBL();
                 dbengine.createRouteTBL();
-                dbengine.close();
+                //dbengine.close();
                 try
                 {
                     funGetRegistrationID(getResources().getString(R.string.regID));
@@ -1547,9 +1558,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
                     @Override
                     public void run()
                     {
-                        dbengine.open();
+                        //dbengine.open();
                         serverDateForSPref=	dbengine.fnGetServerDate();
-                        dbengine.close();
+                        //dbengine.close();
                         //setSharedPreferencesDate(serverDateForSPref);
 
                         if(sPref.contains("DatePref"))
@@ -1614,9 +1625,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
                     }
 
                 }, 1000); // time in milliseconds (1 second = 1000 milliseconds) until the run() method will be called
-                      /* // dbengine.open();
+                      /* // //dbengine.open();
                       //  dbengine.reCreateDB();
-                      //  dbengine.close();
+                      //  //dbengine.close();
 
 
 
@@ -1643,9 +1654,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 
     public void callDayStartActivity()
     {
-        dbengine.open();
+        //dbengine.open();
         int flgPersonTodaysAtt=dbengine.FetchflgPersonTodaysAtt();
-        dbengine.close();
+        //dbengine.close();
 
         if(flgPersonTodaysAtt==0)
         {
@@ -1704,9 +1715,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 
 
 
-            dbengine.open();
+            //dbengine.open();
             String presentRoute="0";
-            dbengine.close();
+            //dbengine.close();
 
             SimpleDateFormat df1 = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
             newfullFileName=imei+"."+presentRoute+"."+ df1.format(dateobj);
@@ -1905,9 +1916,9 @@ public class SplashScreen extends BaseActivity implements  TaskListner
 				/* showAlertBox("Your Phone  Date is not correct.Please Correct it.");
 					return;*/
 
-          /*  dbengine.open();
+          /*  //dbengine.open();
             dbengine.reCreateDB();
-            dbengine.close();*/
+            //dbengine.close();*/
             Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
             intent.putExtra("imei", imei);
             SplashScreen.this.startActivity(intent);

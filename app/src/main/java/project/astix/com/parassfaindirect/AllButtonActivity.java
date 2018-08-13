@@ -156,6 +156,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
     public String rID="0";    // Abhinav Sir tell Sunil for set its value zero at 10 October 2017
     LinearLayout ll_noVisit, ll_marketVisit, ll_reports, ll_storeVal, ll_distrbtrCheckIn, ll_execution,ll_stockCheckOut,ll_warehose;
     String[] drsNames;
+    ImageView imageView551;
     TextView tv_Warehouse;
     PRJDatabase dbengine = new PRJDatabase(this);
 
@@ -349,6 +350,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         setContentView(R.layout.activity_all_button);
 
         StoreSelection.flgChangeRouteOrDayEnd=1;
+        if(dbengine.isDBOpen()==false)
+        {
+            dbengine.open();
+        }
         sharedPrefReport = getSharedPreferences("Report", MODE_PRIVATE);
 
 
@@ -480,6 +485,15 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         ll_dsrTracker = (LinearLayout) findViewById(R.id.ll_dsrTracker);
         ll_DayEnd = (LinearLayout) findViewById(R.id.ll_DayEnd);
         ll_warehose= (LinearLayout) findViewById(R.id.ll_warehose);
+        imageView551= (ImageView) findViewById(R.id.imageView551);
+        if(dbengine.flgConfirmedWareHouse()==0)
+        {
+            imageView551.setBackground(getResources().getDrawable(R.drawable.distributorstock_not_confirmed));
+        }
+        else
+        {
+            imageView551.setBackground(getResources().getDrawable(R.drawable.backgrnd_distributionstock));
+        }
          tv_Warehouse=(TextView) findViewById(R.id.Warehouse);
         int flgCkechDayStart=1;//dbengine.fnCkechDayStart();
         if(flgCkechDayStart==1)
@@ -549,9 +563,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 String xmlfileNames = dbengine.fnGetXMLFile("3");
               //  String xmlfileNamesStrMap=dbengineSo.fnGetXMLFile("3");
 
-                dbengine.open();
+                //dbengine.open();
                 String[] SaveStoreList = dbengine.ProcessStoreReq();
-                dbengine.close();
+                //dbengine.close();
 
                 if (SaveStoreList.length != 0)
                 {
@@ -564,6 +578,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 }
                   else
                 {
+                    if(dbengine.isDBOpen()==true)
+                    {
+                        dbengine.close();
+                    }
                     dialogLogout();
 
                 }
@@ -654,9 +672,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     String xmlfileNames = dbengine.fnGetXMLFile("3");
                     // String xmlfileNamesStrMap=dbengineSo.fnGetXMLFile("3");
 
-                    dbengine.open();
+                    //dbengine.open();
                     String[] SaveStoreList = dbengine.SaveStoreList();
-                    dbengine.close();
+                    //dbengine.close();
                     if(xmlfileNames.length()>0 || SaveStoreList.length != 0)
                     {
                         if(isOnline())
@@ -666,7 +684,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                             whereTo = "11";
 
-                            dbengine.open();
+                            //dbengine.open();
 
                             StoreList2Procs = dbengine.ProcessStoreReq();
                             if (StoreList2Procs.length != 0)
@@ -674,7 +692,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                                 midPart();
                                 dayEndCustomAlert(1);
-                                dbengine.close();
+                                //dbengine.close();
 
                             } else if (dbengine.GetLeftStoresChk() == true)
                             {
@@ -879,18 +897,18 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         protected Void doInBackground(Void... params) {
 
             try {
-                dbengine.open();
+                //dbengine.open();
                 String rID=dbengine.GetActiveRouteID();
 
                 dbengine.UpdateTblDayStartEndDetails(Integer.parseInt(rID), valDayEndOrChangeRoute);
-                dbengine.close();
+                //dbengine.close();
 
 
                 if (whatTask == 2)
                 {
                     whatTask = 0;
 
-                    dbengine.open();
+                    //dbengine.open();
                     dbengine.UpdateStoreImage("0", 3);
                     for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++)
                     {
@@ -914,7 +932,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                         }
                     }
 
-                    dbengine.close();
+                    //dbengine.close();
 
                     pDialog2.dismiss();
 
@@ -936,12 +954,12 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                     SyncNow();
 
-                    dbengine.open();
+                    //dbengine.open();
                     //String rID=dbengine.GetActiveRouteID();
                     //dbengine.updateActiveRoute(rID, 0);
                     dbengine.reCreateDB();
 
-                    dbengine.close();
+                    //dbengine.close();
                 }
 
 
@@ -994,9 +1012,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         Date dateobj = new Date(syncTIMESTAMP);
 
 
-        dbengine.open();
+        //dbengine.open();
         String presentRoute=dbengine.GetActiveRouteID();
-        dbengine.close();
+        //dbengine.close();
          SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
 
         String newfullFileName=imei+"."+presentRoute+"."+ df.format(dateobj);
@@ -1008,7 +1026,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
             Set set2 = hmapStoreListToProcessWithoutAlret.entrySet();
             Iterator iterator = set2.iterator();
-            dbengine.open();
+            //dbengine.open();
             while(iterator.hasNext())
             {
                 Map.Entry me2 = (Map.Entry)iterator.next();
@@ -1016,7 +1034,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 dbengine.UpdateStoreFlagAtDayEndOrChangeRouteWithOnlyVistOrCollection(StoreIDToProcessWithoutAlret,3);
 
             }
-            dbengine.close();;
+            //dbengine.close();;
 
             Set set3 = hmapStoreListToProcessWithoutAlret.entrySet();
             Iterator iterator1 = set3.iterator();
@@ -1054,7 +1072,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                 Set set2 = hmapStoreListToProcessWithoutAlret.entrySet();
                 Iterator iterator = set2.iterator();
-                dbengine.open();
+                //dbengine.open();
                 while(iterator.hasNext())
                 {
                     Map.Entry me2 = (Map.Entry)iterator.next();
@@ -1064,7 +1082,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     String TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAWhileSync(StoreIDToProcessWithoutAlret,StoreVisitCode);
                     dbengine.UpdateStoreVisitWiseTables(StoreIDToProcessWithoutAlret, 4,StoreVisitCode,TmpInvoiceCodePDA);*/
                 }
-                dbengine.close();;
+                //dbengine.close();;
 
                 Set set3 = hmapStoreListToProcessWithoutAlret.entrySet();
                 Iterator iterator1 = set3.iterator();
@@ -1082,7 +1100,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
 
             dbengine.savetbl_XMLfiles(newfullFileName, "3","1");
-            dbengine.open();
+            //dbengine.open();
             dbengine.UpdateStoreImage("0", 5);
             for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++)
             {
@@ -1110,7 +1128,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
             }
 
-            dbengine.close();
+            //dbengine.close();
             for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++)
             {
                 String valSN = (String) mSelectedItems.get(nosSelected);
@@ -1218,11 +1236,11 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             public void onClick(DialogInterface dialog, int which)
             {
 
-                dbengine.open();
+                //dbengine.open();
 
                 if (dbengine.GetLeftStoresChk() == true) {
 
-                    dbengine.close();
+                    //dbengine.close();
 
                     whatTask = 3;
 
@@ -1241,7 +1259,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 else {
 
                     try {
-                        dbengine.close();
+                        //dbengine.close();
                         whatTask = 1;
                         new bgTasker().execute().get();
                     } catch (InterruptedException e) {
@@ -1277,11 +1295,11 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
     public void DayEndWithoutalert()
     {
 
-        dbengine.open();
+        //dbengine.open();
         String rID=dbengine.GetActiveRouteID();
 
         dbengine.UpdateTblDayStartEndDetails(Integer.parseInt(rID), valDayEndOrChangeRoute);
-        dbengine.close();
+        //dbengine.close();
 
         SyncNow();
 
@@ -1374,10 +1392,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 /*
     void getDistribtrList()
     {
-        dbengine.open();
+        //dbengine.open();
 
         Distribtr_list=dbengine.getDistributorDataMstr();
-        dbengine.close();
+        //dbengine.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             String value=Distribtr_list[i];
@@ -1952,9 +1970,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                         fDate = sdf.format(date1).toString().trim();
                         if (checkDataNotSync == 1)
                         {
-                            dbengine.open();
+                            //dbengine.open();
                             String rID = dbengine.GetActiveRouteID();
-                            dbengine.close();
+                            //dbengine.close();
 
                             // Date date=new Date();
                             sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
@@ -2001,9 +2019,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     fDate = sdf.format(date1).toString().trim();
                     if (checkDataNotSync == 1)
                     {
-                        dbengine.open();
+                        //dbengine.open();
                         String rID = dbengine.GetActiveRouteID();
-                        dbengine.close();
+                        //dbengine.close();
 
                         // Date date=new Date();
                         sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
@@ -2074,20 +2092,27 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             public void onClick(View view)
             {
 
-                SharedPreferences.Editor editor = sharedPrefReport .edit();
-                editor.putString("fromPage", "1");
-                editor.commit();
-                Intent intent=new Intent(AllButtonActivity.this,DetailReportSummaryActivity.class);
+                if(CommonInfo.VanLoadedUnloaded==1)
+                {
+                    showAlertSingleWareHouseStockconfirButtonInfo("Stock is updated, please confirm the warehouse stock first.");
 
-                intent.putExtra("imei", imei);
-                intent.putExtra("userDate",currSysDate);
-                intent.putExtra("pickerDate", fDate);
-                intent.putExtra("rID", rID);
-                intent.putExtra("back", "0");
-               // intent.putExtra("fromPage","AllButtonActivity");
+                }
+                else {
+                    SharedPreferences.Editor editor = sharedPrefReport.edit();
+                    editor.putString("fromPage", "1");
+                    editor.commit();
+                    Intent intent = new Intent(AllButtonActivity.this, DetailReportSummaryActivity.class);
 
-                startActivity(intent);
-                finish();
+                    intent.putExtra("imei", imei);
+                    intent.putExtra("userDate", currSysDate);
+                    intent.putExtra("pickerDate", fDate);
+                    intent.putExtra("rID", rID);
+                    intent.putExtra("back", "0");
+                    // intent.putExtra("fromPage","AllButtonActivity");
+
+                    startActivity(intent);
+                    finish();
+                }
 
 
             }
@@ -2326,13 +2351,21 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             public void onClick(View view)
             {
 
-                Intent intent =new Intent(AllButtonActivity.this,StorelistActivity.class);
-                intent.putExtra("activityFrom", "AllButtonActivity");
-                startActivity(intent);
-                finish();
-               /* dbengine.open();
+
+                if(CommonInfo.VanLoadedUnloaded==1)
+                {
+                    showAlertSingleWareHouseStockconfirButtonInfo("Stock is updated, please confirm the warehouse stock first.");
+
+                }
+                else {
+                    Intent intent = new Intent(AllButtonActivity.this, StorelistActivity.class);
+                    intent.putExtra("activityFrom", "AllButtonActivity");
+                    startActivity(intent);
+                    finish();
+                }
+               /* //dbengine.open();
                 String allLoctionDetails=  dbengine.getLocationDetails();
-                dbengine.close();
+                //dbengine.close();
                 if(allLoctionDetails.equals("0"))
                 {
                     firstTimeLocationTrack();
@@ -2369,12 +2402,12 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 int alreadyLocFind=dbengine.fetchtblIsDBRStockSubmitted();
                 if(alreadyLocFind==0)
                 {
-                    dbengine.open();
+                    //dbengine.open();
                     dbengine.maintainPDADate();
                     String getPDADate=dbengine.fnGetPdaDate();
                     String getServerDate=dbengine.fnGetServerDate();
 
-                    dbengine.close();
+                    //dbengine.close();
 
 
                     //changes
@@ -2401,12 +2434,12 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 {
                     if(totalDis>1)
                     {
-                        dbengine.open();
+                        //dbengine.open();
                         dbengine.maintainPDADate();
                         String getPDADate=dbengine.fnGetPdaDate();
                         String getServerDate=dbengine.fnGetServerDate();
 
-                        dbengine.close();
+                        //dbengine.close();
 
 
                         //changes
@@ -2540,9 +2573,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     }
                     if(mm==4)
                     {
-                        dbengine.open();
+                        //dbengine.open();
                         int check1=dbengine.counttblCatagoryMstr();
-                        dbengine.close();
+                        //dbengine.close();
                         if(check1==0)
                         {
                             newservice = newservice.getCategory(getApplicationContext(), imei);
@@ -3019,10 +3052,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             if(fnAccurateProvider.equals(""))
             {
                 //because no location found so updating table with NA
-                dbengine.open();
+                //dbengine.open();
                 dbengine.deleteLocationTable();
                 dbengine.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-                dbengine.close();
+                //dbengine.close();
                 if(pDialog2STANDBY.isShowing())
                 {
                     pDialog2STANDBY.dismiss();
@@ -3113,10 +3146,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                 if(fnAccuracy>10000)
                 {
-                    dbengine.open();
+                    //dbengine.open();
                     dbengine.deleteLocationTable();
                     dbengine.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                    dbengine.close();
+                    //dbengine.close();
                     if(pDialog2STANDBY.isShowing())
                     {
                         pDialog2STANDBY.dismiss();
@@ -3135,10 +3168,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 }
                 else
                 {
-                    dbengine.open();
+                    //dbengine.open();
                     dbengine.deleteLocationTable();
                     dbengine.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                    dbengine.close();
+                    //dbengine.close();
 
 
                     hmapOutletListForNear=dbengine.fnGetALLOutletMstr();
@@ -3184,7 +3217,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                     if(hmapOutletListForNearUpdated!=null)
                     {
-                        dbengine.open();
+                        //dbengine.open();
                         for(Map.Entry<String, String> entry:hmapOutletListForNearUpdated.entrySet())
                         {
                             String outID=entry.getKey().toString().trim();
@@ -3203,7 +3236,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                                 dbengine.UpdateStoreDistanceNear(outID,Integer.parseInt(DistanceNear));
                             }
                         }
-                        dbengine.close();
+                        //dbengine.close();
                     }
                     //send to storeListpage page
                     //From, addr,zipcode,city,state,errorMessageFlag,username,totaltarget,todayTarget
@@ -3379,7 +3412,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
     public void setStoresList()
     {
 
-        dbengine.open();
+        //dbengine.open();
 
         //System.out.println("Arjun has rID :"+rID);
 
@@ -3391,7 +3424,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         storeNextDayStatus = dbengine.FetchStoreStoreNextDayStatus();
         StoreflgSubmitFromQuotation= dbengine.FetchStoreStatusflgSubmitFromQuotation();
         hmapStoreLatLongDistanceFlgRemap=dbengine.fnGeStoreList(CommonInfo.DistanceRange);
-        dbengine.close();
+        //dbengine.close();
 
         storeCode = new String[storeList.length];
         storeName = new String[storeList.length];
@@ -3503,9 +3536,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                     selStoreID = arg0.getTag().toString();
 
-                    dbengine.open();
+                    //dbengine.open();
                     selStoreName=dbengine.FetchStoreName(selStoreID);
-                    dbengine.close();
+                    //dbengine.close();
 
                     RadioButton child2get12 = (RadioButton) arg0;
                     child2get12.setChecked(true);
@@ -3539,7 +3572,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                                 if (!currSysDate.equals(fDate)) {
                                     fullFileName1 = fDate + " 12:00:00";
                                 }
-                                dbengine.open();
+                                //dbengine.open();
                                 dbengine.updateCloseflg(Sid, 1);
                                 System.out.println("DateTimeNitish 1");
                                 dbengine.UpdateStoreStartVisit(selStoreID,startTS);
@@ -3552,11 +3585,11 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                                 dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
 
                                 dbengine.UpdateStoreEndVisit(selStoreID,startTS);
-                                dbengine.close();
+                                //dbengine.close();
 
                             } else {
                                 //System.out.println("1st unchecked with Store ID :"+ Sid);
-                                dbengine.open();
+                                //dbengine.open();
                                 dbengine.updateCloseflg(Sid, 0);
                                 //dbengine.delStoreCloseNextData(selStoreID);
 
@@ -3567,7 +3600,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 								dbengine.UpdateStoreVisitBatt(selStoreID,"");
 								dbengine.UpdateStoreEndVisit(selStoreID,"");*/
 
-                                dbengine.close();
+                                //dbengine.close();
                             }
 
                         }
@@ -3602,7 +3635,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                                 if (!currSysDate.equals(fDate)) {
                                     fullFileName1 = fDate + " 12:00:00";
                                 }
-                                dbengine.open();
+                                //dbengine.open();
                                 System.out.println("DateTimeNitish2");
                                 dbengine.updateNextDayflg(Sid, 1);
 
@@ -3620,13 +3653,13 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                                 dbengine.UpdateStoreEndVisit(selStoreID,
                                         startTS);
 
-                                dbengine.close();
+                                //dbengine.close();
 
                             } else {
                                 System.out
                                         .println("2nd unchecked with Store ID :"
                                                 + Sid);
-                                dbengine.open();
+                                //dbengine.open();
                                 dbengine.updateNextDayflg(Sid, 0);
                                 //dbengine.delStoreCloseNextData(selStoreID);
 
@@ -3637,7 +3670,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 								dbengine.UpdateStoreVisitBatt(selStoreID,"");
 								dbengine.UpdateStoreEndVisit(selStoreID,"");*/
 
-                                dbengine.close();
+                                //dbengine.close();
                             }
 
                         }
@@ -3862,9 +3895,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 String RouteType="0";
                 try
                 {
-                    dbengine.open();
+                    //dbengine.open();
                     RouteType=dbengine.FetchRouteType(rID);
-                    dbengine.close();
+                    //dbengine.close();
                     dbengine.deleteAllSingleCallWebServiceTableWhole();
                 }
                 catch(Exception e)
@@ -3887,12 +3920,12 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     if(mm==2)
                     {
 
-                      /*  newservice = newservice.getallProduct(getApplicationContext(), fDate, imei, rID,RouteType);
+                      newservice = newservice.getallProduct(getApplicationContext(), fDate, imei, rID,RouteType);
                         if(newservice.flagExecutedServiceSuccesfully!=2)
                         {
                             serviceException=true;
                             break;
-                        }*/
+                        }
                     }
                     if(mm==3)
                     {
@@ -4282,13 +4315,13 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 {
 
                 }
-              /*  dbengine.open();
+              /*  //dbengine.open();
 
                // dbengine.maintainPDADate();
                // dbengine.dropRoutesTBL();
                // dbengine.reCreateDB();
 
-                dbengine.close();*/
+                //dbengine.close();*/
             }
             else
             {
@@ -4369,13 +4402,13 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
 
 
-            dbengine.open();
+            //dbengine.open();
             String getPDADate=dbengine.fnGetPdaDate();
             String getServerDate=dbengine.fnGetServerDate();
 
 
 
-            dbengine.close();
+            //dbengine.close();
 
             if(!getPDADate.equals(""))  // || !getPDADate.equals("NA") || !getPDADate.equals("Null") || !getPDADate.equals("NULL")
             {
@@ -4384,10 +4417,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
                     showAlertSingleButtonInfo(getResources().getString(R.string.txtErrorPhnDate));
 
-                    dbengine.open();
+                    //dbengine.open();
                     dbengine.maintainPDADate();
                     dbengine.reCreateDB();
-                    dbengine.close();
+                    //dbengine.close();
                     return;
                 }
             }
@@ -4397,7 +4430,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
 
 
-            dbengine.open();
+            //dbengine.open();
             rID=dbengine.GetActiveRouteID();
 
             if(rID.equals("0"))
@@ -4417,7 +4450,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             int DatabaseVersion=dbengine.DATABASE_VERSION;
             String AppVersionID=dbengine.AppVersionID;
             dbengine.insertTblDayStartEndDetails(imei,startTS,rID,DayEndFlg,ChangeRouteFlg,fDate,AppVersionID);//DatabaseVersion;//getVersionNumber
-            dbengine.close();
+            //dbengine.close();
 
             showProgress(getResources().getString(R.string.RetrivingDataMsg));
         }
@@ -4549,9 +4582,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                             {
 
 
-                              /*  dbengine.open();
+                              /*  //dbengine.open();
                                 dbengine.deleteVanConfirmFlag();
-                                dbengine.close();*/
+                                //dbengine.close();*/
                                 newservice = newservice.fnGetVanStockData(getApplicationContext(), imei);
                                 if (newservice.flagExecutedServiceSuccesfully != 39) {
                                     chkFlgForErrorToCloseApp = 1;
@@ -4566,9 +4599,9 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     }
 
                     if (mm == 3) {
-                        dbengine.open();
+                        //dbengine.open();
                         int check1 = dbengine.counttblCatagoryMstr();
-                        dbengine.close();
+                        //dbengine.close();
                         if (check1 == 0) {
                             newservice = newservice.getCategory(getApplicationContext(), imei);
                         }
@@ -5186,5 +5219,24 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         file.delete();
         File file1 = new File(delPath.toString().replace(".xml", ".zip"));
         file1.delete();
+    }
+    public void showAlertSingleWareHouseStockconfirButtonInfo(String msg)
+    {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.AlertDialogHeaderMsg))
+                .setMessage(msg)
+                .setCancelable(false)
+                .setIcon(R.drawable.info_ico)
+                .setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        dialogInterface.dismiss();
+                        Intent intent=new Intent(AllButtonActivity.this,AllButtonActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }).create().show();
     }
 }

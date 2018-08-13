@@ -485,7 +485,10 @@
 
         <activity android:name="project.astix.com.parassfaindirect.StorelistActivity"
             android:screenOrientation="portrait" />
-
+        <service
+            android:name=".MyService"
+            android:enabled="true"
+            android:process=":ParassfaBkgSync" />
 
     </application>
 

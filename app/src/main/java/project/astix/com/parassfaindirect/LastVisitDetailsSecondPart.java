@@ -51,9 +51,9 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 	public void setUpVariable()
 	{
 		 TextView StoreName = (TextView)findViewById(R.id.StoreName);
-		    dbengine.open();
+		    //dbengine.open();
 			String selStoreName=dbengine.FetchStoreName(fStoreID);
-			dbengine.close();
+			//dbengine.close();
 			StoreName.setText(selStoreName+" "+getText(R.string.Summary));
 			
 			
@@ -85,16 +85,16 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 			}
 		});
 		
-		dbengine.open();
+		//dbengine.open();
 		int checkDataForTotalValues=dbengine.counttblspForPDAGetLastOrderDetails_TotalValues(fStoreID);
 		System.out.println("Hello Value checkDataForTotalValues :"+checkDataForTotalValues);
-		dbengine.close();
+		//dbengine.close();
 		if(checkDataForTotalValues==1)
 		{
 			
 			 TextView OrderValue = (TextView)findViewById(R.id.OrderValue);
 			 TextView ExecutionValue = (TextView)findViewById(R.id.ExecutionValue);
-			dbengine.open();
+			//dbengine.open();
 			String LastTotalOrderAndExecutionValue[]=dbengine.fetchAllDataFromtblspForPDAGetLastOrderDetails_TotalValues(fStoreID);
 			StringTokenizer tokens = new StringTokenizer(String.valueOf(LastTotalOrderAndExecutionValue[0]), "_");
 			
@@ -107,17 +107,17 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 			OrderValue.setText("Rs. "+OV);
 			
 			ExecutionValue.setText("Rs. "+EV);
-			dbengine.close();
+			//dbengine.close();
 		}
 		
 	}
 	
 	public void setUpTablesData()
 	{
-		dbengine.open();
+		//dbengine.open();
 		System.out.println("New Getting fStoreID :"+fStoreID);
 		int checkDataForVisitDetails=dbengine.counttblForPDAGetLastVisitDetails(fStoreID);
-		dbengine.close();
+		//dbengine.close();
 		System.out.println("New Getting checkDataForVisitDetails :"+checkDataForVisitDetails);
 		if(checkDataForVisitDetails==1)
 		{
@@ -125,11 +125,11 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 			VisitDetailLayout.setVisibility(View.VISIBLE);
 			RelativeLayout relativeLayoutLastVisitDate = (RelativeLayout)findViewById(R.id.relativeLayoutLastVisitDate);
 			relativeLayoutLastVisitDate.setVisibility(View.VISIBLE);
-			dbengine.open();
+			//dbengine.open();
 			String LastVisitDetails[]=dbengine.fetchAllDataFromtblForPDAGetLastVisitDetails(fStoreID);
 			LastVisitDateForTable=dbengine.fetchDateFromtblForPDAGetLastVisitDetails(fStoreID);
 			//System.out.println("Ashish and Anuj LTDdet[i] : "+LTDdet.length);
-			dbengine.close();
+			//dbengine.close();
 			
 			TextView VisitDate = (TextView)findViewById(R.id.VisitDateId);
 			VisitDate.setText("("+LastVisitDateForTable[0]+")");
@@ -200,18 +200,18 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 		
 		
 
-		dbengine.open();
+		//dbengine.open();
 		int checkDataForOrderDetails=dbengine.counttblForPDAGetLastOrderDetails(fStoreID);
-		dbengine.close();
+		//dbengine.close();
 		if(checkDataForOrderDetails==1)
 		{
 			
 			
-			dbengine.open();
+			//dbengine.open();
 			String LastOrderDetails[]=dbengine.fetchAllDataFromtblForPDAGetLastOrderDetails(fStoreID);
 			//System.out.println("Ashish and Anuj LTDdet[i] : "+LTDdet.length);
 			String LastOrderDateForTable[]=dbengine.fetchOrderDateFromtblForPDAGetLastOrderDetails(fStoreID);
-			dbengine.close();
+			//dbengine.close();
 			/*System.out.println("New Value LastOrderDateForTable.length"+LastOrderDateForTable.length);
 			System.out.println("New Value LastVisitDateForTable.length"+LastVisitDateForTable.length);
 			System.out.println("New Value LastVisitDateForTable "+LastVisitDateForTable[0]);

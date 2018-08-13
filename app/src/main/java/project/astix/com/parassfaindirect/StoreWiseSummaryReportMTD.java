@@ -140,9 +140,9 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 			super.onPreExecute();
 			
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateStoreWiseDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -186,9 +186,9 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblStoreWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}

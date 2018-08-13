@@ -468,9 +468,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 			/*	try
 				{
 
-				dbengine.open();
+				//dbengine.open();
 				String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-				dbengine.close();
+				//dbengine.close();
 				//System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 				if(!Noti_textWithMsgServerID.equals("Null"))
 				{
@@ -523,13 +523,13 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 									SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 									String Noti_ReadDateTime = df.format(dateobj);
 
-									dbengine.open();
+									//dbengine.open();
 									dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-									dbengine.close();
+									//dbengine.close();
 
 									try
 									{
-										dbengine.open();
+										//dbengine.open();
 									    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
 									    if(checkleftNoti>0)
 									    {
@@ -542,7 +542,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 													MsgServerID= Integer.parseInt(token.nextToken().trim());
 													Noti_text= token.nextToken().trim();
 
-													dbengine.close();
+													//dbengine.close();
 													if(Noti_text.equals("") || Noti_text.equals("Null"))
 													{
 
@@ -566,7 +566,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 									}
 						            finally
 						            {
-						            	dbengine.close();
+						            	//dbengine.close();
 
 						            }
 
@@ -874,7 +874,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 				alertDialogBuilder.setTitle(ProductOrderEntry.this.getResources().getString(R.string.genTermInformation));
 
 
-				dbengine.open();
+				//dbengine.open();
 
 				String DateResult[] = dbengine.fetchOrderDateFromtblForPDAGetExecutionSummary(storeID);
 				String LastexecutionDetail[] = dbengine.fetchAllDataFromtbltblForPDAGetExecutionSummary(storeID);
@@ -885,7 +885,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 
 				//System.out.println("Ashish and Anuj LastexecutionDetail : "+LastexecutionDetail.length);
-				dbengine.close();
+				//dbengine.close();
 
 				if (DateResult.length > 0) {
 					TextView FirstDate = (TextView) promptView.findViewById(R.id.FirstDate);
@@ -969,9 +969,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 								tv5.setVisibility(View.GONE);
 								tv6.setVisibility(View.GONE);
 								tv7.setVisibility(View.GONE);
-								dbengine.open();
+								//dbengine.open();
 								String abc[] = dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID, DateResult[0], ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 
 								//System.out.println("Check Value Number "+abc.length);
 								//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -987,9 +987,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 								tv6.setVisibility(View.GONE);
 								tv7.setVisibility(View.GONE);
 
-								dbengine.open();
+								//dbengine.open();
 								String abc[] = dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID, DateResult[0], ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 
 								//System.out.println("Check Value Number "+abc.length);
 								//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -1002,9 +1002,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 									tv3.setText("0");
 								}
 
-								dbengine.open();
+								//dbengine.open();
 								String abc1[] = dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID, DateResult[1], ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 
 
 								if (abc1.length > 0) {
@@ -1018,9 +1018,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 
 							} else if (DateResult.length == 3) {
-								dbengine.open();
+								//dbengine.open();
 								String abc[] = dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID, DateResult[0], ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 
 
 								if (abc.length > 0) {
@@ -1032,9 +1032,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 									tv3.setText("0");
 								}
 
-								dbengine.open();
+								//dbengine.open();
 								String abc1[] = dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID, DateResult[1], ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 
 
 								if (abc1.length > 0) {
@@ -1046,9 +1046,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 									tv5.setText("0");
 								}
 
-								dbengine.open();
+								//dbengine.open();
 								String abc2[] = dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID, DateResult[2], ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 
 
 								if (abc2.length > 0) {
@@ -1238,9 +1238,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 					bw.write(CommonInfo.fileContent);
 					bw.close();
 
-					dbengine.open();
+					//dbengine.open();
 					dbengine.savetblMessageTextFileContainer(fileName, 0);
-					dbengine.close();
+					//dbengine.close();
 
 
 				} catch (IOException e1) {
@@ -1279,13 +1279,13 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 								}
 
 
-								dbengine.open();
+								//dbengine.open();
 								dbengine.UpdateStoreFlag(storeID.trim(), 0);
 								dbengine.updateRtlrCrdtBal(storeID.trim());
 								dbengine.deleteOrderId(strGlobalOrderID);
 								dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 0, strGlobalOrderID, TmpInvoiceCodePDA);
 								dbengine.deleteStoreTblsRecordsInCaseCancelOrderInOrderBooking(storeID.trim(), flag, strGlobalOrderID, TmpInvoiceCodePDA);
-								dbengine.close();
+								//dbengine.close();
 
 								dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(), 0, StoreVisitCode);
 
@@ -4621,10 +4621,10 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 						public void onClick(DialogInterface dialog, int which)
 						{
 							 butClickForGPS=3;
-							 dbengine.open();
+							 //dbengine.open();
 							 if ((dbengine.PrevLocChk(storeID.trim(),StoreVisitCode)) )
 								{
-								 dbengine.close();
+								 //dbengine.close();
 								 try
 								    {
 									FullSyncDataNow task = new FullSyncDataNow(ProductOrderEntry.this);
@@ -4638,7 +4638,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 								}
 							 else
 							 {
-								 dbengine.close();
+								 //dbengine.close();
 
 							        pDialog2STANDBY=ProgressDialog.show(ProductOrderEntry.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.genTermRetrivingLocation), true);
 									   pDialog2STANDBY.setIndeterminate(true);
@@ -4681,13 +4681,13 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 							String StampEndsTime = df.format(dateobj);
 
 
-							dbengine.open();
+							//dbengine.open();
 							dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
 							dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3");
 
 							dbengine.UpdateStoreFlag(storeID.trim(), 3);
 							//dbengine.deleteStoreRecordFromtblStoreSchemeFreeProQtyOtherDetailsOnceSubmitted(fStoreID);
-							dbengine.close();*//*
+							//dbengine.close();*//*
 
 							//new FullSyncDataNow().execute();
 
@@ -4719,7 +4719,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		 int Outstat=1;
 		    TransactionTableDataDeleteAndSaving(Outstat);
 			InvoiceTableDataDeleteAndSaving(Outstat,flgTransferStatus);
-			dbengine.open();
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
 			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,TmpInvoiceCodePDA);
 			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,TmpInvoiceCodePDA);
@@ -4733,16 +4733,16 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 
 			dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
-			dbengine.close();
+			//dbengine.close();
 			dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0,StoreVisitCode);
 			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,TmpInvoiceCodePDA)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",TmpInvoiceCodePDA);
-					dbengine.close();
+					//dbengine.close();
 				}
 			}
 	 }
@@ -4755,7 +4755,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		 int Outstat=1;
 		    TransactionTableDataDeleteAndSaving(Outstat);
 			InvoiceTableDataDeleteAndSaving(Outstat,flgTransferStatus);
-			dbengine.open();
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
 			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,TmpInvoiceCodePDA);
 			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,TmpInvoiceCodePDA);
@@ -4768,24 +4768,24 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 
 				dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
-			dbengine.close();
+			//dbengine.close();
 			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,TmpInvoiceCodePDA)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",TmpInvoiceCodePDA);
-					dbengine.close();
+					//dbengine.close();
 				}
 			}
 
 
 
 
-		 dbengine.open();
+		 //dbengine.open();
 		 String presentRoute=dbengine.GetActiveRouteID();
-		 dbengine.close();
+		 //dbengine.close();
 
 		 Intent trans2storeList = new Intent(ProductOrderEntry.this, StoreSelection.class);
 		 trans2storeList.putExtra("imei", imei);
@@ -4809,21 +4809,21 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		   int Outstat=1;
 		    TransactionTableDataDeleteAndSaving(Outstat);
 			InvoiceTableDataDeleteAndSaving(Outstat,flgTransferStatus);
-			dbengine.open();
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
 			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,TmpInvoiceCodePDA);
 			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,TmpInvoiceCodePDA);
 			dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"1",strGlobalOrderID,TmpInvoiceCodePDA);
-			dbengine.close();
+			//dbengine.close();
 
 			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,TmpInvoiceCodePDA)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",TmpInvoiceCodePDA);
-					dbengine.close();
+					//dbengine.close();
 				}
 			}
 			 long  syncTIMESTAMP = System.currentTimeMillis();
@@ -4980,7 +4980,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		       // String TransDate=date;
 		       if(Integer.valueOf(OrderFreeQty)>0 || Integer.valueOf(SampleQTY)>0 || Integer.valueOf(OrderQTY)>0 || Integer.valueOf(OrderValue)>0 || Integer.valueOf(OrderDisVal)>0 || ProductExtraOrder>0)// || Integer.valueOf(ProductStock)>0
 		       {
-		    	   dbengine.open();
+		    	   //dbengine.open();
 			       StoreCatNodeId=dbengine.fnGetStoreCatNodeId(storeID);
 			      // dbengine.fnsaveStoreProdcutPurchaseDetails(imei,storeID,""+PCateId,ProductID,pickerDate,Integer.parseInt(ProductStock),Integer.parseInt(OrderQTY)
 				   // ,Double.parseDouble(OrderValue),Integer.parseInt(OrderFreeQty.split(Pattern.quote("."))[0]),Double.parseDouble(OrderDisVal),Integer.parseInt(SampleQTY)
@@ -4989,7 +4989,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 				   //dbengine.fnsaveStoreProdcutPurchaseDetails(imei,storeID,""+PCateId,ProductID,pickerDate,Integer.parseInt(ProductStock),Integer.parseInt(OrderQTY),Double.parseDouble(OrderValue),Integer.parseInt(OrderFreeQty.split(Pattern.quote("."))[0]),Double.parseDouble(OrderDisVal),Integer.parseInt(SampleQTY),PName,Double.parseDouble(PRate),Outstat,TaxRate,TaxValue,StoreCatNodeId,strGlobalOrderID,flgIsQuoteRateApplied,distID,PriceApplyDiscountLevelType,TmpInvoiceCodePDA,strFinalAllotedInvoiceIds);
 					int flgRuleTaxVal=1;
 				   dbengine.fnsaveStoreTempOrderEntryDetails(TmpInvoiceCodePDA,storeID,""+PCateId,ProductID,Double.parseDouble(PRate),TaxRate,flgRuleTaxVal,Integer.parseInt(OrderQTY),Integer.parseInt(hmapProductSelectedUOMId.get(ProductID)),Double.parseDouble(hmapLineValBfrTxAftrDscnt.get(ProductID)),Double.parseDouble(hmapLineValAftrTxAftrDscnt.get(ProductID)),Integer.parseInt(OrderFreeQty.split(Pattern.quote("."))[0]),Double.parseDouble(OrderDisVal),Integer.parseInt(SampleQTY),PName,TaxValue,strGlobalOrderID,flgIsQuoteRateApplied,PriceApplyDiscountLevelType,distID,Outstat,ProductExtraOrder);
-				   dbengine.close();
+				   //dbengine.close();
 		       }
 
 
@@ -5118,12 +5118,12 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 		int flgRuleTaxVal=1;
 		int flgTransType=1;
-		dbengine.open();
+		//dbengine.open();
 		//dbengine.saveStoreInvoice(imei,storeID, pickerDate, TBtaxDis, TAmt, Dis, INval, Ftotal, InvAfterDis, AddDis, AmtPrevDueVA, AmtCollVA, AmtOutstandingVAL, NoOfCouponValue, TotalCoupunAmount,Outstat,strGlobalOrderID,TmpInvoiceCodePDA,strFinalAllotedInvoiceIds);//, INvalCreditAmt, INvalInvoiceAfterCreditAmt, valInvoiceOrginal);
 
 				dbengine.saveStoreTempInvoice(StoreVisitCode, TmpInvoiceCodePDA, storeID, pickerDate, TBtaxDis, TAmt, Dis, INval, Ftotal, InvAfterDis, AddDis, NoOfCouponValue, TotalCoupunAmount, pickerDate, flgTransType, PriceApplyDiscountLevelType, flgRuleTaxVal, Outstat,flgTransferStatus);//strFinalAllotedInvoiceIds);//, INvalCreditAmt, INvalInvoiceAfterCreditAmt, valInvoiceOrginal);
 
-	    dbengine.close();
+	    //dbengine.close();
 
 
 
@@ -5132,9 +5132,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 	public void SyncNow()
 	{
 
-		dbengine.open();
+		//dbengine.open();
 		String presentRoute=dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
 
 
 		long syncTIMESTAMP = System.currentTimeMillis();
@@ -5475,11 +5475,11 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 								 String FusedAccuracy="0";
 								 String FusedAddress="0";
 								 checkHighAccuracyLocationMode(ProductOrderEntry.this);
-								 dbengine.open();
+								 //dbengine.open();
 								 dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview,StoreVisitCode,VisitTimeInSideStore);
 
 
-								 dbengine.close();
+								 //dbengine.close();
 
 								 if(butClickForGPS==1)
 								 {
@@ -6079,11 +6079,11 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 	public void UpdateLocationAndProductAllData()
 	{
 		checkHighAccuracyLocationMode(ProductOrderEntry.this);
-		dbengine.open();
+		//dbengine.open();
 		dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview,StoreVisitCode,VisitTimeInSideStore);
 
 
-		dbengine.close();
+		//dbengine.close();
 
 		if(butClickForGPS==1)
 		{
@@ -6337,9 +6337,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 				BufferedWriter bw = new BufferedWriter(fw);
 				bw.write(CommonInfo.fileContent);
 				bw.close();
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 			}
 			catch (IOException e1)
 			{
@@ -6404,9 +6404,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -6468,9 +6468,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -6483,11 +6483,11 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 			butClickForGPS=2;
 			flagClkdButton=2;
-			dbengine.open();
+			//dbengine.open();
 			dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2,StoreVisitCode);
 			if ((dbengine.PrevLocChk(storeID.trim(),StoreVisitCode)) )
 			{
-				dbengine.close();
+				//dbengine.close();
 
 
 
@@ -6534,7 +6534,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 			}
 			else
 			{
-				dbengine.close();
+				//dbengine.close();
 
 				appLocationService=new AppLocationService();
 
@@ -6607,9 +6607,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -6622,9 +6622,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 
 			flagClkdButton=3;
-			dbengine.open();
+			//dbengine.open();
 			dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2,StoreVisitCode);
-			dbengine.close();
+			//dbengine.close();
 
 			orderBookingTotalCalc();
 
@@ -6963,9 +6963,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		  @Override
 		  protected Void doInBackground(Void... params)
 		  {
-			  dbengine.open();
+			  //dbengine.open();
 			  StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
-			  dbengine.close();
+			  //dbengine.close();
 
 
 
@@ -6997,10 +6997,10 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		   getProductData();
 
 		   getCutOffDetailsForProduct();
-			  dbengine.open();
+			  //dbengine.open();
 			  hmapFetchPDASavedData=dbengine.fetchActualVisitData(storeID);
 
-			  dbengine.close();
+			  //dbengine.close();
 
 			  if(hmapFetchPDASavedData!=null && hmapFetchPDASavedData.size()>0)
 			  {
@@ -7116,9 +7116,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 				SimpleDateFormat df = new SimpleDateFormat(
 						"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 				String startTS = df.format(dateobj);
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreEndVisit(storeID,startTS);
-				dbengine.close();
+				//dbengine.close();
 		     if(isReturnClkd==3)
 		     {
 		    	   Intent fireBackDetPg=new Intent(ProductOrderEntry.this,ReturnActivity.class);

@@ -362,24 +362,6 @@
     android:orientation="vertical"
     android:weightSum="1">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="1dp"
-        android:layout_weight="0.85"
-        android:clipToPadding="false"
-        android:scrollbarStyle="outsideOverlay"
-        >
-
-        <LinearLayout
-            android:id="@+id/ll_prdct_detal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-        </LinearLayout>
-    </ScrollView>
-
     <View
     android:layout_width="match_parent"
     android:layout_height="2dp"
@@ -490,11 +472,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="visible">
+        android:visibility="gone">
        
         
     </LinearLayout>
 </ScrollView>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="1dp"
+        android:layout_weight="0.85"
+        android:clipToPadding="false"
+        android:scrollbarStyle="outsideOverlay">
+
+        <LinearLayout
+            android:id="@+id/ll_prdct_detal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
 
 </LinearLayout>

@@ -2084,10 +2084,10 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
        SignName_string=pic_name + ".png";
        SignPath_string=StoredPath;
 
-       dbengine.open();
+       //dbengine.open();
        dbengine.Delete_tblDsrRegDetails();
        dbengine.savetblDsrRegDetails(IMEI_string,ClickedDateTime_string,FirstName_string,LastName_string,ContactNo_string,DOB_string,Sex_string,MaritalStatus_string,MarriedDate_string,Qualification_string,SelfieName_string,SelfiePath_string,EmailID_string,BloodGroup_string,SignName_string,SignPath_string,3,PhotoName_string,PersonNodeId_string,PersonNodeType_string);
-       dbengine.close();
+       //dbengine.close();
        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
        if(FROM.equals("DAYEND"))
        {

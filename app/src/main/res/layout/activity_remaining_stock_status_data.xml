@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
@@ -56,7 +56,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="4"
+        android:layout_below="@+id/rtv_hdr"
         android:gravity="center"
         >
 
@@ -73,12 +73,37 @@
             android:layout_weight="3"/>
 
         <TextView
+
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Open Stock"
+            android:padding="1dp"
+            android:layout_marginLeft="2dp"
+            android:textColor="#000000"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_weight="1"/>
+        <TextView
+
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Sales"
+            android:gravity="center"
+            android:padding="1dp"
+            android:layout_marginLeft="2dp"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_weight="1"/>
+        <TextView
             android:id="@+id/tvlbl2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Stock Left"
             android:padding="1dp"
             android:layout_marginLeft="2dp"
+            android:gravity="center"
             android:textColor="#000000"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -89,8 +114,10 @@
 
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/ll_view"
         android:layout_width="match_parent"
         android:layout_height="2dp"
+        android:layout_below="@+id/ll_product_stock"
         android:orientation="horizontal">
 
         <View
@@ -109,13 +136,14 @@
 
     </LinearLayout>
     <ScrollView
+
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:clipToPadding="false"
         android:layout_marginTop="1dp"
-
+        android:layout_below="@+id/ll_view"
         android:background="#ffffff"
-        android:layout_weight="0.70"
+        android:layout_above="@+id/ll_LoadUnloadLink"
         android:scrollbarStyle="outsideOverlay">
 
         <LinearLayout
@@ -127,6 +155,13 @@
             </LinearLayout>
     </ScrollView>
 
-
+<LinearLayout
+    android:id="@+id/ll_LoadUnloadLink"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:orientation="vertical">
 
 </LinearLayout>
+
+</RelativeLayout>

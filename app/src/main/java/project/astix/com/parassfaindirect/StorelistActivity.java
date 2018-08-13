@@ -219,9 +219,9 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
         try
         {
 
-            dbEngine.open();
+            //dbEngine.open();
             String Noti_textWithMsgServerID=dbEngine.fetchNoti_textFromtblNotificationMstr();
-            dbEngine.close();
+            //dbEngine.close();
             System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
             if(!Noti_textWithMsgServerID.equals("Null"))
             {
@@ -275,13 +275,13 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                             SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.ENGLISH);
                             String Noti_ReadDateTime = df.format(dateobj);
 
-                            dbEngine.open();
+                            //dbEngine.open();
                             dbEngine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-                            dbEngine.close();
+                            //dbEngine.close();
 
                             try
                             {
-                                dbEngine.open();
+                                //dbEngine.open();
                                 int checkleftNoti=dbEngine.countNumberOFNotificationtblNotificationMstr();
                                 if(checkleftNoti>0)
                                 {
@@ -294,7 +294,7 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                                         MsgServerID= Integer.parseInt(token.nextToken().trim());
                                         Noti_text= token.nextToken().trim();
 
-                                        dbEngine.close();
+                                        //dbEngine.close();
                                         if(Noti_text.equals("") || Noti_text.equals("Null"))
                                         {
 
@@ -318,7 +318,7 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                             }
                             finally
                             {
-                                dbEngine.close();
+                                //dbEngine.close();
 
                             }
 
@@ -403,9 +403,9 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
         }
 
         SharedPreferences.Editor ed;
-        dbEngine.open();
+        //dbEngine.open();
         String getServerDate = dbEngine.fnGetServerDate();
-        dbEngine.close();
+        //dbEngine.close();
 
         if(locNotEnabled)
         {
@@ -1320,10 +1320,10 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
             if(fnAccurateProvider.equals(""))
             {
                 //because no location found so updating table with NA
-                dbEngine.open();
+                //dbEngine.open();
                 dbEngine.deleteLocationTable();
                 dbEngine.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-                dbEngine.close();
+                //dbEngine.close();
                 if(pDialog2STANDBY.isShowing())
                 {
                     pDialog2STANDBY.dismiss();
@@ -1428,10 +1428,10 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
 
                 if(fnAccuracy>10000)
                 {
-                    dbEngine.open();
+                    //dbEngine.open();
                     dbEngine.deleteLocationTable();
                     dbEngine.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                    dbEngine.close();
+                    //dbEngine.close();
 
                     if(pDialog2STANDBY.isShowing())
                     {
@@ -1442,10 +1442,10 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                 }
                 else
                 {
-                    dbEngine.open();
+                    //dbEngine.open();
                     dbEngine.deleteLocationTable();
                     dbEngine.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                    dbEngine.close();
+                    //dbEngine.close();
 
 
                     if(flgAddButtonCliked==1)
@@ -1540,7 +1540,7 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
 
                         if(hmapOutletListForNearUpdated!=null)
                         {
-                            dbEngine.open();
+                            //dbEngine.open();
                             for(Map.Entry<String, String> entry:hmapOutletListForNearUpdated.entrySet())
                             {
                                 String outID=entry.getKey().toString().trim();
@@ -1559,7 +1559,7 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                                     dbEngine.UpdateStoreDistanceNearSM(outID,Integer.parseInt(DistanceNear));
                                 }
                             }
-                            dbEngine.close();
+                            //dbEngine.close();
                         }
                         //send to storeListpage page
                         //From, addr,zipcode,city,state,errorMessageFlag,username,totaltarget,todayTarget
@@ -1904,9 +1904,9 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                 SharedPreferences sharedPreferences=getSharedPreferences("MyPref", MODE_PRIVATE);
                 SharedPreferences.Editor ed;
                 ed = sharedPreferences.edit();
-                dbEngine.open();
+                //dbEngine.open();
                 String getServerDate = dbEngine.fnGetServerDate();
-                dbEngine.close();
+                //dbEngine.close();
                 ed.putString("ServerDate", getServerDate);
                 ed.commit();
                 String userName=   dbEngine.getUsername();
@@ -2351,9 +2351,9 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                 String StampEndsTime = df.format(dateobj);
 
 
-                dbEngine.open();
+                //dbEngine.open();
                 dbEngine.UpdateStoreFlagForSaveExit("1");
-                dbEngine.close();
+                //dbEngine.close();
 
 
                 SimpleDateFormat df1 = new SimpleDateFormat(imei+"."+ "dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
@@ -2382,12 +2382,12 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
 
 
                     dbEngine.savetbl_XMLfiles(newfullFileName, "3");
-                    dbEngine.open();
+                    //dbEngine.open();
 
                     dbEngine.UpdateStoreFlagForFinalSubmit("3");
                     dbEngine.UpdateStoreFlagForALLSubmit("5");
 
-                    dbEngine.close();
+                    //dbEngine.close();
 
 
 

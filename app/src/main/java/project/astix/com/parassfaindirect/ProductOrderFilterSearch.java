@@ -465,9 +465,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 				try
 				{
 
-				dbengine.open();
+				//dbengine.open();
 				String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-				dbengine.close();
+				//dbengine.close();
 				//System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 				if(!Noti_textWithMsgServerID.equals("Null"))
 				{
@@ -520,13 +520,13 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 									SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 									String Noti_ReadDateTime = df.format(dateobj);
 
-									dbengine.open();
+									//dbengine.open();
 									dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-									dbengine.close();
+									//dbengine.close();
 
 									try
 									{
-										dbengine.open();
+										//dbengine.open();
 									    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
 									    if(checkleftNoti>0)
 									    {
@@ -539,7 +539,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 													MsgServerID= Integer.parseInt(token.nextToken().trim());
 													Noti_text= token.nextToken().trim();
 
-													dbengine.close();
+													//dbengine.close();
 													if(Noti_text.equals("") || Noti_text.equals("Null"))
 													{
 
@@ -563,7 +563,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 									}
 						            finally
 						            {
-						            	dbengine.close();
+						            	//dbengine.close();
 
 						            }
 
@@ -897,7 +897,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 
 
 
-					dbengine.open();
+					//dbengine.open();
 
 					String DateResult[]=dbengine.fetchOrderDateFromtblForPDAGetExecutionSummary(storeID);
 					String LastexecutionDetail[]=dbengine.fetchAllDataFromtbltblForPDAGetExecutionSummary(storeID);
@@ -908,7 +908,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 
 
 					//System.out.println("Ashish and Anuj LastexecutionDetail : "+LastexecutionDetail.length);
-					dbengine.close();
+					//dbengine.close();
 
 					if(DateResult.length>0)
 					{
@@ -1011,9 +1011,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 									tv5.setVisibility(View.GONE);
 									tv6.setVisibility(View.GONE);
 									tv7.setVisibility(View.GONE);
-									dbengine.open();
+									//dbengine.open();
 									String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 
 									//System.out.println("Check Value Number "+abc.length);
 									//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -1034,9 +1034,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 									tv6.setVisibility(View.GONE);
 									tv7.setVisibility(View.GONE);
 
-									dbengine.open();
+									//dbengine.open();
 									String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 
 									//System.out.println("Check Value Number "+abc.length);
 									//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -1052,9 +1052,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 										tv3.setText("0");
 									}
 
-									dbengine.open();
+									//dbengine.open();
 									String abc1[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[1],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 
 
 									if(abc1.length>0)
@@ -1076,9 +1076,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 								}
 								else if(DateResult.length==3)
 								{
-									dbengine.open();
+									//dbengine.open();
 									String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 
 
 									if(abc.length>0)
@@ -1093,9 +1093,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 										tv3.setText("0");
 									}
 
-									dbengine.open();
+									//dbengine.open();
 									String abc1[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[1],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 
 
 									if(abc1.length>0)
@@ -1110,9 +1110,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 										tv5.setText("0");
 									}
 
-									dbengine.open();
+									//dbengine.open();
 									String abc2[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[2],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 
 
 									if(abc2.length>0)
@@ -1378,9 +1378,9 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 							bw.write(CommonInfo.fileContent);
 							bw.close();
 
-							dbengine.open();
+							//dbengine.open();
 							dbengine.savetblMessageTextFileContainer(fileName,0);
-							dbengine.close();
+							//dbengine.close();
 
 
 						}
@@ -1425,13 +1425,13 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 
 			    		dbengine.deleteProductBenifitSlabApplieddeleteProductBenifitSlabApplied(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
 			    		dbengine.deleteAllStoreAlertValueProduct(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
-			    		dbengine.open();
+			    		//dbengine.open();
 			    		dbengine.UpdateStoreFlag(storeID.trim(), 0);
 						dbengine.updateRtlrCrdtBal(storeID.trim());
 						dbengine.deleteOrderId(strGlobalOrderID);
 			    		dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 0,strGlobalOrderID,strGlobalInvoiceNumber);
 			    		dbengine.deleteStoreTblsRecordsInCaseCancelOrderInOrderBooking(storeID.trim(),flag,strGlobalOrderID,strGlobalInvoiceNumber);
-			    		dbengine.close();
+			    		//dbengine.close();
 
 			    		//dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
 
@@ -3917,7 +3917,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 								HashMap<String, String> hmapMultiplePuschasedProductVolumeAndValue=new HashMap<String, String>();
 								HashMap<String, String> arrProductIDMappedInSchSlbSubBukBenifits=new HashMap<String, String>();
 								LinkedHashMap<String, String> hmapFreeProdID=new LinkedHashMap<String, String>();
-								dbengine.open();
+								//dbengine.open();
 
 								*//*String productNameValue=hmapPrdctIdPrdctName.get(ProductIdOnClicked);
 								arrProductIDMappedInSchSlbSubBukBenifits.put(productNameValue,ProductIdOnClicked);*//*
@@ -3931,7 +3931,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 
 
 
-								dbengine.close();
+								//dbengine.close();
 								Double AssigendValue=Double.parseDouble(strBeniftRowIdExistsInSchemeSlabBenefitsValueDetail[0]);
 								double totVolumeofProducts=0.00;
 								double totlCombinedPriceOfProdcuts=0.00;
@@ -5042,7 +5042,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 								HashMap<String, String> hmapMultiplePuschasedProductVolumeAndValue=new HashMap<String, String>();
 								HashMap<String, String> arrProductIDMappedInSchSlbSubBukBenifits=new HashMap<String, String>();
 								LinkedHashMap<String, String> hmapFreeProdID=new LinkedHashMap<String, String>();
-								dbengine.open();
+								//dbengine.open();
 
                      /*String productNameValue=hmapPrdctIdPrdctName.get(ProductIdOnClicked);
                      arrProductIDMappedInSchSlbSubBukBenifits.put(productNameValue,ProductIdOnClicked);*/
@@ -5056,7 +5056,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 
 
 
-								dbengine.close();
+								//dbengine.close();
 								Double AssigendValue=Double.parseDouble(strBeniftRowIdExistsInSchemeSlabBenefitsValueDetail[0]);
 								double totVolumeofProducts=0.00;
 								double totlCombinedPriceOfProdcuts=0.00;
@@ -7313,10 +7313,10 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 						public void onClick(DialogInterface dialog, int which)
 						{
 							 butClickForGPS=3;
-							 dbengine.open();
+							 //dbengine.open();
 							 if ((dbengine.PrevLocChk(storeID.trim(),"abc")) )
 								{
-								 dbengine.close();
+								 //dbengine.close();
 								 try
 								    {
 									FullSyncDataNow task = new FullSyncDataNow(ProductOrderFilterSearch.this);
@@ -7330,7 +7330,7 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 								}
 							 else
 							 {
-								/* dbengine.close();
+								/* //dbengine.close();
 
 									// TODO Auto-generated method stub
 									boolean isGPSok = false;
@@ -7419,13 +7419,13 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 							String StampEndsTime = df.format(dateobj);
 
 
-							dbengine.open();
+							//dbengine.open();
 							dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
 							dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3");
 
 							dbengine.UpdateStoreFlag(storeID.trim(), 3);
 							//dbengine.deleteStoreRecordFromtblStoreSchemeFreeProQtyOtherDetailsOnceSubmitted(fStoreID);
-							dbengine.close();*/
+							//dbengine.close();*/
 
 							//new FullSyncDataNow().execute();
 
@@ -7457,7 +7457,7 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 		 int Outstat=1;
 		    TransactionTableDataDeleteAndSaving(Outstat);
 			InvoiceTableDataDeleteAndSaving(Outstat);
-			dbengine.open();
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
 			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,strGlobalInvoiceNumber);
 			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
@@ -7471,16 +7471,16 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 
 
 			dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
-			dbengine.close();
+			//dbengine.close();
 			//dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
 			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",strGlobalInvoiceNumber);
-					dbengine.close();
+					//dbengine.close();
 				}
 			}
 	 }
@@ -7493,7 +7493,7 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 		 int Outstat=1;
 		    TransactionTableDataDeleteAndSaving(Outstat);
 			InvoiceTableDataDeleteAndSaving(Outstat);
-			dbengine.open();
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
 			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,strGlobalInvoiceNumber);
 			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
@@ -7506,24 +7506,24 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 
 
 				dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
-			dbengine.close();
+			//dbengine.close();
 			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",strGlobalInvoiceNumber);
-					dbengine.close();
+					//dbengine.close();
 				}
 			}
 
 
 
 
-		 dbengine.open();
+		 //dbengine.open();
 		 String presentRoute=dbengine.GetActiveRouteID();
-		 dbengine.close();
+		 //dbengine.close();
 
 		 Intent trans2storeList = new Intent(ProductOrderFilterSearch.this, StoreSelection.class);
 		 trans2storeList.putExtra("imei", imei);
@@ -7547,21 +7547,21 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 		   int Outstat=1;
 		    TransactionTableDataDeleteAndSaving(Outstat);
 			InvoiceTableDataDeleteAndSaving(Outstat);
-			dbengine.open();
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
 			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,strGlobalInvoiceNumber);
 			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
 			dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
-			dbengine.close();
+			//dbengine.close();
 
 			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",strGlobalInvoiceNumber);
-					dbengine.close();
+					//dbengine.close();
 				}
 			}
 			 long  syncTIMESTAMP = System.currentTimeMillis();
@@ -7723,10 +7723,10 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 		       // String TransDate=date;
 		       if(Integer.valueOf(OrderFreeQty)>0 || Integer.valueOf(SampleQTY)>0 || Integer.valueOf(OrderQTY)>0 || Integer.valueOf(OrderValue)>0 || Integer.valueOf(OrderDisVal)>0 || Integer.valueOf(ProductStock)>0)
 		       {
-		    	   dbengine.open();
+		    	   //dbengine.open();
 			       StoreCatNodeId=dbengine.fnGetStoreCatNodeId(storeID);
 			       dbengine.fnsaveStoreProdcutPurchaseDetails(imei,storeID,""+PCateId,ProductID,pickerDate,Integer.parseInt(ProductStock),Integer.parseInt(OrderQTY),Double.parseDouble(OrderValue),Integer.parseInt(OrderFreeQty.split(Pattern.quote("."))[0]),Double.parseDouble(OrderDisVal),Integer.parseInt(SampleQTY),PName,Double.parseDouble(PRate),Outstat,TaxRate,TaxValue,StoreCatNodeId,strGlobalOrderID,flgIsQuoteRateApplied,distID,PriceApplyDiscountLevelType,strGlobalInvoiceNumber,strFinalAllotedInvoiceIds);
-			       dbengine.close();
+			       //dbengine.close();
 		       }
 
 
@@ -7854,9 +7854,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 		}
 
 
-		dbengine.open();
+		//dbengine.open();
 		dbengine.saveStoreInvoice(imei,storeID, pickerDate, TBtaxDis, TAmt, Dis, INval, Ftotal, InvAfterDis, AddDis, AmtPrevDueVA, AmtCollVA, AmtOutstandingVAL, NoOfCouponValue, TotalCoupunAmount,Outstat,strGlobalOrderID,strGlobalInvoiceNumber,strFinalAllotedInvoiceIds);//, INvalCreditAmt, INvalInvoiceAfterCreditAmt, valInvoiceOrginal);
-	    dbengine.close();
+	    //dbengine.close();
 
 
 
@@ -7865,9 +7865,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 	public void SyncNow()
 	{
 
-		dbengine.open();
+		//dbengine.open();
 		String presentRoute=dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
 
 
 		long syncTIMESTAMP = System.currentTimeMillis();
@@ -8395,11 +8395,11 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 									}
 			        		   }
 
-							dbengine.open();
+							//dbengine.open();
 							 dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(lastKnownLocLatitude), String.valueOf(lastKnownLocLongitude), "" + accuracy,locationProvider);
 
 
-							dbengine.close();
+							//dbengine.close();
 
 							 if(butClickForGPS==1)
 	                         {
@@ -8555,11 +8555,11 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 								 String FusedAccuracy="0";
 								 String FusedAddress="0";
 								 checkHighAccuracyLocationMode(ProductOrderFilterSearch.this);
-								 dbengine.open();
+								 //dbengine.open();
 								// dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview);
 
 
-								 dbengine.close();
+								 //dbengine.close();
 
 								 if(butClickForGPS==1)
 								 {
@@ -9171,11 +9171,11 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 	public void UpdateLocationAndProductAllData()
 	{
 		checkHighAccuracyLocationMode(ProductOrderFilterSearch.this);
-		dbengine.open();
+		//dbengine.open();
 		//dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview);
 
 
-		dbengine.close();
+		//dbengine.close();
 
 		if(butClickForGPS==1)
 		{
@@ -9471,9 +9471,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				BufferedWriter bw = new BufferedWriter(fw);
 				bw.write(CommonInfo.fileContent);
 				bw.close();
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 			}
 			catch (IOException e1)
 			{
@@ -9484,10 +9484,10 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 
 			butClickForGPS=6;
 			flagClkdButton=6;
-					  /* dbengine.open();
+					  /* //dbengine.open();
 					   if ((dbengine.PrevLocChk(storeID.trim())) )
 						{
-						   dbengine.close();*/
+						   //dbengine.close();*/
 			if(ed_LastEditextFocusd!=null)
 			{
 							  /*if(!(ed_LastEditextFocusd.getText().toString()).equals(viewCurrentBoxValue))
@@ -9549,9 +9549,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -9566,11 +9566,11 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 
 			butClickForGPS=1;
 			flagClkdButton=5;
-				  /* dbengine.open();
+				  /* //dbengine.open();
 				   if ((dbengine.PrevLocChk(storeID.trim())) )
 					{
 
-					   dbengine.close();*/
+					   //dbengine.close();*/
 
 			if(ed_LastEditextFocusd!=null)
 			{
@@ -9626,9 +9626,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -9641,11 +9641,11 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 
 			butClickForGPS=2;
 			flagClkdButton=2;
-			dbengine.open();
+			//dbengine.open();
 			//dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2);
 			if ((dbengine.PrevLocChk(storeID.trim(),"abc")) )
 			{
-				dbengine.close();
+				//dbengine.close();
 				if(ed_LastEditextFocusd!=null)
 				{
 						  /*if(!(ed_LastEditextFocusd.getText().toString()).equals(viewCurrentBoxValue))
@@ -9771,9 +9771,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -9786,9 +9786,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 
 
 			flagClkdButton=3;
-			dbengine.open();
+			//dbengine.open();
 			//dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2);
-			dbengine.close();
+			//dbengine.close();
 			if(ed_LastEditextFocusd!=null)
 			{
 					   /*if(!(ed_LastEditextFocusd.getText().toString()).equals(viewCurrentBoxValue))
@@ -10170,7 +10170,7 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				String StampEndsTime = df.format(dateobj);
 
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
 				dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3",strGlobalOrderID,strGlobalInvoiceNumber);
 				dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"3",strGlobalOrderID,strGlobalInvoiceNumber);
@@ -10178,21 +10178,21 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 3,strGlobalOrderID,strGlobalInvoiceNumber);
 				//dbengine.UpdateStoreReturnphotoFlag(storeID.trim(), 5);
 
-				dbengine.close();
+				//dbengine.close();
 				//dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
 				if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 				{
 					String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 					if(!strDefaultPaymentStageForStore.equals(""))
 					{
-						dbengine.open();
+						//dbengine.open();
 						dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"3",strGlobalInvoiceNumber);
-						dbengine.close();
+						//dbengine.close();
 					}
 				}
-			dbengine.open();
+			//dbengine.open();
 			String presentRoute=dbengine.GetActiveRouteID();
-			dbengine.close();
+			//dbengine.close();
 
 
 			/*long syncTIMESTAMP = System.currentTimeMillis();
@@ -10227,12 +10227,12 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				}*/
 				dbengine.savetbl_XMLfiles(newfullFileName, "3","1");
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreFlag(storeID.trim(), 4);
 				dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 4,strGlobalOrderID,strGlobalInvoiceNumber);
 				dbengine.UpdateStoreMaterialphotoFlag(storeID.trim(), 5);
 				dbengine.UpdateStoreReturnphotoFlag(storeID.trim(), 5);
-				dbengine.close();
+				//dbengine.close();
 
 				VisitTypeStatus="0";
 				//dbengine.updateVisitTypeStatusOfStore(storeID,VisitTypeStatus);
@@ -10254,9 +10254,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 					String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 					if(!strDefaultPaymentStageForStore.equals(""))
 					{
-						dbengine.open();
+						//dbengine.open();
 						dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"4",strGlobalInvoiceNumber);
-						dbengine.close();
+						//dbengine.close();
 					}
 				}
 
@@ -10324,9 +10324,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 		  @Override
 		  protected Void doInBackground(Void... params)
 		  {
-			  dbengine.open();
+			  //dbengine.open();
 			  StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
-			  dbengine.close();
+			  //dbengine.close();
 
 			  LinkedHashMap<String, String> hmapListQuoteISOfUnmappedWithProducts= dbengine.fnGetListQuoteISOfUnmappedWithProducts(storeID);
 			  if(hmapListQuoteISOfUnmappedWithProducts.size()>0)
@@ -10646,9 +10646,9 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 				SimpleDateFormat df = new SimpleDateFormat(
 						"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 				String startTS = df.format(dateobj);
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreEndVisit(storeID,startTS);
-				dbengine.close();
+				//dbengine.close();
 		     if(isReturnClkd==3)
 		     {
 		    	   Intent fireBackDetPg=new Intent(ProductOrderFilterSearch.this,ReturnActivity.class);

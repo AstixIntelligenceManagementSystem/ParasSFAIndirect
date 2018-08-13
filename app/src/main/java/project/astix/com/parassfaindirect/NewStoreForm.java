@@ -94,7 +94,7 @@ public class NewStoreForm extends Fragment  {
 	String previousSlctdState="Select";
 	String previousSlctdCity="Select";
 	LinkedHashMap<String, String> hmapCity_details=new LinkedHashMap<String, String>();
-		private final int requestCode = 200;
+	private final int requestCode = 200;
 	public String flgGSTCapture="1";
 	public String flgGSTCompliance="0";
 	public String GSTNumber="NA";
@@ -176,7 +176,7 @@ public class NewStoreForm extends Fragment  {
 		StringBuilder sbMultiple=new StringBuilder();
 		 boolean isSelectedSearch=false;
 	  View headerView;
-	  PRJDatabase helperDb;
+	  PRJDatabase helperDb=new PRJDatabase(getActivity());
 	  LinearLayout ll_Image;
 	  String activityFrom="";
 	  String fullStringOfDelivery="0";
@@ -611,9 +611,9 @@ private InputFilter filter = new InputFilter() {
 	public void createView()
 	{
 
-		helperDb.open();
+		//////////helperDb.open();
 		getActiveRouteId=helperDb.GetActiveRouteID();
-		helperDb.close();
+		//helperDb.close();
 		  // getActivity() loop is for section i.e page
 		  for(Entry<String,ArrayList<String>> entry:AddNewStore_DynamicSectionWise.hmapSctnId_GrpId.entrySet())
 		  {
@@ -5213,11 +5213,11 @@ public SpannableStringBuilder textWithMandatory(String text_Value)
 
 
 
-			helperDb.open();
+			//////////helperDb.open();
 			helperDb.fndeleteNewStoreSalesQuotePaymentDetails(storeIDString);
 			helperDb.fnsaveNewStoreSalesQuotePaymentDetails(storeIDString,PAYMENT_STAGEID_Values);
 
-			helperDb.close();
+			//helperDb.close();
 
 			 getActivity().getWindow().clearFlags(LayoutParams.FLAG_NOT_TOUCHABLE);
 
@@ -7459,9 +7459,9 @@ public SpannableStringBuilder textWithMandatory(String text_Value)
 
 			                    		/*if(helperDb.checkCountIntblNewStoreMainTable(AddNewStore_DynamicSectionWise.selStoreID)==0)
 			                    		{
-			                    			helperDb.open();
+			                    			//////////helperDb.open();
 			                    		//	helperDb.fndeleteNewStoreSalesQuotePaymentDetails(AddNewStore_DynamicSectionWise.selStoreID);
-			                    			helperDb.close();
+			                    			//helperDb.close();
 			                    		}
 										Intent intent = new Intent(getActivity(), LauncherActivity.class);
 										intent.putExtra("FROM", "AddNewStore_DynamicSectionWise");
@@ -7547,14 +7547,14 @@ public SpannableStringBuilder textWithMandatory(String text_Value)
 
 
 
-					helperDb.open();
+					//////////helperDb.open();
 					helperDb.deletetblstoreMstrOnStoreIDBasis(AddNewStore_DynamicSectionWise.selStoreID);
 
 			/*		helperDb.savetblStoreMain("NA",AddNewStore_DynamicSectionWise.selStoreID,currentStoreName,"NA","NA","NA","NA","NA","NA","NA","0",AddNewStore_DynamicSectionWise.StoreTypeTradeChannel,
 							Integer.parseInt("1"),0,0, 0, "NA",VisitStartTS,imei,""+AddNewStore_DynamicSectionWise.battLevel,1,1,String.valueOf(AddNewStore_DynamicSectionWise.latitudeToSave),String.valueOf(AddNewStore_DynamicSectionWise.longitudeToSave),"" + AddNewStore_DynamicSectionWise.accuracyToSave,"" + AddNewStore_DynamicSectionWise.ProviderFromLauncher,1,AddNewStore_DynamicSectionWise.fetchAddress,allValuesOfPaymentStageID,flgHasQuote,flgAllowQuotation,flgSubmitFromQuotation,flgGSTCapture,flgGSTCompliance,GSTNumber,flgGSTRecordFromServer,AddNewStore_DynamicSectionWise.flgLocationServicesOnOff,AddNewStore_DynamicSectionWise.flgGPSOnOff,AddNewStore_DynamicSectionWise.flgNetworkOnOff,AddNewStore_DynamicSectionWise.flgFusedOnOff,AddNewStore_DynamicSectionWise.flgInternetOnOffWhileLocationTracking,AddNewStore_DynamicSectionWise.flgRestart,AddNewStore_DynamicSectionWise.flgStoreOrder, hmapAddress.get("2"), hmapAddress.get("1"), hmapAddress.get("3"),AddNewStore_DynamicSectionWise.distID,AddNewStore_DynamicSectionWise.OwnerName,AddNewStore_DynamicSectionWise.StoreContactNo,AddNewStore_DynamicSectionWise.StoreCatType,AddNewStore_DynamicSectionWise.flgRuleTaxVal,AddNewStore_DynamicSectionWise.flgTransType);
 */
 					//	helperDb.saveSOAPdataStoreListDetailsInNewTable(AddNewStore_DynamicSectionWise.selStoreID, hmapAddress.get("2"), hmapAddress.get("1"), hmapAddress.get("3"),1);
-					helperDb.close();
+					//helperDb.close();
 					if(activityFrom.equals("StoreSelection")){
 
 						Intent intent = new Intent(getActivity(), StoreSelection.class);

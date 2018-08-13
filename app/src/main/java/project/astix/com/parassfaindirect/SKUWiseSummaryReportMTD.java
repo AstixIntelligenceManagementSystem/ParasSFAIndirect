@@ -145,9 +145,9 @@ public class SKUWiseSummaryReportMTD extends BaseActivity
 		{
 			super.onPreExecute();
 			
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateSKUDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -191,9 +191,9 @@ public class SKUWiseSummaryReportMTD extends BaseActivity
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblSKUWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}

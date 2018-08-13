@@ -66,6 +66,7 @@ public class BaseActivity extends Activity
     }
    public boolean onKeyDown(int keyCode, KeyEvent event)
     {
+
         if(keyCode==KeyEvent.KEYCODE_BACK)
         {
             return true;
@@ -204,6 +205,7 @@ public class BaseActivity extends Activity
                     }
                 }).create().show();
     }
+
 
     public void showAlertSingleButtonError(String msg)
     {

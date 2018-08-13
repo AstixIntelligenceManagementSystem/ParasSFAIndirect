@@ -29,7 +29,7 @@
 				android:orientation="horizontal"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:weightSum="7"
+				android:weightSum="7.5"
 				android:gravity="center"
 				>
 
@@ -42,7 +42,7 @@
 
 					android:textColor="#000000"
 					android:textSize="12sp"
-					android:layout_weight="3.9"/>
+					android:layout_weight="4.2"/>
 
 				<ImageView
 					android:id="@+id/btnExcptn"
@@ -51,14 +51,14 @@
 
 					android:src="@drawable/exception_alert_sighn"
 					android:visibility="invisible"
-					android:layout_weight=".2"/>
+					android:layout_weight=".3"/>
 				<EditText
 					android:id="@+id/et_ProductMDQ"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:singleLine="true"
 					android:gravity="center"
-					android:layout_marginLeft="6dp"
+					android:layout_marginLeft="8dp"
 					android:enabled="false"
 					android:padding="1dp"
 					android:textSize="12sp"
@@ -74,7 +74,7 @@
 					android:layout_height="wrap_content"
 					android:singleLine="true"
 					android:gravity="center"
-					android:layout_marginLeft="6dp"
+					android:layout_marginLeft="8dp"
 					android:enabled="false"
 					android:padding="1dp"
 					android:textSize="12sp"
@@ -96,7 +96,7 @@
 					android:textSize="12sp"
 					android:textColor="#D42625"
 					android:background="@drawable/edit_text_diable_bg_transprent"
-					android:layout_weight="0.9"/>
+					android:layout_weight="1"/>
 
 				<!-- <EditText
                      android:id="@+id/txtVwRate"
@@ -226,7 +226,7 @@
 					android:inputType="number"
 					android:maxLength="5"
 					android:background="@drawable/edit_text_bg"
-					android:layout_weight="1.4"/>
+					android:layout_weight="1.5"/>
 
 
 				<EditText

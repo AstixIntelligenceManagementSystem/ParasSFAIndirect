@@ -342,7 +342,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 		{
 			boolean uom_is_select=true;
 			
-			//dbengine.open();
+			////dbengine.open();
 		  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 		   {
 			  String UOMID="0";
@@ -398,7 +398,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 			
 			if(!hashmapForBackupOfDynamicData.isEmpty())
 			{
-				dbengine.open();
+				//dbengine.open();
 			  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 			   {
 				  String UOMID="0";
@@ -475,7 +475,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 				}
 			
 				}
-			  dbengine.close();
+			  //dbengine.close();
 			 if(stopSavingFlg==true)
 			  {
 				  stopSavingFlg=false;
@@ -500,9 +500,9 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 					  {
 							 SalesQuotePrcsForUpdate=	hmapPrcDetailsFromDataBase.get("3");
 							 SalesQuotePrcsIdForUpdate="3";
-							 dbengine.open();
+							 //dbengine.open();
 							 dbengine.UpdateQuotePrcsAgainstQuotationId(QuotationActivity.SalesQuoteId, SalesQuotePrcsIdForUpdate, SalesQuotePrcsForUpdate);
-							 dbengine.close();
+							 //dbengine.close();
 						} 
 				 	}
 				  
@@ -2612,11 +2612,11 @@ else{
 		    chkmsgnew=0;
 		    QuotationActivityLayout.setEnabled(false);
             gifView.setVisibility(View.VISIBLE);
-            dbengine.open();
+            //dbengine.open();
 			StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
-			dbengine.close();
+			//dbengine.close();
 			if(!hashmapForBackupOfDynamicData.isEmpty()){
-				dbengine.open();
+				//dbengine.open();
 				//StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
 			  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 			   {
@@ -2685,7 +2685,7 @@ else{
 				
 			   }
 				}
-			  dbengine.close();
+			  //dbengine.close();
 			  
 			  if(stopSavingFlg==false)
 			  {
@@ -2846,11 +2846,11 @@ else{
 			QuotationActivityLayout.setEnabled(false);
 			gifView.setVisibility(View.VISIBLE);
 			chkmsgnew=0;
-			dbengine.open();
+			//dbengine.open();
 			StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
-			dbengine.close();
+			//dbengine.close();
 			if(!hashmapForBackupOfDynamicData.isEmpty()){
-				dbengine.open();
+				//dbengine.open();
 			  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 			   {
 				  String UOMID="0";
@@ -2917,7 +2917,7 @@ else{
 				
 			   }
 				}
-			  dbengine.close();
+			  //dbengine.close();
 			  if(stopSavingFlg==false)
 			  {
 			  hashmapForBackupOfDynamicData.clear();

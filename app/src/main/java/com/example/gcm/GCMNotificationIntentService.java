@@ -10,26 +10,25 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
 
-
-
-
+import com.astix.Common.CommonInfo;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import project.astix.com.parassfaindirect.PRJDatabase;
 import project.astix.com.parassfaindirect.R;
-
+import project.astix.com.parassfaindirect.SplashScreen;
 public class GCMNotificationIntentService extends IntentService
 {
 	// Sets an ID for the notification, so it can be updated
 	public static final int notifyID = 9001;
 	NotificationCompat.Builder builder;
-	PRJDatabase dbengine = new PRJDatabase(this);
+	PRJDatabase dbengine;// = new PRJDatabase(this);
 
 	//public String DuplicateMsgServerID="";
 
@@ -64,57 +63,76 @@ public class GCMNotificationIntentService extends IntentService
 			{
 				try
 				{
-					if(!extras.get(ApplicationConstants.MSG_KEY).toString().equals("") || !extras.get(ApplicationConstants.MSG_KEY).toString().equals("Null"))
+					if(extras.get(ApplicationConstants.MSG_isVanLoadedUnloaded).toString().equals("0"))
 					{
-						sendNotification(extras.get(ApplicationConstants.MSG_KEY).toString(),extras.get(ApplicationConstants.MSG_SenderFrom).toString());
-						//System.out.println("Sunil Recieve MSG :"+extras.get(ApplicationConstants.MSG_KEY));
-						String str=TextUtils.htmlEncode(extras.get(ApplicationConstants.MSG_KEY).toString());
-						String strMsgSendTime=extras.get(ApplicationConstants.MSG_SendTime).toString();
-						TelephonyManager tManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-						String imei = tManager.getDeviceId();
-
-
-
-						long syncTIMESTAMP = System.currentTimeMillis();
-						Date dateobj = new Date(syncTIMESTAMP);
-						SimpleDateFormat df = new SimpleDateFormat(
-								"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
-						String Noti_ReadDateTime = df.format(dateobj);
-						String MsgSendingTime=strMsgSendTime;
-						//StringTokenizer tokens = new StringTokenizer(String.valueOf(str), "^");
-
-
-						String MsgFrom=extras.get(ApplicationConstants.MSG_SenderFrom).toString();
-						String NotificationMessage=TextUtils.htmlEncode(str);
-
-						int MsgServerID=Integer.parseInt(extras.get(ApplicationConstants.MSG_SendMsgID).toString());
-
-						dbengine.open();
-						int SerialNo=dbengine.countNoRowIntblNotificationMstr();
-						if(SerialNo>=10)
+						if(!extras.get(ApplicationConstants.MSG_KEY).toString().equals("") || !extras.get(ApplicationConstants.MSG_KEY).toString().equals("Null"))
 						{
-							dbengine.deletetblNotificationMstrOneRow(1);
-						}
-						else
-						{
-							SerialNo=SerialNo+1;
-						}
+							sendNotification(extras.get(ApplicationConstants.MSG_KEY).toString(),extras.get(ApplicationConstants.MSG_SenderFrom).toString());
+							//System.out.println("Sunil Recieve MSG :"+extras.get(ApplicationConstants.MSG_KEY));
+							String str=TextUtils.htmlEncode(extras.get(ApplicationConstants.MSG_KEY).toString());
+							String strMsgSendTime=extras.get(ApplicationConstants.MSG_SendTime).toString();
+							TelephonyManager tManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+							String imei = tManager.getDeviceId();
 
-						int DuplicateMsgServerID=dbengine.checkMessageIDExistOrNotForNotification(MsgServerID);
 
-						if(DuplicateMsgServerID==0)
-						{
-							dbengine.inserttblNotificationMstr(SerialNo,imei,NotificationMessage,MsgSendingTime,1,1,
-									Noti_ReadDateTime,0,MsgServerID);
-							dbengine.close();
 
-						}
+							long syncTIMESTAMP = System.currentTimeMillis();
+							Date dateobj = new Date(syncTIMESTAMP);
+							SimpleDateFormat df = new SimpleDateFormat(
+									"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
+							String Noti_ReadDateTime = df.format(dateobj);
+							String MsgSendingTime=strMsgSendTime;
+							//StringTokenizer tokens = new StringTokenizer(String.valueOf(str), "^");
+
+
+							String MsgFrom=extras.get(ApplicationConstants.MSG_SenderFrom).toString();
+							String NotificationMessage=TextUtils.htmlEncode(str);
+
+							int MsgServerID=Integer.parseInt(extras.get(ApplicationConstants.MSG_SendMsgID).toString());
+
+							//dbengine.open();
+							int SerialNo=dbengine.countNoRowIntblNotificationMstr();
+							if(SerialNo>=10)
+							{
+								dbengine.deletetblNotificationMstrOneRow(1);
+							}
+							else
+							{
+								SerialNo=SerialNo+1;
+							}
+
+							int DuplicateMsgServerID=dbengine.checkMessageIDExistOrNotForNotification(MsgServerID);
+
+							if(DuplicateMsgServerID==0)
+							{
+								dbengine.inserttblNotificationMstr(SerialNo,imei,NotificationMessage,MsgSendingTime,1,1,
+										Noti_ReadDateTime,0,MsgServerID);
+								//dbengine.close();
+
+							}
 					/*else
 					{
 						duplicate="";
 					}*/
 
+						}
 					}
+					else
+					{
+						//CommonInfo.VanLoadedUnloaded=1;
+						if (extras.get(ApplicationConstants.MSG_isVanLoadedUnloaded).toString().equals("1")) {
+							SplashScreen.sPrefVanStockChanged = getSharedPreferences(CommonInfo.sPrefVanLoadedUnloaded, 0);
+							SharedPreferences.Editor editor = SplashScreen.sPrefVanStockChanged.edit();
+							editor.clear();
+							editor.commit();
+							SplashScreen.sPrefVanStockChanged.edit().putString("isVanLoadedUnloaded", "1").commit();
+							CommonInfo.VanLoadedUnloaded = 1;
+						} else {
+							CommonInfo.VanLoadedUnloaded = 0;
+						}
+					}
+
+
 				}
 				catch(Exception e)
 				{

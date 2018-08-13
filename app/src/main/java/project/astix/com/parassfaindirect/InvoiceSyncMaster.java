@@ -144,7 +144,7 @@ public class InvoiceSyncMaster extends Activity
 					
 					dialog.dismiss();
 					
-					//db.open();
+					////db.open();
 					//System.out.println("Indubati flgChangeRouteOrDayEnd :"+StoreSelection_Old.flgChangeRouteOrDayEnd);
 					/*if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 					{
@@ -153,7 +153,7 @@ public class InvoiceSyncMaster extends Activity
 					
 					
 					//db.reCreateDB();
-					//db.close();
+					////db.close();
 					
 					Intent submitStoreIntent = new Intent(InvoiceSyncMaster.this, InvoiceStoreSelection.class);
 					submitStoreIntent.putExtra("imei", imei);
@@ -303,9 +303,9 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	        }
 	        
 	        if(IMGsyOK == 0){
-	        	/*db.open();
+	        	/*//db.open();
 	        	db.PicRecordPath2del(fnameIMG);
-	        	db.close();*/
+	        	//db.close();*/
 	        }
 				
 		}
@@ -386,19 +386,19 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 			 String[] fp2s; // = "/mnt/sdcard/NMPphotos/1539_24-05-2013_1.jpg";
 		        
 				try {
-					db.open();
+					//db.open();
 					String[] sySTidS = db.getStoreIDTblSelectedStoreIDinChangeRouteCase();
 					//String date= db.GetPickerDate();
-					db.close();
+					//db.close();
 					/*for(int chkCountstore=0; chkCountstore < sySTidS.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int syUPlimit = db.getExistingPicNos(sySTidS[chkCountstore].toString());
 						String[] syP2F = db.getImgsPath(sySTidS[chkCountstore].toString());
 						String[] syC4P = db.getImgsComment(sySTidS[chkCountstore].toString());
 						
 						String actRid = db.GetActiveRouteID();
-						db.close();
+						//db.close();
 						
 						//fp2s = new String[syUPlimit];
 						fp2s = new String[5];
@@ -437,11 +437,11 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 					
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				} /*catch (ExecutionException e) {
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				}*/
 				
@@ -714,7 +714,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	                                	if(res_code==200){
 	                                		syncFLAG = 1;
 	                                		System.out.println("After Sync Successful res_code: if " + res_code);
-	                                		/*db.open();
+	                                		/*//db.open();
 	                                		System.out.println("After Sync Successful mSelectedItems.size(): " + mSelectedItems.size());
 	                                		
 	                                		for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++) 
@@ -729,8 +729,8 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 
 	                							
 	                						}
-	                                		db.close();*/
-	                                		db.open();
+	                                		//db.close();*/
+	                                		//db.open();
 	                                		if(whereTo.contentEquals("7"))
 	                                		{
 	                                			db.updateInvoiceButtonRecordsSyncd("7");
@@ -747,7 +747,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	                                		db.updateInvoiceButtonRecordsSyncd("3");		// update syncd' records
 	                                		
 	                                		}
-	                                		db.close();
+	                                		//db.close();
 	                                		//delete recently synced xml (not zip)
 	                                		delXML(xmlForWeb[0].toString());
 	                                		//System.out.println("inside runonUIthread() - Sync OK");
@@ -808,7 +808,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	        	}
 	        	else
 	        	{
-	        		/*db.open();
+	        		/*//db.open();
 	        		if(whereTo.contentEquals("11"))
             		{
             			db.updateInvoiceButtonRecordsSyncd("7");
@@ -819,7 +819,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
             		db.updateInvoiceButtonRecordsSyncd("3");		// update syncd' records
             		
             		}		// update syncd' records
-            		db.close();*/
+            		//db.close();*/
 	        		showSyncSuccess();
 	        	}
 	        }

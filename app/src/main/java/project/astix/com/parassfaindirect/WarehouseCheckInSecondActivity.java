@@ -780,9 +780,9 @@ void conFirmBtn(){
 
 
                     if (mm == 3) {
-                        dbengine.open();
+                        //dbengine.open();
                         int check1 = dbengine.counttblCatagoryMstr();
-                        dbengine.close();
+                       // dbengine.close();
                         if (check1 == 0) {
                             newservice = newservice.getCategory(getApplicationContext(), imei);
                         }

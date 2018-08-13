@@ -542,10 +542,10 @@ public class WarehouseCheckInFirstActivity extends BaseActivity implements Locat
 
    /* public void fnGetDistributorList()
     {
-        helperDb.open();
+        //helperDb.open();
 
         Distribtr_list=helperDb.getDistributorDataMstr();
-        helperDb.close();
+        //helperDb.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             String value=Distribtr_list[i];
@@ -733,7 +733,7 @@ public class WarehouseCheckInFirstActivity extends BaseActivity implements Locat
             {
 
             }
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(20.5937, 78.9629), 0));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(20.5937, 78.9629), 5));
             //googleMap.moveCamera(CameraUpdateFactory.zoomIn());
             /*googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
@@ -1138,10 +1138,10 @@ public class WarehouseCheckInFirstActivity extends BaseActivity implements Locat
             // fnAccurateProvider="";
             if(fnAccurateProvider.equals(""))
             {
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-                helperDb.close();
+                //helperDb.close();
 
                 if(pDialog2STANDBY.isShowing())
                 {
@@ -1246,10 +1246,10 @@ public class WarehouseCheckInFirstActivity extends BaseActivity implements Locat
                 ft.show(mapFrag);
 
 
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                helperDb.close();
+                //helperDb.close();
                 //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
                 if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
                 {
@@ -1978,7 +1978,7 @@ public class WarehouseCheckInFirstActivity extends BaseActivity implements Locat
         String finalCity=etCity.getText().toString().trim();
         String finalState=etState.getText().toString().trim();
 
-        helperDb.open();
+        //helperDb.open();
         helperDb.savetblDistributorMappingData(UniqueDistribtrMapId,""+userId,""+"0",flgGSTCapture,flgGSTCompliance,
                 GSTNumber,finalAddress,finalPinCode,finalCity,finalState,SOLattitudeFromLauncher,SOLongitudeFromLauncher,
                 SOAccuracyFromLauncer,"0",SOProviderFromLauncher,SOAllProvidersLocationFromLauncher,fnAddressFromLauncher,
@@ -1990,7 +1990,7 @@ public class WarehouseCheckInFirstActivity extends BaseActivity implements Locat
 
 
 
-        helperDb.close();
+        //helperDb.close();
         try
         {
            // FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInFirstActivity.this);

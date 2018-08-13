@@ -431,11 +431,11 @@ private void downloadapk()
 				else
 				{
 					
-					dbengine.open();
+					//dbengine.open();
 					dbengine.maintainPDADate();
 					String getPDADate=dbengine.fnGetPdaDate();
 					String getServerDate=dbengine.fnGetServerDate();
-					dbengine.close();
+					//dbengine.close();
 				
 				
 				
@@ -450,9 +450,9 @@ private void downloadapk()
 					}
 					else
 					{
-					dbengine.open();
+					//dbengine.open();
 					int checkUserAuthenticate=dbengine.FetchflgUserAuthenticated();
-				    dbengine.close();
+				    //dbengine.close();
 					
 					if(checkUserAuthenticate==0)   // 0 means-->New user        1 means-->Exist User
 					{
@@ -461,9 +461,9 @@ private void downloadapk()
 						return;
 						
 					}
-					dbengine.open();
+					//dbengine.open();
 					int check=dbengine.FetchVersionDownloadStatus();  // 0 means-->new version install  1 means-->new version not install
-					dbengine.close();
+					//dbengine.close();
 					if(check==1)
 					{
 						showNewVersionAvailableAlert();
@@ -512,18 +512,18 @@ private void downloadapk()
 
 				case R.id.radio0:
 					
-					/*dbengine.open();
+					/*//dbengine.open();
 					String strGetAllActiveRouteId=dbengine.GetAllActiveRouteID();
 					String strGetAllActiveRouteDescr=dbengine.GetAllActiveRouteDescr();
-					dbengine.close();
+					//dbengine.close();
 					
 					tv_Route.setText(""+strGetAllActiveRouteDescr);
 				    rID=strGetAllActiveRouteId;*/
 					
 					
-					dbengine.open();
+					//dbengine.open();
 					String strGetActiveRouteId=dbengine.GetCurrentDayActiveRouteID();
-					dbengine.close();
+					//dbengine.close();
 					if(route_name.length>0)
 					{
 						for(int i=0;i<route_name.length;i++)
@@ -628,13 +628,13 @@ private void downloadapk()
 			super.onPreExecute();
 			
 
-			dbengine.open();
+			//dbengine.open();
 			String getPDADate=dbengine.fnGetPdaDate();
 			String getServerDate=dbengine.fnGetServerDate();
 			
 			
 			
-			dbengine.close();
+			//dbengine.close();
 			
 			//System.out.println("Checking  Oncreate Date PDA GetStoresForDay:"+getPDADate);
 			//System.out.println("Checking  Oncreate Date Server GetStoresForDay :"+getServerDate);
@@ -646,10 +646,10 @@ private void downloadapk()
 					
 					showAlertBox(getResources().getString(R.string.txtErrorPhnDate));
 
-					dbengine.open();
+					//dbengine.open();
 					dbengine.maintainPDADate();
 					dbengine.reCreateDB();
-					dbengine.close();
+					//dbengine.close();
 					return;
 				}
 			}
@@ -659,7 +659,7 @@ private void downloadapk()
 			
 			
 			
-			dbengine.open();
+			//dbengine.open();
 			dbengine.fnSetAllRouteActiveStatus();
 			
 			//rID="17^18^19";
@@ -686,7 +686,7 @@ private void downloadapk()
 			int DatabaseVersion=dbengine.DATABASE_VERSION;
 			String AppVersionID=dbengine.AppVersionID;
 			dbengine.insertTblDayStartEndDetails(imei,startTS,rID,DayEndFlg,ChangeRouteFlg,fDate,AppVersionID);//DatabaseVersion;//getVersionNumber
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -708,9 +708,9 @@ private void downloadapk()
 			String RouteType="0";
 			try
 			{
-				dbengine.open();
+				//dbengine.open();
 				RouteType=dbengine.FetchRouteType(rID);
-				dbengine.close();
+				//dbengine.close();
 				dbengine.deleteAllSingleCallWebServiceTableWhole();
 			}
 			catch(Exception e)
@@ -1089,13 +1089,13 @@ private void downloadapk()
     			{
     				
     			}
-            	 dbengine.open();
+            	 //dbengine.open();
 		      serviceException=false;
 		         dbengine.maintainPDADate();
 		         dbengine.dropRoutesTBL();
 		         dbengine.reCreateDB();
 		         
-		         dbengine.close();
+		         //dbengine.close();
             }
             else
             {
@@ -1367,7 +1367,10 @@ private void downloadapk()
 		
 		//Intent passedvals = getIntent();
 		//imei = passedvals.getStringExtra("imei");
-		
+		 if(dbengine.isDBOpen()==false)
+		 {
+			 dbengine.open();
+		 }
 		try {
 			getReasonDetail();
 		} catch (IOException e1) {
@@ -1412,7 +1415,7 @@ private void downloadapk()
 		        wl.acquire();
 		   }
 		 
-		dbengine.open();
+		//dbengine.open();
 		
 		//dbengine.maintainPDADate();
 		route_name = dbengine.fnGetRouteInfoForDDL();
@@ -1420,13 +1423,13 @@ private void downloadapk()
 		/*String strGetAllActiveRouteId=dbengine.GetAllActiveRouteID();
 		String strGetAllActiveRouteDescr=dbengine.GetAllActiveRouteDescr();
 		
-		dbengine.close();
+		//dbengine.close();
 		
 		tv_Route.setText(""+strGetAllActiveRouteDescr);
 		rID=strGetAllActiveRouteId;*/
 		
 		String strGetActiveRouteId=dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
 		if(route_name.length>0)
 		{
 			for(int i=0;i<route_name.length;i++)
@@ -1462,9 +1465,9 @@ private void downloadapk()
 		
 		
 		
-		dbengine.open();
+		//dbengine.open();
 		int checkValueForRadioButton=dbengine.GetActiveRouteIDForRadioButton();
-		dbengine.close();
+		//dbengine.close();
 		
 		if(checkValueForRadioButton==0)
 		{
@@ -1598,12 +1601,12 @@ private void downloadapk()
 
 
 				 //new code
-				 dbengine.open();
+				 //dbengine.open();
 				 dbengine.maintainPDADate();
 				 String getPDADate=dbengine.fnGetPdaDate();
 				 String getServerDate=dbengine.fnGetServerDate();
 
-				 dbengine.close();
+				 //dbengine.close();
 
 
 				 if(!getServerDate.equals(getPDADate))
@@ -1705,9 +1708,9 @@ private void downloadapk()
 		});
 		
 		
-		dbengine.open();
+		//dbengine.open();
 		boolean DBCurrentName=dbengine.doesDatabaseExist(this, dbengine.DATABASE_NAME) ;
-		dbengine.close();
+		//dbengine.close();
 	
 		
 		
@@ -1716,9 +1719,9 @@ private void downloadapk()
 		if((DBCurrentName== true))
 		{
 			
-			dbengine.open();
+			//dbengine.open();
 			boolean valGetPrevDateChk=true;//dbengine.GetPrevDateChk();
-			dbengine.close();
+			//dbengine.close();
 			//if(( valGetPrevDateChk== true))
 			if(( true))
 			{
@@ -1758,12 +1761,12 @@ private void downloadapk()
 		else
 		{
 
-			/*dbengine.open();
+			/*//dbengine.open();
 			//dbengine.maintainPDADate();
 			String getPDADate=dbengine.fnGetPdaDate();
 			String getServerDate=dbengine.fnGetServerDate();
 			
-			dbengine.close();
+			//dbengine.close();
 			
 			if(!getPDADate.equals("") )   //|| !getPDADate.equals("NA") || !getPDADate.equals("Null") || !getPDADate.equals("NULL")
 			{
@@ -1796,9 +1799,9 @@ private void downloadapk()
 		try
 		{
 
-		dbengine.open();
+		//dbengine.open();
 		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		//dbengine.close();
 		System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -1852,13 +1855,13 @@ private void downloadapk()
 							SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 							String Noti_ReadDateTime = df.format(dateobj);
 				    	
-							dbengine.open();
+							//dbengine.open();
 							dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-							dbengine.close();
+							//dbengine.close();
 							
 							try
 							{
-								dbengine.open();
+								//dbengine.open();
 							    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
 							    if(checkleftNoti>0)
 							    {
@@ -1871,7 +1874,7 @@ private void downloadapk()
 											MsgServerID= Integer.parseInt(token.nextToken().trim());
 											Noti_text= token.nextToken().trim();
 											
-											dbengine.close();
+											//dbengine.close();
 											if(Noti_text.equals("") || Noti_text.equals("Null"))
 											{
 												
@@ -1895,7 +1898,7 @@ private void downloadapk()
 							}
 				            finally
 				            {
-				            	dbengine.close();
+				            	//dbengine.close();
 							   
 				            }
 			            
@@ -1953,14 +1956,14 @@ private void downloadapk()
 		
 		
 		
-       dbengine.open();
+       //dbengine.open();
 		
 		//dbengine.maintainPDADate();
 		route_name = dbengine.fnGetRouteInfoForDDL();
 		route_name_id = dbengine.fnGetRouteIdsForDDL();
 		
 		String strGetActiveRouteId=dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
 		if(route_name.length>0)
 		{
 			for(int i=0;i<route_name.length;i++)
@@ -2058,11 +2061,11 @@ private void downloadapk()
 	      public void onClick(DialogInterface dialog, int which) 
 	          {
 			         dialog.dismiss();
-			         dbengine.open();
+			         //dbengine.open();
 			         dbengine.reTruncateRouteMstrTbl();
 			         dbengine.maintainPDADate();
 			         dbengine.reCreateDB();
-			         dbengine.close();
+			         //dbengine.close();
 			         finish();
 			                       
 	         }
@@ -2090,9 +2093,9 @@ private void downloadapk()
 		{
 			super.onPreExecute();
 			
-			/*dbengine.open();
+			/*//dbengine.open();
 			dbengine.reTruncateInvoiceButtonTable();
-			dbengine.close();
+			//dbengine.close();
 			*/
 			
 			pDialogGetInvoiceForDay.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -2150,9 +2153,9 @@ private void downloadapk()
 				}
 				if(mm==4)
 				{  
-					dbengine.open();
+					//dbengine.open();
 					int check1=dbengine.counttblCatagoryMstr();
-					dbengine.close();
+					//dbengine.close();
 					if(check1==0)
 					{
 					newservice = newservice.getCategory(getApplicationContext(), imei);
@@ -2368,9 +2371,9 @@ private void downloadapk()
 				}
 				else
 				{
-					dbengine.open();
+					//dbengine.open();
 					int checkUserAuthenticate=dbengine.FetchflgUserAuthenticated();
-				    dbengine.close();
+				    //dbengine.close();
 					
 					if(checkUserAuthenticate==0)   // 0 means-->New user        1 means-->Exist User
 					{
@@ -2379,9 +2382,9 @@ private void downloadapk()
 						return;
 						
 					}
-					dbengine.open();
+					//dbengine.open();
 					int check=dbengine.FetchVersionDownloadStatus();  // 0 means-->new version install  1 means-->new version not install
-					dbengine.close();
+					//dbengine.close();
 					if(check==1)
 					{
 						showNewVersionAvailableAlert();
@@ -2596,9 +2599,9 @@ private void downloadapk()
 
 
 
-			dbengine.open();
+			//dbengine.open();
 			String presentRoute=dbengine.GetActiveRouteIDForDistributor();
-			dbengine.close();
+			//dbengine.close();
 
 			SimpleDateFormat df1 = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
 			newfullFileName=imei+"."+presentRoute+"."+ df1.format(dateobj);
@@ -2622,12 +2625,12 @@ private void downloadapk()
 
 				}
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.maintainPDADate();
 				String getPDADate=dbengine.fnGetPdaDate();
 				String getServerDate=dbengine.fnGetServerDate();
 
-				dbengine.close();
+				//dbengine.close();
 
 				//dbengine.deleteDistributorStockTbles();
 				if(!getServerDate.equals(getPDADate))
@@ -2921,9 +2924,9 @@ private void downloadapk()
 
 			if(serverResponseCode == 200)
 			{
-						  /* dbengine.open();
+						  /* //dbengine.open();
 						   dbengine.upDateXMLFileFlag(fileUri, 4);
-						   dbengine.close();*/
+						   //dbengine.close();*/
 
 				//new File(dir, fileUri).delete();
 				syncFLAG=1;
@@ -2937,9 +2940,9 @@ private void downloadapk()
 				String FileSyncFlag=pref.getString(fileUri, ""+1);
 
 				delXML(xmlForWeb[0].toString());
-						   		/*dbengine.open();
+						   		/*//dbengine.open();
 					            dbengine.deleteXMLFileRow(fileUri);
-					            dbengine.close();*/
+					            //dbengine.close();*/
 
 			}
 			else

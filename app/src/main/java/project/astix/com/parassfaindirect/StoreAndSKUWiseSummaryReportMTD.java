@@ -143,9 +143,9 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 			super.onPreExecute();
 			
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateStoreAndSKUWiseDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -189,9 +189,9 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblStoreSKUWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}
@@ -314,9 +314,9 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 				
 				
 				txt_store_sku.setText(s3);
-				/*dbengine.open();
+				/*//dbengine.open();
 				String StoreName=dbengine.FetchStoreName(s13.trim());
-				dbengine.close();
+				//dbengine.close();
 				txt_store_sku.setText(StoreName);*/
 				
 				Double disc_val1=Double.parseDouble(s8);

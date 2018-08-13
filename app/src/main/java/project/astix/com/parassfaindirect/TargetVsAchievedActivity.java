@@ -153,9 +153,9 @@ public class TargetVsAchievedActivity extends BaseActivity
 		{
 			super.onPreExecute();
 			
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncatetblTargetVsAchievedSummary();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -225,9 +225,9 @@ public class TargetVsAchievedActivity extends BaseActivity
 		 tl_headerVal = (TableLayout) findViewById(R.id.tl_headerVal);
 		 txt_note=(TextView) findViewById(R.id.txt_note);
 		 txt_note.setText(note);
-			/*dbengine.open();
+			/*//dbengine.open();
 			String LTschApp[] = {"380_10_5_1_20_15_2","500_20_35_3_50_25_4"};//dbengine.PrevPDASchemeApplicableSecondPage(storeID);
-			dbengine.close();*/
+			//dbengine.close();*/
 			
 			LayoutInflater inflater2 = getLayoutInflater();
 			for (int current2 = 0; current2 <= (AllDataContainer.length - 1); current2++)

@@ -426,9 +426,9 @@ public class ProductOrderFilterSearch_RecycleView  extends BaseActivity
 
     private void getProductData() {
         // CategoryID,ProductID,ProductShortName,ProductRLP,Date/Qty)
-        dbengine.open();
+        //dbengine.open();
         StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
-        dbengine.close();
+        //dbengine.close();
 
         arrLstHmapPrdct=dbengine.fetch_catgry_prdctsData(storeID,StoreCurrentStoreType);
         hmapSchemeIDandDescr=dbengine.fnSchemeIDandDescr();

@@ -139,9 +139,9 @@ public class LastVisitDetails extends BaseActivity
 		try
 		{
 
-		dbengine.open();
+		////dbengine.open();
 		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		//dbengine.close();
 		System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -191,13 +191,13 @@ public class LastVisitDetails extends BaseActivity
 							SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 							String Noti_ReadDateTime = df.format(dateobj);
 
-							dbengine.open();
+							////dbengine.open();
 							dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-							dbengine.close();
+							//dbengine.close();
 
 							try
 							{
-								dbengine.open();
+								////dbengine.open();
 							    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
 							    if(checkleftNoti>0)
 							    {
@@ -210,7 +210,7 @@ public class LastVisitDetails extends BaseActivity
 											MsgServerID= Integer.parseInt(token.nextToken().trim());
 											Noti_text= token.nextToken().trim();
 
-											dbengine.close();
+											//dbengine.close();
 											if(Noti_text.equals("") || Noti_text.equals("Null"))
 											{
 
@@ -234,7 +234,7 @@ public class LastVisitDetails extends BaseActivity
 							}
 				            finally
 				            {
-				            	dbengine.close();
+				            	//dbengine.close();
 
 				            }
 
@@ -412,17 +412,17 @@ public class LastVisitDetails extends BaseActivity
 		TextView tvBalAmt = (TextView)findViewById(R.id.pre_balance_amount_value);
 		
 	
-		dbengine.open();
+		////dbengine.open();
 		Double PreCreditAmt =dbengine.fnGetLastCreditAmountFromLastInvoiceTable(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 			Double.parseDouble(decimalFormat.format(PreCreditAmt));//Double.parseDouble(new DecimalFormat("##.##").format(PreCreditAmt));
 		
 		
 			tvPreCreditAmt.setText(""+PreCreditAmt);
-			dbengine.open();
+			////dbengine.open();
 		String BalAmt =dbengine.fnGetPDALastInvoiceDetDueAmt(storeID);
-		dbengine.close();
+		//dbengine.close();
 		Double BalAmtNew=0.00;
 		if(BalAmt.equals(""))
 		{
@@ -436,19 +436,19 @@ public class LastVisitDetails extends BaseActivity
 		Double.parseDouble(decimalFormat.format(BalAmtNew));
 		tvBalAmt.setText(""+ BalAmtNew);*/
 		
-		/*dbengine.open();
+		/*////dbengine.open();
 		String lastVisitDate=dbengine.fnGettblFirstOrderDetailsOnLastVisitDetailsActivity(storeID);
-		dbengine.close();*/
+		//dbengine.close();*/
 		
-		dbengine.open();
+		////dbengine.open();
 	    checkdataForVisit=dbengine.counttblForPDAGetLastVisitDate(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		 TextView txt_visitDate_Value = (TextView)findViewById(R.id.txt_visitDate_Value);
 		
 		if(checkdataForVisit==1)
 		{
-		dbengine.open();
+		////dbengine.open();
 		String lastVisitDateAndFlgOrder=dbengine.fnGetVisitDateAndflgOrderFromtblForPDAGetLastVisitDate(storeID);
 		StringTokenizer tokens = new StringTokenizer(String.valueOf(lastVisitDateAndFlgOrder), "^");
 		
@@ -464,7 +464,7 @@ public class LastVisitDetails extends BaseActivity
 			txt_visitDate_Value.setBackgroundColor(Color.RED);
 		}
 		
-		dbengine.close();
+		//dbengine.close();
 		}
 		
 		if(lastVisitDate.equals(""))
@@ -491,9 +491,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		int valSstatValueAgainstStore=0;
 		 try
 		 {
-		dbengine.open();
+		////dbengine.open();
 		valSstatValueAgainstStore=dbengine.fnGetStatValueagainstStore(storeID);
-		dbengine.close();
+		//dbengine.close();
 		if(valSstatValueAgainstStore==0)
 		{
 			btn_Cancel.setVisibility(View.VISIBLE);
@@ -573,10 +573,10 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 
 
 				//getStoreVisitCode();
-				dbengine.open();
+				////dbengine.open();
 				int checkDataForVisitDetails=dbengine.counttblForPDAGetLastVisitDetails(storeID);
 				int checkDataForOrderDetails=dbengine.counttblForPDAGetLastOrderDetails(storeID);
-				dbengine.close();
+				//dbengine.close();
 				String passdLevel = battLevel + "%";
 				dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
 				if(checkDataForVisitDetails!=0 || checkDataForOrderDetails!=0) 
@@ -618,15 +618,15 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
 		TextView orderDate_Value = (TextView)findViewById(R.id.txt_orderDate_Value);
 		
-		dbengine.open();
+		////dbengine.open();
 	    int checkdataForOrder=dbengine.counttblForPDAGetLastOrderDate(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(checkdataForOrder==1)
 		{
-		dbengine.open();
+		////dbengine.open();
 		String lastOrderDateAndflgExecutionSummary=dbengine.fnGettblForPDAGetLastOrderDate(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		
 		StringTokenizer tokens = new StringTokenizer(String.valueOf(lastOrderDateAndflgExecutionSummary), "^");
@@ -701,7 +701,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 
 				
 				
-				dbengine.open();
+				////dbengine.open();
 				
 				String DateResult[]=dbengine.fetchOrderDateFromtblForPDAGetExecutionSummary(storeID);
 				String LastexecutionDetail[]=dbengine.fetchAllDataFromtbltblForPDAGetExecutionSummary(storeID);
@@ -711,7 +711,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 				String ProductIDDetail[]=dbengine.fetchProductIDFromtblForPDAGetExecutionSummary(storeID);
 				
 				System.out.println("Ashish and Anuj LastexecutionDetail : "+LastexecutionDetail.length);
-				dbengine.close();
+				//dbengine.close();
 				
 				if(DateResult.length>0)
 				{
@@ -807,9 +807,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 							tv5.setVisibility(View.GONE);
 							tv6.setVisibility(View.GONE);
 							tv7.setVisibility(View.GONE);
-								dbengine.open();
+								////dbengine.open();
 								String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 								
 								//System.out.println("Check Value Number "+abc.length);
 								//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -830,9 +830,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 							tv6.setVisibility(View.GONE);
 							tv7.setVisibility(View.GONE);
 							
-							dbengine.open();
+							////dbengine.open();
 							String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-							dbengine.close();
+							//dbengine.close();
 							
 							//System.out.println("Check Value Number "+abc.length);
 							//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -848,9 +848,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 									tv3.setText("0");
 								}
 								
-								dbengine.open();
+								////dbengine.open();
 								String abc1[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[1],ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 								
 								//System.out.println("Check Value Number NEw "+abc1.length);
 								//System.out.println("Check Value Number12 NEw "+DateResult[1]);
@@ -873,9 +873,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 						}
 						else if(DateResult.length==3)
 						{
-							dbengine.open();
+							////dbengine.open();
 							String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-							dbengine.close();
+							//dbengine.close();
 							
 							//System.out.println("Check Value Number "+abc.length);
 							//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -891,9 +891,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 									tv3.setText("0");
 								}
 								
-								dbengine.open();
+								////dbengine.open();
 								String abc1[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[1],ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 								
 								//System.out.println("Check Value Number NEw "+abc1.length);
 								//System.out.println("Check Value Number12 NEw "+DateResult[1]);
@@ -909,9 +909,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 										tv5.setText("0");
 									}
 									
-									dbengine.open();
+									////dbengine.open();
 									String abc2[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[2],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 									
 									//System.out.println("Check Value Number NEw "+abc2.length);
 									//System.out.println("Check Value Number12 NEw "+DateResult[2]);
@@ -992,22 +992,22 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
 		
 		/*
-		dbengine.open();
+		////dbengine.open();
 		int checkdata=dbengine.counttblSecondVisitDetailsOnLastVisitDetailsActivity(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(checkdata==1)
 		{
-		dbengine.open();
+		////dbengine.open();
 		String lastVisitDate=dbengine.fnGettblSecondVisitDetailsOnLastVisitDetailsActivity(storeID);
 		LastVisitDateValue.setText(lastVisitDate);
-		dbengine.close();
+		//dbengine.close();
 		
 		tbl2_dyntable_For_LastVisitDate = (TableLayout) findViewById(R.id.dyntable_For_LastVisitDate);
 		
-		dbengine.open();
+		////dbengine.open();
 		String LastVisitDetails[] = dbengine.fetchtblSecondVisitDetailsOnLastVisitDetailsActivity(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		LayoutInflater inflater3 = getLayoutInflater();
 		for (int current2 = 0; current2 <= (LastVisitDetails.length - 1); current2++) 
@@ -1054,9 +1054,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
       tbl3_dyntable_SchemeApplicable = (TableLayout) findViewById(R.id.dyntable_SchemeApplicable);
 		
-		dbengine.open();
+		////dbengine.open();
 		String LTschApp[] = dbengine.PrevPDASchemeApplicableSecondPage(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(LTschApp.length>0)
 		{
@@ -1126,9 +1126,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
     tbl3_dyntable_SpecialSchemeApplicable = (TableLayout) findViewById(R.id.dyntable_SpecialSchemeApplicable);
 		
-		dbengine.open();
+		////dbengine.open();
 		String SpecialScheme[] = dbengine.PrevPDASchemeApplicableSecondPageSpecialScheme(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(SpecialScheme.length>0)
 		{
@@ -1189,9 +1189,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 			//	getStoreVisitCode();
 				String passdLevel = battLevel + "%";
 				dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
-				dbengine.open();
+				////dbengine.open();
 				String rID=dbengine.GetActiveRouteID();
-				dbengine.close();
+				//dbengine.close();
 				
 				Intent prevP2 = new Intent(LastVisitDetails.this, StoreSelection.class);
 				
@@ -1269,9 +1269,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 						
 						
 						
-						dbengine.open();
+						////dbengine.open();
 						dbengine.UpdateStoreEndVisit(storeID,startTS);
-						dbengine.close();
+						//dbengine.close();
 						Intent nxtP4 = new Intent(LastVisitDetails.this,ActualVisitStock.class);
 						//Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch_RecycleView.class);
 						nxtP4.putExtra("storeID", storeID);
@@ -1359,8 +1359,29 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 			}
 		});
 		tv_outstandingvalue=(TextView) findViewById(R.id.tv_outstandingvalue);
-		Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
-		tv_outstandingvalue.setText(""+outstandingvalue);
+	/*	Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
+		tv_outstandingvalue.setText(""+outstandingvalue);*/
+
+		Double cntAllOustandings=dbengine.fetch_Store_AllOustandings(storeID);
+		cntAllOustandings=Double.parseDouble(new DecimalFormat("##.##").format(cntAllOustandings));
+
+
+		Double cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(storeID);
+		cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotCollectionAmtAgainstStoreIrespectiveOfVisit));
+
+
+
+
+		Double cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(storeID);
+		cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit));
+
+
+
+		Double totOutstandingValue=cntAllOustandings+cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit-cntTotCollectionAmtAgainstStoreIrespectiveOfVisit;
+		totOutstandingValue=Double.parseDouble(new DecimalFormat("##.##").format(totOutstandingValue));
+		tv_outstandingvalue.setText(" : "+String.format("%.2f", totOutstandingValue));
+
+
 		setInvoiceData();
 
 
@@ -1743,7 +1764,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 	
 	 public void CustomAlertBoxForSchemeDetails(String TagValue)
 	 {
-		// dbengine.open();
+		// ////dbengine.open();
 		 String SchemeId=(TagValue.split(Pattern.quote("_")))[0];
 		 String SchemeDesc=(TagValue.split(Pattern.quote("_")))[1];
 		 
@@ -1874,7 +1895,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 	        alertDialogBuilder.setPositiveButton(getText(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
 	            public void onClick(DialogInterface dialog, int which) {
 	            	 dialog.cancel();
-	            	// dbengine.close();
+	            	// //dbengine.close();
 	              }
 	        });
 

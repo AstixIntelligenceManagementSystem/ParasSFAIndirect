@@ -279,9 +279,9 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
         String startTS = df.format(dateobj);
         StoreVisitCode=helperDb.fnGetStoreVisitCode(storeID);
-        helperDb.open();
+        //helperDb.open();
         helperDb.UpdateStoreStartVisit(storeID,startTS);
-        helperDb.close();
+        //helperDb.close();
 
 
         btn_clickPic= (Button) findViewById(R.id.btn_clickPic);
@@ -372,11 +372,11 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                 Date dateobj = new Date(syncTIMESTAMP);
                 SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
                 String StampEndsTime = df.format(dateobj);
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID,StoreVisitCode);
                 helperDb.UpdateStoreEndVisit(storeID, StampEndsTime);
                 helperDb.UpdateStoreFlag(storeID.trim(), 3);
-                helperDb.close();
+                //helperDb.close();
 
 
 
@@ -419,11 +419,11 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                     Date dateobj = new Date(syncTIMESTAMP);
                     SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
                     String startTS = df.format(dateobj);
-                    helperDb.open();
+                    //helperDb.open();
                     helperDb.UpdateStoreEndVisit(storeID,startTS);
                     helperDb.UpdateStoreStoreClose(storeID,1,StoreVisitCode);
                     helperDb.UpdateStoreSstat(storeID,3,StoreVisitCode);
-                    helperDb.close();
+                    //helperDb.close();
 
                     if (hmapPhotoDetailsForSaving != null && hmapPhotoDetailsForSaving.size() > 0)
                     {
@@ -2043,11 +2043,11 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
             // fnAccurateProvider="";
             if(fnAccurateProvider.equals(""))
             {
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID,StoreVisitCode);
                 helperDb.saveTblStorecloseLocationDetails(storeID,"NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA",3,StoreVisitCode);
                 System.out.println("LOCATION NA....");
-                helperDb.close();
+                //helperDb.close();
 
                 if(pDialog2STANDBY.isShowing())
                 {
@@ -2094,11 +2094,11 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                 AccuracyFromLauncher= String.valueOf(fnAccuracy);
                 ProviderFromLauncher = fnAccurateProvider;
 
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID,StoreVisitCode);
                 helperDb.saveTblStorecloseLocationDetails(storeID,fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt,3,StoreVisitCode);
                 System.out.println("LOCATION..."+fnLati+"--"+fnLongi+"--"+String.valueOf(fnAccuracy)+"--"+addr+"--"+city+"--"+zipcode+"--"+state+"--"+fnAccurateProvider+"--"+GpsLat+"--"+GpsLong+"--"+GpsAccuracy+"--"+NetwLat+"--"+NetwLong+"--"+NetwAccuracy+"--"+FusedLat+"--"+FusedLong+"--"+FusedAccuracy+"--"+AllProvidersLocation+"--"+GpsAddress+"--"+NetwAddress+"--"+FusedAddress+"--"+FusedLocationLatitudeWithFirstAttempt+"--"+FusedLocationLongitudeWithFirstAttempt+"--"+FusedLocationAccuracyWithFirstAttempt);
-                helperDb.close();
+                //helperDb.close();
                 //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
                 if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
                 {

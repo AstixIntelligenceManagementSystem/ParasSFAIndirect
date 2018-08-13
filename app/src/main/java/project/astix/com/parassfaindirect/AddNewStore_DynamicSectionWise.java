@@ -1,5 +1,6 @@
 package project.astix.com.parassfaindirect;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
@@ -27,6 +28,7 @@ import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -85,6 +87,7 @@ import java.util.regex.Pattern;
 
 public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,SearchListCommunicator,OnMapReadyCallback
 {
+    int IsComposite=0;
     int flgCheckNewOldStore=0;
     String StoreNameFromBack="";
     public static String currentBeatName="All";
@@ -246,7 +249,7 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
     Button btn_refresh;
     TextView txt_rfrshCmnt;
     ImageView img_exit;
-    PRJDatabase helperDb;
+    PRJDatabase helperDb=new PRJDatabase(this);
     String AddressFromLauncher="NA";
     String CityFromLauncher="NA";
     String PincodeFromLauncher="NA";
@@ -255,6 +258,11 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
     PRJDatabase dbengine=new PRJDatabase(this);
     DatabaseAssistant DA=new DatabaseAssistant(this);
     private boolean mIsServiceStarted = false;
+    Context ctx;
+    //private MyService mMyService;
+    public Context getCtx() {
+        return ctx;
+    }
     private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent intent) {
@@ -308,10 +316,11 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newstoredynamicsectionwise);
+        ctx=this;
         refreshCount=0;
         channelOptId="0";
         locationManager=(LocationManager) this.getSystemService(LOCATION_SERVICE);
-        helperDb=new PRJDatabase(AddNewStore_DynamicSectionWise.this);
+       // helperDb=new PRJDatabase(AddNewStore_DynamicSectionWise.this);
         locVo=new LocationVo();
         prvsStoreId="";
 
@@ -466,9 +475,9 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
             imei=CommonInfo.imei.trim();
         }
         checkHighAccuracyLocationMode(AddNewStore_DynamicSectionWise.this);
-        helperDb.open();
+        ////helperDb.open();
       String allLoctionDetails=  helperDb.getLocationDetails();
-        helperDb.close();
+        //helperDb.close();
 
         prvsStoreId=helperDb.getPreviousStoreId();
 
@@ -926,9 +935,9 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
         hmapSctnId_GrpId=helperDb.fnGetGroupIdMpdWdSectionId();
         hmapDpndtQustGrpId=helperDb.fnGetDependentQuestionMstr();
         hmapSection_key=helperDb.fnGetSection_Key();
-        helperDb.open();
+        //helperDb.open();
         channelOptId=helperDb.getChannelGroupIdOptId();
-        helperDb.close();
+        //helperDb.close();
      //   hmapOptionId_OptionValue=helperDb.fnGetOptionId_OptionValue();
         QuestIDForOutChannel=helperDb.fnGetQuestIDForOutChannelFromQuestionMstr();
 
@@ -1132,17 +1141,17 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
             }
         }
         if (FLAG_NEW_UPDATE.equals("UPDATE")) {
-            helperDb.open();
+            //helperDb.open();
             helperDb.UpdateStoreReturnphotoFlagSM(selStoreID, StoreName,0);
-            helperDb.close();
+            //helperDb.close();
         } else
         {
-            helperDb.open();
+            //helperDb.open();
             helperDb.saveTblPreAddedStores(selStoreID, StoreName, LattitudeFromLauncher, LongitudeFromLauncher, VisitDate, 1,0, 3,Integer.parseInt(slctdBeatId),Integer.parseInt(slctdBeatNodeType));
-            helperDb.close();
+            //helperDb.close();
         }
 
-        helperDb.open();
+        //helperDb.open();
         helperDb.deletetblstoreMstrOnStoreIDBasis(selStoreID);
         if((!fnlStoreType.equals("0")) && fnlStoreType.contains("-"))
         {
@@ -1150,10 +1159,10 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
         }
                                                 //RetailerName
         helperDb.savetblStoreMain("NA",selStoreID,StoreName,"NA","NA","NA","NA","NA","NA","NA","0",StoreTypeTradeChannel,
-                Integer.parseInt(fnlStoreType),0,0, 0, "NA",VisitStartTS,imei,""+battLevel,3,1,String.valueOf(fnLati),String.valueOf(fnLongi),"" + fnAccuracy,"" + fnAccurateProvider,0,fnlAddressName,allValuesOfPaymentStageID,flgHasQuote,flgAllowQuotation,flgSubmitFromQuotation,flgGSTCapture,flgGSTCompliance,GSTNumber,flgGSTRecordFromServer,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart,flgStoreOrder, hmapStoreAddress.get("2"), hmapStoreAddress.get("1"), hmapStoreAddress.get("3"),distID,fnlOwnerName,fnlMobileNumber,fnStoreCatType,flgRuleTaxVal,flgTransType,fnlMobileNumber,fnSalesPersonName,fnSalesPersonContactNo);
+                Integer.parseInt(fnlStoreType),0,0, 0, "NA",VisitStartTS,imei,""+battLevel,3,1,String.valueOf(fnLati),String.valueOf(fnLongi),"" + fnAccuracy,"" + fnAccurateProvider,0,fnlAddressName,allValuesOfPaymentStageID,flgHasQuote,flgAllowQuotation,flgSubmitFromQuotation,flgGSTCapture,flgGSTCompliance,GSTNumber,flgGSTRecordFromServer,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart,flgStoreOrder, hmapStoreAddress.get("2"), hmapStoreAddress.get("1"), hmapStoreAddress.get("3"),distID,fnlOwnerName,fnlMobileNumber,fnStoreCatType,flgRuleTaxVal,flgTransType,fnlMobileNumber,fnSalesPersonName,fnSalesPersonContactNo,IsComposite);
 
         helperDb.saveSOAPdataStoreListDetailsInNewTable(selStoreID, hmapStoreAddress.get("2"), hmapStoreAddress.get("1"), hmapStoreAddress.get("3"),1);
-        helperDb.close();
+        //helperDb.close();
         // new code
 
         try {
@@ -1162,9 +1171,9 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
             {
                 OrderXMLFolder.mkdirs();
             }
-            dbengine.open();
+            //dbengine.open();
             String presentRoute=dbengine.GetActiveRouteID();
-            dbengine.close();
+            //dbengine.close();
 
 
             Date dateobj = new Date(syncTIMESTAMP);
@@ -1190,6 +1199,21 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
         }
         // new code
 
+
+        StoreSelection.flgChangeRouteOrDayEnd=0;
+        DayStartActivity.flgDaySartWorking=0;
+        String presentRoute = dbengine.GetActiveRouteID();
+        Intent mMyServiceIntent = new Intent(getCtx(), MyService.class);
+        mMyServiceIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
+        mMyServiceIntent.putExtra("storeID", selStoreID);
+        mMyServiceIntent.putExtra("OrigZipFileName", newfullFileName);
+        mMyServiceIntent.putExtra("whereTo", "Regular");//
+
+
+
+        if (!isMyServiceRunning(MyService.class)) {
+            startService(mMyServiceIntent);
+        }
         if(activityFrom.equals("StoreSelection"))
         {
            /* Intent intent =new Intent(AddNewStore_DynamicSectionWise.this,StorelistActivity.class);
@@ -1272,12 +1296,12 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
 
         String allValuesOfPaymentStageID=helperDb.fngettblNewStoreSalesQuotePaymentDetails(selStoreID);
         String VisitTypeStatus="0";
-        helperDb.open();
+        //helperDb.open();
 
         helperDb.fndeleteNewStoreSalesQuotePaymentDetails(selStoreID);
        /* helperDb.saveSOAPdataStoreList(ServiceWorkerStoreID,StoreName,StoreType,Double.parseDouble(StoreLatitude),Double.parseDouble(StoreLongitude),LastVisitDate,LastTransactionDate,
                 dateVAL.toString().trim(),Integer.parseInt(AutoIdStore), Integer.parseInt(Sstat),Integer.parseInt(IsClose),Integer.parseInt(IsNextDat),Integer.parseInt(RouteID),StoreTypeTradeChannel,fetchAddress,allValuesOfPaymentStageID,flgHasQuoteNew,flgAllowQuotationNew,flgSubmitFromQuotationNew,flgGSTCapture,flgGSTCompliance,GSTNumber,Integer.parseInt(flgGSTRecordFromServer),distID,"0",VisitTypeStatus);*/
-        helperDb.close();
+        //helperDb.close();
 
 
 
@@ -3167,5 +3191,16 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
     public String convertExponential(double firstNumber){
         String secondNumberAsString = String.format("%.10f",firstNumber);
         return secondNumberAsString;
+    }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("isMyServiceRunning?", true+"");
+                return true;
+            }
+        }
+        Log.i ("isMyServiceRunning?", false+"");
+        return false;
     }
 }

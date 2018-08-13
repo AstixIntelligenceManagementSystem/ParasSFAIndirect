@@ -2414,7 +2414,7 @@ public void whenPaymentStageClickNew()
 		}
 	SalesQuoteCode=uniqueId;
 	PAYMENT_STAGEID_Values=	dbengine.fnGetDefaultStoreOrderPAymentDetails(storeIDString);
-	dbengine.open();
+	//dbengine.open();
 	dbengine.deleteSalesQuotePersonMeetMstr(uniqueId);
 	 dbengine.saveSalesQuotePersonMeetMstr(uniqueId, SalesQuoteCode, SalesQuotePrcsId, SalesQuotePrcs, storeNameString, "0",
 			 storeIDString, PaymntTermEditString, PaymntTermSpinnerString, ExpBusValueString, ValFromString, ValToString, 
@@ -2424,7 +2424,7 @@ public void whenPaymentStageClickNew()
 	
 	CommonInfo.SalesQuoteId=uniqueId;
 	QuotationActivity.SalesQuoteId=uniqueId;
-	 dbengine.close();
+	 //dbengine.close();
 	
 	 getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 	 Done_btn.setEnabled(true);

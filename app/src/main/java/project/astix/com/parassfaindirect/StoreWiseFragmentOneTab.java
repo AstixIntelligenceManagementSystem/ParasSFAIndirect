@@ -118,9 +118,9 @@ public class StoreWiseFragmentOneTab<Context> extends Fragment
 			super.onPreExecute();
 			
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateStoreWiseDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -164,9 +164,9 @@ public class StoreWiseFragmentOneTab<Context> extends Fragment
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblStoreWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}

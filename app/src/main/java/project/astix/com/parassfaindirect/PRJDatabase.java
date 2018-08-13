@@ -1,5 +1,19 @@
 package project.astix.com.parassfaindirect;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.support.media.ExifInterface;
+import android.text.TextUtils;
+import android.util.Log;
+import com.astix.Common.CommonInfo;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -12,29 +26,21 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-
-
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
-import android.util.Log;
-
-import com.astix.Common.CommonInfo;
 
 public class PRJDatabase
 {
 
     public static final String KEY_PHID = "phID";
     private static final String TAG = "PRJDatabase";
+
+    private static final String TABLE_tblDeliveryNoteNumber = "tblDeliveryNoteNumber";
+    private static final String DATABASE_CREATE_TABLE_tblDeliveryNoteNumber = "create table tblDeliveryNoteNumber(LastDeliveryNoteNumber int null);";
+
+    private static final String TABLE_tblWarehouseMstr = "tblWarehouseMstr";
+    private static final String DATABASE_CREATE_TABLE_tblWarehouseMstr = "create table tblWarehouseMstr(NodeID int null,NodeType int null,Descr text null,latCode text null,LongCode text null,flgMapped int null,Address text null,State text null,City text null,PinCode text null,PhoneNo text null,TaxNumber text null);";
 
     private static final String DATABASE_TABLE_tblUserName = "tblUserName";
     private static final String DATABASE_TABLE_tblStoreCountDetails = "tblStoreCountDetails";
@@ -443,7 +449,7 @@ public class PRJDatabase
             "TodaysSummary text null,MTDSummary text null);";
     private static final String DATABASE_CREATE_TABLE_11 = "create table tblPdaDate (PdaDate text null);";
     private static final String DATABASE_CREATE_TABLE_12 = "create table tblDayStartEndDetails (IMEINo text null,SyncTime text null,RouteID text null,EndTime text null,DayEndFlag int null,ChangeRouteFlg int null,ForDate text null,AppVersionID string null,Sstat int null);";//,AppVersionID int null//, VersionNo string null
-    private static final String DATABASE_CREATE_TABLE_13 = "create table tblStoreList(IMEINumber text null,AutoIdStore INTEGER PRIMARY KEY AUTOINCREMENT not null,StoreID text not null, StoreName string not null,OwnerName text null,StoreContactNo text null,StoreAddress text null,StoreType string not null,chainID integer null,StoreLatitude real not null, StoreLongitude real not null, LastVisitDate string not null, LastTransactionDate string not null, Sstat integer not null,ISNewStore int null,StoreRouteID int null,RouteNodeType int null,StoreCatNodeId int null,PaymentStage text null,flgHasQuote int null,flgAllowQuotation int null,flgGSTCapture text null,flgGSTCompliance text null,GSTNumber text null,flgGSTRecordFromServer int null,DistanceNear int null,flgStoreOrder int null,StoreCity text null,StorePinCode text not null,StoreState text null,OutStanding float null,OverDue float null,DBR text null,flgRuleTaxVal integer null,flgTransType integer null,StoreCatType text null,IsNewStoreDataCompleteSaved int null,StoreClose int null,SalesPersonName text null,SalesPersonContact text null);";//
+    private static final String DATABASE_CREATE_TABLE_13 = "create table tblStoreList(IMEINumber text null,AutoIdStore INTEGER PRIMARY KEY AUTOINCREMENT not null,StoreID text not null, StoreName string not null,OwnerName text null,StoreContactNo text null,StoreAddress text null,StoreType string not null,chainID integer null,StoreLatitude real not null, StoreLongitude real not null, LastVisitDate string not null, LastTransactionDate string not null, Sstat integer not null,ISNewStore int null,StoreRouteID int null,RouteNodeType int null,StoreCatNodeId int null,PaymentStage text null,flgHasQuote int null,flgAllowQuotation int null,flgGSTCapture text null,flgGSTCompliance text null,GSTNumber text null,flgGSTRecordFromServer int null,DistanceNear int null,flgStoreOrder int null,StoreCity text null,StorePinCode text not null,StoreState text null,OutStanding float null,OverDue float null,DBR text null,flgRuleTaxVal integer null,flgTransType integer null,StoreCatType text null,IsNewStoreDataCompleteSaved int null,StoreClose int null,SalesPersonName text null,SalesPersonContact text null,IsComposite int null);";//
     private static final String DATABASE_CREATE_TABLE_14 = "create table tblProductList(CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real null, ProductRLP real null, ProductTaxAmount real null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null,SearchField text null,ManufacturerID int null,RptUnitName text null,PerbaseUnit text null);";
     private static final String DATABASE_CREATE_TABLE_ProductSegementMap = "create table tblProductSegementMap(ProductID text  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,BusinessSegmentId int null,flgPriceAva int null,flgWholeSellApplicable int null,PriceRangeWholeSellApplicable real null,StandardRateWholeSale real null,StandardRateBeforeTaxWholeSell real null,StandardTaxWholeSale real null);";
 
@@ -589,20 +595,15 @@ public class PRJDatabase
     private static String DATABASE_CREATE_TABLE_tblIncentiveDetailsData="";
     private static String DATABASE_CREATE_TABLE_tblIncentivePastDetailsData="";
     private final Context context;
-    public Cursor cursor;
-    public int checkNumberOfStore=1;
+    public static Cursor cursor;
+    public static int checkNumberOfStore=1;
     Locale locale  = new Locale("en", "UK");
     String pattern = "###.##";
     DecimalFormat decimalFormat = (DecimalFormat)NumberFormat.getNumberInstance(locale);
     private boolean isDBOpenflag = false;
-    private DatabaseHelper DBHelper;
-    private SQLiteDatabase db;
+    private static DatabaseHelper DBHelper;
+    private static SQLiteDatabase db;
 
-    public PRJDatabase(Context ctx)
-    {
-        this.context = ctx;
-        DBHelper = new DatabaseHelper(context);
-    }
 
   /*  // ---opens the database---
     public PRJDatabase open() throws SQLException {
@@ -611,18 +612,17 @@ public class PRJDatabase
         return this;
     }*/
 
-    public boolean isDBOpen()
-    {
-        isDBOpenflag = false;
-        return isDBOpenflag;
-    }
+        public boolean isDBOpen() {
+            this.isDBOpenflag = false;
+            return this.isDBOpenflag;
+        }
 
     // ---closes the database---
   /*  public void close() {
         DBHelper.close();
     }*/
 
-    public void saveOutletChammetQstnIdGrpId(int grpQstId,int qstId,String optId,int section_count)
+    public static void saveOutletChammetQstnIdGrpId(int grpQstId,int qstId,String optId,int section_count)
     {
   /*private static final String TABLE_QSTOUTCHANNEL = "tblQuestIDForOutChannel";
    private static final String TABLE_QST_NAME = "tblQuestIDForName";
@@ -642,7 +642,7 @@ public class PRJDatabase
 
     // function for new store master data start
 
-    public void savetblQuestIDForName(int id,int grpQstId,int qstId,String QuestDesc)
+    public static void savetblQuestIDForName(int id,int grpQstId,int qstId,String QuestDesc)
     {
   /*private static final String TABLE_QSTOUTCHANNEL = "tblQuestIDForOutChannel";
    private static final String TABLE_QST_NAME = "tblQuestIDForName";
@@ -657,7 +657,7 @@ public class PRJDatabase
 
     }
 
-    public void savetblPDAQuestOptionDependentMstr(int QstID,int DepQstId,int GrpQuestID,int GrpDepQuestID)
+    public static void savetblPDAQuestOptionDependentMstr(int QstID,int DepQstId,int GrpQuestID,int GrpDepQuestID)
     {
 
         ContentValues values=new ContentValues();
@@ -669,7 +669,7 @@ public class PRJDatabase
 
     }
 
-    public void savetblPDAQuestOptionValuesDependentMstr(int DepQstId,String DepAnswValId ,int QstId,String AnswValId,String OptDescr,int Sequence,int GrpQuestID,int GrpDepQuestID)
+    public static void savetblPDAQuestOptionValuesDependentMstr(int DepQstId,String DepAnswValId ,int QstId,String AnswValId,String OptDescr,int Sequence,int GrpQuestID,int GrpDepQuestID)
     {
 
         ContentValues values=new ContentValues();
@@ -685,7 +685,7 @@ public class PRJDatabase
 
     }
 
-    public void Delete_tblMessageTextFileContainer()
+    public static void Delete_tblMessageTextFileContainer()
     {
         db.execSQL("DELETE FROM tblMessageTextFileContainer");
     }
@@ -693,26 +693,26 @@ public class PRJDatabase
 
     // function for new store master data end
 
-    public void Delete_tblDsrRegDetails()
+    public static void Delete_tblDsrRegDetails()
 
     {
         db.execSQL("DELETE FROM tblDsrRegDetails");
     }
 
-    public void Delete_tblUserRegistarationStatus()
+    public static void Delete_tblUserRegistarationStatus()
 
     {
         db.execSQL("DELETE FROM tblUserRegistarationStatus");
     }
 
     //tblStockUploadedStatus
-    public void Delete_tblStockUploadedStatus()
+    public static void Delete_tblStockUploadedStatus()
 
     {
         db.execSQL("DELETE FROM tblStockUploadedStatus");
     }
 
-    public int countNumberOFTextFile()  throws IOException
+    public static int countNumberOFTextFile()  throws IOException
     {
         // int entryCount;sdfsfsf
 
@@ -734,7 +734,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String[] returnTextFileName()
+    public static String[] returnTextFileName()
     {
 
         String qry="select FileName from tblMessageTextFileContainer where FileFlag=0";
@@ -759,7 +759,7 @@ public class PRJDatabase
         }
     }
 
-    public void upDateTextFileFlag(String FileName, int FileFlag) {
+    public static void upDateTextFileFlag(String FileName, int FileFlag) {
 
         try {
 
@@ -780,23 +780,23 @@ public class PRJDatabase
 
     }
 
-    public void deleteTextFileRow(String fileName)
+    public static void deleteTextFileRow(String fileName)
     {
 
         db.execSQL("DELETE FROM tblMessageTextFileContainer WHERE FileName ='" + fileName +"'");
     }
 
-    public void deleteViewAddedStore()
+    public static void deleteViewAddedStore()
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblViewOutletQuestAnsMstr");
         db.execSQL("DELETE FROM tblViewOutletNameAndId");
-        close();
+       // close();
     }
 
-    public void deleteAllSingleCallWebServiceTable()
+    public static void deleteAllSingleCallWebServiceTable()
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblNewStoreSalesQuotePaymentDetails");
 
         db.execSQL("DELETE FROM tblQuestionMstr");
@@ -829,12 +829,12 @@ public class PRJDatabase
 
         db.execSQL("DELETE FROM tblsameLocationForStoreRestartDone");
 
-        close();
+        //close();
     }
 
-    public void deleteAllSingleCallWebServiceTableWhole()
+    public static void deleteAllSingleCallWebServiceTableWhole()
     {
-        open();
+        //open();
         //db.execSQL("DELETE FROM tblNewStoreSalesQuotePaymentDetails");
 
         //db.execSQL("DELETE FROM tblQuestionMstr");
@@ -865,10 +865,10 @@ public class PRJDatabase
 
         db.execSQL("DELETE FROM tblsameLocationForStoreRestartDone");
 
-        close();
+       // close();
     }
 
-    public long savetblSKUWiseDaySummary(int AutoId,String ProductId, String Product, String MRP,
+    public static long savetblSKUWiseDaySummary(int AutoId,String ProductId, String Product, String MRP,
                                          String Rate, String NoofStores, String OrderQty, String FreeQty,String DiscValue,
                                          String ValBeforeTax, String  TaxValue,String ValAfterTax,String Lvl,String Category,String UOM)
     {
@@ -905,7 +905,7 @@ public class PRJDatabase
 
     // change by sunil for Summary Report
 
-    public int checkCountIntblSalesQuotePersonMeetMstr(String  StoreId)
+    public static int checkCountIntblSalesQuotePersonMeetMstr(String  StoreId)
     {
 
         Cursor cursor = db.rawQuery("SELECT Count(*) FROM tblSalesQuotePersonMeetMstr WHERE  StoreId ='"+ StoreId + "'", null);
@@ -934,7 +934,7 @@ public class PRJDatabase
 
     }
 
-    public long savetbltblUOMMstr(String UOMID,String UOM)
+    public static long savetbltblUOMMstr(String UOMID,String UOM)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -945,7 +945,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_UOMMstr, null, initialValues);
     }
 
-    public long saveSalesQuotePrcsMstr(String SalesQuotePrcsId,String SalesQuotePrcs)
+    public static long saveSalesQuotePrcsMstr(String SalesQuotePrcsId,String SalesQuotePrcs)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -956,7 +956,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_SalesQuotePrcsMstr, null, initialValues);
     }
 
-    public long SavetblSalesQuotePaymentModeMstr(String PymtModeId,String PymtMode)
+    public static long SavetblSalesQuotePaymentModeMstr(String PymtModeId,String PymtMode)
     {
         ContentValues initialValues= new ContentValues();
 
@@ -966,7 +966,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_tblSalesQuotePaymentModeMstr, null, initialValues);
     }
 
-    public long SavetblSalesQuotePaymentStageMstr(String PymtStageId,String PymtStage, String PymtModeId)
+    public static long SavetblSalesQuotePaymentStageMstr(String PymtStageId,String PymtStage, String PymtModeId)
     {
         ContentValues initialValues= new ContentValues();
 
@@ -978,7 +978,7 @@ public class PRJDatabase
     }
 
     //surbhi
-    public long SavetblSalesQuoteTypeMstr(String SalesQuotetypeId	, String SalesQuoteType)
+    public static long SavetblSalesQuoteTypeMstr(String SalesQuotetypeId	, String SalesQuoteType)
     {
         ContentValues initialValues=new ContentValues();
 
@@ -988,7 +988,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_tblSalesQuoteTypeMstr, null, initialValues);
     }
 
-    public long SavetblSalesQuotePaymentStageModeMapMstr(String PymtStageId, String PymtModeId )
+    public static long SavetblSalesQuotePaymentStageModeMapMstr(String PymtStageId, String PymtModeId )
     {
         ContentValues initialValues=new ContentValues();
 
@@ -998,10 +998,10 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_tblSalesQuotePaymentStageModeMapMstr, null, initialValues);
     }
 
-    public LinkedHashMap<String, String> fnGettblUOMMstr()
+    public static LinkedHashMap<String, String> fnGettblUOMMstr()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         // Cursor cursor = db.rawQuery("SELECT SST_NameId,SST_Name_des from tbl_SST_NameMstr Order By Sequence ASC  ", null);// Where PNodeID='"+TSIID+"'
 
         // (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
@@ -1027,12 +1027,12 @@ public class PRJDatabase
         finally
         {
 
-            close();
+            //close();
             return hmapQuestionMstr;
         }
     }
 
-    public void insertMinDelQty(String prdId,String storeId,String qPbT,String QPTaxAmount,int minDlvrQty,String uOMID,String qPaT)
+    public static void insertMinDelQty(String prdId,String storeId,String qPbT,String QPTaxAmount,int minDlvrQty,String uOMID,String qPaT)
     {
         // "create table tblMinDeliverQntty (PrdId text null,StoreID text null,QPBT text null,QPTaxAmount text null,MinDlvrQty int null,UOMID text null,Sstat text null);";
         ContentValues values=new ContentValues();
@@ -1047,11 +1047,11 @@ public class PRJDatabase
         db.insert(TABLE_MinDeliverQntty, null, values);
     }
 
-    public String  fngettblSalesQuotePersonMeetMstr(String SalesQuoteId)
+    public static String  fngettblSalesQuotePersonMeetMstr(String SalesQuoteId)
     {
         String flag="0";
         try {
-            open();
+            //open();
             Cursor cursor = db.rawQuery("SELECT SalesQuotePrcsId,SalesQuotePrcs,SalesQuoteValidFrom,SalesQuoteValidTo,SalesQuoteType from tblSalesQuotePersonMeetMstr where SalesQuoteId = '"+SalesQuoteId +"'", null);
 
             if(cursor.getCount()>0){
@@ -1069,12 +1069,12 @@ public class PRJDatabase
         finally
         {
 
-            close();
+            //close();
             return flag;
         }
     }
 
-    public long SalesQuoteProductsMstr(String SalesQuoteId,String Row_No,String PrdId,String StandardRate,String StandardRateBeforeTax,String RateOffer,String InclusiveTax,String ValidFrom,String ValidTo,String MinDlvryQty,String UOMID ,String Remarks,String LastTranscRate,String ProductTaxRateBK)
+    public static long SalesQuoteProductsMstr(String SalesQuoteId,String Row_No,String PrdId,String StandardRate,String StandardRateBeforeTax,String RateOffer,String InclusiveTax,String ValidFrom,String ValidTo,String MinDlvryQty,String UOMID ,String Remarks,String LastTranscRate,String ProductTaxRateBK)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -1100,7 +1100,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_SalesQuoteProductsMstr, null, initialValues);
     }
 
-    public void deleteAllQuotationTables()
+    public static void deleteAllQuotationTables()
     {
 
         db.execSQL("DELETE FROM tblUOMMstr");
@@ -1116,19 +1116,19 @@ public class PRJDatabase
 
     }
 
-    public void deletetblSalesQuoteProductsMstr(String PrdId,String SalesQuoteId)
+    public static void deletetblSalesQuoteProductsMstr(String PrdId,String SalesQuoteId)
     {
 
         db.execSQL("DELETE FROM tblSalesQuoteProductsMstr WHERE PrdId ='" + PrdId +"' and SalesQuoteId='"+SalesQuoteId+"' ");
     }
 
-    public void deletetblRateDistribution(String SalesQuoteId,String StoreId)
+    public static void deletetblRateDistribution(String SalesQuoteId,String StoreId)
     {
 
         db.execSQL("DELETE FROM tblRateDistribution WHERE SalesQuoteId ='" + SalesQuoteId +"' and StoreId='"+StoreId+"' ");
     }
 
-    public String[] fetchAllDataFromtblSKUWiseDaySummary()
+    public static String[] fetchAllDataFromtblSKUWiseDaySummary()
     {
         int ScodecolumnIndex = 0;
 
@@ -1155,7 +1155,7 @@ public class PRJDatabase
 
     }
 
-    public long savetblStoreWiseDaySummary(int AutoId,String Store, String LinesperBill, String StockValue,
+    public static long savetblStoreWiseDaySummary(int AutoId,String Store, String LinesperBill, String StockValue,
                                            String DiscValue, String ValBeforeTax, String TaxValue, String ValAfterTax,String Lvl)
     {
 
@@ -1182,7 +1182,7 @@ public class PRJDatabase
 		 		"LinesperBill text null,StockValue text null,DiscValue text null,ValBeforeTax text null,TaxValue text null," +
 		 		"ValAfterTax text null,Lvl text null);";*/
 
-    public String[] fetchAllDataFromtblStoreWiseDaySummary()
+    public static String[] fetchAllDataFromtblStoreWiseDaySummary()
     {
 
         Cursor cursor = db.rawQuery("SELECT *  FROM tblStoreWiseDaySummary", null);
@@ -1215,7 +1215,7 @@ public class PRJDatabase
 	 		StoreId text null);";
 
 	*/
-    public long savetblStoreSKUWiseDaySummary(int AutoId,String ProductId, String Product, String MRP,
+    public static long savetblStoreSKUWiseDaySummary(int AutoId,String ProductId, String Product, String MRP,
                                               String Rate, String OrderQty, String FreeQty,String DiscValue,
                                               String ValBeforeTax, String  TaxValue,String ValAfterTax,String Lvl,String StoreId,String StockQty)
     {
@@ -1242,13 +1242,13 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN233, null, initialValues);
     }
 
-    public void deleteSalesQuotePersonMeetMstr(String SalesQuoteId)
+    public static void deleteSalesQuotePersonMeetMstr(String SalesQuoteId)
     {
 
         db.execSQL("DELETE FROM tblSalesQuotePersonMeetMstr WHERE SalesQuoteId ='" + SalesQuoteId +"'");
     }
 
-    public long saveSalesQuotePersonMeetMstr(String SalesQuoteId,String SalesQuoteCode,String SalesQuotePrcsId,String SalesQuotePrcs,
+    public static long saveSalesQuotePersonMeetMstr(String SalesQuoteId,String SalesQuoteCode,String SalesQuotePrcsId,String SalesQuotePrcs,
                                              String StoreName,String Remarks,String StoreId,String CreditLimit,String CreditDays,
                                              String ExpectedBusinessValue,String SalesQuoteValidFrom ,String SalesQuoteValidTo,String SalesQuoteDate,
                                              String SalesQuoteType,String ContactPerson,String ContactPersonEmail,String ContactPersonPhone,
@@ -1283,12 +1283,12 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_SalesQuotePersonMeetMstr, null, initialValues);
     }
 
-    public String fngetPaymentModeIDsBasedOnStageID(String PaymentStageID)
+    public static String fngetPaymentModeIDsBasedOnStageID(String PaymentStageID)
     {
 
         String flag="0";
         try {
-            //open();
+            ////open();
             Cursor cursor = db.rawQuery("SELECT PymtModeId from tblSalesQuotePaymentStageMstr where PymtStageId= '"+PaymentStageID +"'", null);
 
             if(cursor.getCount()>0){
@@ -1312,10 +1312,10 @@ public class PRJDatabase
 
     }
 
-    public LinkedHashMap<String, String> fnGettblSalesQuotePaymentStageMstr()
+    public static LinkedHashMap<String, String> fnGettblSalesQuotePaymentStageMstr()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         Cursor cursor= db.rawQuery("SELECT PymtStageId,PymtStage from tblSalesQuotePaymentStageMstr", null);// Where PNodeID='"+TSIID+"'
         //(String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
         // close();
@@ -1336,14 +1336,14 @@ public class PRJDatabase
         finally
         {
             cursor.close();
-            close();
+         //   close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGettblSalesQuoteTypeMstr()
+    public static LinkedHashMap<String, String> fnGettblSalesQuoteTypeMstr()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         Cursor cursor= db.rawQuery("SELECT SalesQuotetypeId,SalesQuoteType from tblSalesQuoteTypeMstr", null);// Where PNodeID='"+TSIID+"'
         //(String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
         // close();
@@ -1364,11 +1364,11 @@ public class PRJDatabase
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public String[] fetchAllDataFromtblStoreSKUWiseDaySummary()
+    public static String[] fetchAllDataFromtblStoreSKUWiseDaySummary()
     {
 
         Cursor cursor = db.rawQuery("SELECT *  FROM tblStoreSKUWiseDaySummary", null);
@@ -1394,7 +1394,7 @@ public class PRJDatabase
 
     }
 
-    public long savetblAllSummary(int AutoId,String Measures,String TodaysSummary,String MTDSummary)
+    public static long savetblAllSummary(int AutoId,String Measures,String TodaysSummary,String MTDSummary)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -1408,7 +1408,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN234, null, initialValues);
     }
 
-    public String[] fetchAllDataFromtblAllSummary()
+    public static String[] fetchAllDataFromtblAllSummary()
     {
         int ScodecolumnIndex = 0;
 
@@ -1439,10 +1439,10 @@ public class PRJDatabase
 	/* private static final String DATABASE_CREATE_TABLE_234 = "create table tblAllSummary (AutoId int not null,Measures text null," +
 		 		"TodaysSummary text null,MTDSummary text null);";*/
 
-    public HashMap<String, String> getProductPicInfo(File[] fileImageName,String storeId,String TmpInvoiceCodePDA)
+    public static HashMap<String, String> getProductPicInfo(File[] fileImageName,String storeId,String TmpInvoiceCodePDA)
     {
         HashMap<String, String> pathForPhotoInfo=new HashMap<String, String>();//=null;
-        open();
+        //open();
         for(int position=0;position<fileImageName.length;position++)
         {
             Cursor cur=db.rawQuery("Select PhotoName,ProductID,ReasonForReturn from tblStoreProductPhotoDetail where PhotoName = '"+fileImageName[position].getName().toString()+"' and StoreID = '"+storeId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
@@ -1462,11 +1462,11 @@ public class PRJDatabase
         return pathForPhotoInfo;
     }
 
-    public long insertPhotoDetail(String storeId,String productId,String clickedDate,String photoName,
+    public static long insertPhotoDetail(String storeId,String productId,String clickedDate,String photoName,
                                   String reasonForPhotoReturn,String photoValidation,String pdaPhotoPath,int Sstat,String OrderPDAID,String TmpInvoiceCodePDA)
     {
 
-        open();
+        //open();
         ContentValues initialValues = new ContentValues();
         // StoreID ,ProductID ,ClickedDateTime ,PhotoName ,PhotoValidation ,PDAPhotoPath ,outstat
         initialValues.put("StoreID", storeId.trim());
@@ -1481,15 +1481,15 @@ public class PRJDatabase
         initialValues.put("OrderIDPDA", OrderPDAID);
         initialValues.put("TmpInvoiceCodePDA", TmpInvoiceCodePDA);
         long inserted=db.insert(DATABASE_TABLE_Main212, null, initialValues);
-        close();
+        //close();
         return inserted;
     }
 
-    public long insertMaterialPhotoDetail(String storeId,String MaterialID,String clickedDate,String photoName,
+    public static long insertMaterialPhotoDetail(String storeId,String MaterialID,String clickedDate,String photoName,
                                           String reasonForPhotoReturn,String photoValidation,String pdaPhotoPath,int Sstat)
     {
 
-        open();
+        //open();
 
         String RouteID= GetActiveRouteID();
         ContentValues initialValues = new ContentValues();
@@ -1505,7 +1505,7 @@ public class PRJDatabase
         initialValues.put("Sstat", Sstat);
 
         long inserted=db.insert(DATABASE_TABLE_Main164, null, initialValues);
-        close();
+        //close();
         return inserted;
     }
 
@@ -1513,11 +1513,11 @@ public class PRJDatabase
 /* tblStoreMaterialPhotoDetail (RouteID text null,StoreID text null,MaterialID text null,ClickedDateTime text null,
 		 PhotoName text null,PhotoValidation text null,PDAPhotoPath text null,Sstat integer null)*/
 
-    public long insertStoreMaterialDetail(String storeId,String MaterialID,int ExistStock,int ReturntoDistributor,
+    public static long insertStoreMaterialDetail(String storeId,String MaterialID,int ExistStock,int ReturntoDistributor,
                                           int FreshOrder,int DiscardDamage,int Sstat)
     {
 
-        open();
+        //open();
 
         String RouteID= GetActiveRouteID();
         ContentValues initialValues = new ContentValues();
@@ -1533,7 +1533,7 @@ public class PRJDatabase
         initialValues.put("Sstat", Sstat);
 
         long inserted=db.insert(DATABASE_TABLE_Main163, null, initialValues);
-        close();
+        //close();
         return inserted;
     }
 
@@ -1544,34 +1544,34 @@ public class PRJDatabase
  		" (RouteID text null,StoreID text null,MaterialID text null,ExistStock integer null,ReturntoDistributor integer null," +
  		"FreshOrder integer null,DiscardDamage integer null,Sstat integer null);";*/
 
-    public void updatePhotoValidation(String validation,String imageNameToUpdate)
+    public static void updatePhotoValidation(String validation,String imageNameToUpdate)
     {
 
-        open();
+        //open();
         final ContentValues values = new ContentValues();
         values.put("PhotoValidation", validation);
         int affected = db.update("tblStoreProductPhotoDetail", values, "PhotoName=?",
                 new String[] { imageNameToUpdate });
-        close();
+        //close();
 
     }
 
-    public void updatePhotoValidationMaterial(String validation,String imageNameToUpdate)
+    public static void updatePhotoValidationMaterial(String validation,String imageNameToUpdate)
     {
 
-        open();
+        //open();
         final ContentValues values = new ContentValues();
         values.put("PhotoValidation", validation);
         int affected = db.update("tblStoreMaterialPhotoDetail", values, "PhotoName=?",
                 new String[] { imageNameToUpdate });
-        close();
+        //close();
 
     }
 
-    public String[] deletFromSDcCardPhotoValidation(String storeId) {
+    public static String[] deletFromSDcCardPhotoValidation(String storeId) {
 
         String[] imageNameToBeDeleted = null;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  PhotoName from tblStoreProductPhotoDetail where StoreID='"+storeId+"'", null);
         try{
@@ -1595,7 +1595,7 @@ public class PRJDatabase
         }finally
         {
             cursor.close();
-            close();
+            //close();
         }
 
 
@@ -1605,7 +1605,7 @@ public class PRJDatabase
         return imageNameToBeDeleted;
     }
 
-    public long insertPhotoDetail(String storeId,String productId,String clickedDate,String photoName,String photoValidation,String pdaPhotoPath,String outstat)
+    public static long insertPhotoDetail(String storeId,String productId,String clickedDate,String photoName,String photoValidation,String pdaPhotoPath,String outstat)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -1622,7 +1622,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_Main212, null, initialValues);
     }
 
-    public long savetblStoreTypeMstr(int AutoIdStore,int StoreTypeID,String StoreTypeDescr)
+    public static long savetblStoreTypeMstr(int AutoIdStore,int StoreTypeID,String StoreTypeDescr)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -1635,7 +1635,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN221, null, initialValues);
     }
 
-    public String fetchStoreTypeDescrBasicOfStoreTypeID(int StoreTypeID)
+    public static String fetchStoreTypeDescrBasicOfStoreTypeID(int StoreTypeID)
     {
 
         int SnamecolumnIndex1 = 0;
@@ -1662,7 +1662,7 @@ public class PRJDatabase
 
     }
 
-    public long savetblTradeChannelMstr(int AutoIdStore,int TradeChannelID,String TradeChannelName)
+    public static long savetblTradeChannelMstr(int AutoIdStore,int TradeChannelID,String TradeChannelName)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -1674,7 +1674,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN223, null, initialValues);
     }
 
-    public String[] fnGetAllTradeChannelNames() {
+    public static String[] fnGetAllTradeChannelNames() {
 
         int LoncolumnIndex = 0;
 
@@ -1706,7 +1706,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllTradeChannelIDs()
+    public static String[] fnGetAllTradeChannelIDs()
     {
 
         int LoncolumnIndex = 0;
@@ -1741,7 +1741,7 @@ public class PRJDatabase
     }
 
     // Start Fifth Table Working
-    public long savetblStoreProductClassificationTypeListMstr(int AutoIdStore,int CategoryNodeID,
+    public static long savetblStoreProductClassificationTypeListMstr(int AutoIdStore,int CategoryNodeID,
                                                               int CategoryNodeType,String Category,int ProductTypeNodeID,int ProductTypeNodeType,String ProductType,int IsCategorySeleted,int IsSubCategorySeleted,String SubCategoryValue)
     {
 
@@ -1761,7 +1761,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN222, null, initialValues);
     }
 
-    public void fnCheckCategoryIds()
+    public static void fnCheckCategoryIds()
     {
         try
         {
@@ -1774,7 +1774,7 @@ public class PRJDatabase
         }
     }
 
-    public void fnTickCheckCategoryId(int CatId)
+    public static void fnTickCheckCategoryId(int CatId)
     {
         try
         {
@@ -1787,19 +1787,19 @@ public class PRJDatabase
         }
     }
 
-    public void funInsertDataStoreCategoryProductWise(String RouteID,String StoreID)
+    public static void funInsertDataStoreCategoryProductWise(String RouteID,String StoreID)
     {
         db.execSQL("INSERT INTO tblTemp (ProductType,RouteID,StoreID,CategoryNodeID,CategoryNodeType,Category,ProductTypeNodeID,ProductTypeNodeType,IsCategorySeleted,IsSubCategorySeleted,SubCategoryValue,Sstat) SELECT DISTINCT ProductType,'"+ RouteID +"','"+StoreID+"',CategoryNodeID,CategoryNodeType,Category,ProductTypeNodeID,ProductTypeNodeType,IsCategorySeleted,IsSubCategorySeleted,ifnull(SubCategoryValue,'0'),1 FROM   tblStoreProductClassificationTypeListMstr where tblStoreProductClassificationTypeListMstr.IsCategorySeleted=1 and tblStoreProductClassificationTypeListMstr.IsSubCategorySeleted=1");
     }
 
-    public void funResetMainTables()
+    public static void funResetMainTables()
     {
         db.execSQL("Update tblStoreProductClassificationTypeListMstr Set IsCategorySeleted=0");
         db.execSQL("Update tblStoreProductClassificationTypeListMstr Set IsSubCategorySeleted=0");
         db.execSQL("Update tblStoreProductClassificationTypeListMstr Set SubCategoryValue=''");
     }
 
-    public void fnCheckUnCheckSubCategoryId(int CatId,int SubCatId,int SelectStatus)
+    public static void fnCheckUnCheckSubCategoryId(int CatId,int SubCatId,int SelectStatus)
     {
 		/*try
         {*/
@@ -1812,7 +1812,7 @@ public class PRJDatabase
 		}*/
     }
 
-    public void fnUpdateSubCategoryValue(int CatId,int SubCatId,String SubCatValue)
+    public static void fnUpdateSubCategoryValue(int CatId,int SubCatId,String SubCatValue)
     {
 		/*try
         {*/
@@ -1825,7 +1825,7 @@ public class PRJDatabase
 		}*/
     }
 
-    public String[] fnGetAllSubCategoryNames(String CategoryNodeID) {
+    public static String[] fnGetAllSubCategoryNames(String CategoryNodeID) {
 
         int LoncolumnIndex = 0;
 
@@ -1858,7 +1858,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllSubCategoryCheckStatus(String CategoryNodeID) {
+    public static String[] fnGetAllSubCategoryCheckStatus(String CategoryNodeID) {
 
         int LoncolumnIndex = 1;
 
@@ -1893,7 +1893,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllSubCategoryValues(String CategoryNodeID) {
+    public static String[] fnGetAllSubCategoryValues(String CategoryNodeID) {
 
         int LoncolumnIndex = 1;
 
@@ -1928,7 +1928,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllSubCategoryIds(String CategoryNodeID)
+    public static String[] fnGetAllSubCategoryIds(String CategoryNodeID)
     {
 
         int LoncolumnIndex = 0;
@@ -1962,7 +1962,7 @@ public class PRJDatabase
 
     }
 
-    public String fetchStoreProductClassificationDescrBasicOfStoreProductClassificationID(int StoreProductClassificationID)
+    public static String fetchStoreProductClassificationDescrBasicOfStoreProductClassificationID(int StoreProductClassificationID)
     {
 
         int SnamecolumnIndex1 = 0;
@@ -1989,7 +1989,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllStoreProductClassificationTypeNames() {
+    public static String[] fnGetAllStoreProductClassificationTypeNames() {
 
         int LoncolumnIndex = 0;
 
@@ -2015,7 +2015,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllStoreProductClassificationTypeIds()
+    public static String[] fnGetAllStoreProductClassificationTypeIds()
     {
 
         int LoncolumnIndex = 0;
@@ -2042,7 +2042,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllRouteDescrNewStore() {
+    public static String[] fnGetAllRouteDescrNewStore() {
 
         int LoncolumnIndex = 0;
 
@@ -2077,7 +2077,7 @@ public class PRJDatabase
 
     // End Second Table Working
 
-    public String[] fnGetAllRouteIDNewStore()
+    public static String[] fnGetAllRouteIDNewStore()
     {
 
         int LoncolumnIndex = 0;
@@ -2113,7 +2113,7 @@ public class PRJDatabase
 
     //tblRouteMstr(AutoIdStore integer null,RouteID integer null, RouteDescr text null);";
 
-    public String[] fnGetAllStoreTypeNames() {
+    public static String[] fnGetAllStoreTypeNames() {
 
         int LoncolumnIndex = 0;
 
@@ -2146,7 +2146,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllStoreTypeIds()
+    public static String[] fnGetAllStoreTypeIds()
     {
 
         int LoncolumnIndex = 0;
@@ -2180,7 +2180,7 @@ public class PRJDatabase
 
     }
 
-    public void fnReleaseTableUnReuqiredData()
+    public static void fnReleaseTableUnReuqiredData()
     {
         try
         {
@@ -2195,7 +2195,7 @@ public class PRJDatabase
 
     }
 
-    public long savetblStoreMainAfterCountNUmberOfStore(String RouteID,String StoreID,String StoreName,String RetailerName,String emailID,String TinNo,
+    public static long savetblStoreMainAfterCountNUmberOfStore(String RouteID,String StoreID,String StoreName,String RetailerName,String emailID,String TinNo,
                                                         String RetailerContactNo,String StoreAddress,String StorePincode,String City,String KeyAccount,int TradeChannelID, int StoreTypeId,
                                                         int StoreCategoryId,int RetailSalesTypeId,int StorePotentialId,String StoreProductClassificationId,
                                                         String VisitStartTS, String Imei,String BatteryStatus,int Sstat,int CityId,
@@ -2258,7 +2258,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN21, null, initialValues);
     }
 
-    public void deletetblstoreMstrOnStoreIDBasis(String StoreID)
+    public static void deletetblstoreMstrOnStoreIDBasis(String StoreID)
     {
 
         db.execSQL("DELETE FROM tblStoreList WHERE StoreID ='"+ StoreID +"'");
@@ -2273,14 +2273,14 @@ public class PRJDatabase
 
 
 
-/*	public void deletetblstoreMstrOnStoreIDBasis(String StoreID) {
+/*	public static void deletetblstoreMstrOnStoreIDBasis(String StoreID) {
 
 		db.execSQL("DELETE FROM tblStoreList WHERE StoreID ='"+ StoreID +"'");
 		db.execSQL("DELETE FROM tblNewStoreListEntries WHERE StoreID ='"+ StoreID +"'");
 
 	}*/
 
-    public void savetblStoreMain(String RouteID,String StoreID,String StoreName,String RetailerName,String emailID,
+    public static void savetblStoreMain(String RouteID,String StoreID,String StoreName,String RetailerName,String emailID,
                                  String TinNo,
                                  String RetailerContactNo,String StoreAddress,String StorePincode,String City,String KeyAccount,
                                  int TradeChannelID, int StoreTypeId,
@@ -2288,7 +2288,7 @@ public class PRJDatabase
                                  String VisitStartTS, String Imei,String BatteryStatus,int Sstat,int CityId,String ActualLatitude,
                                  String ActualLongitude,String Accuracy,String LocProvider,int IsNewStoreDataCompleteSaved,
                                  String fetchAddress,String PaymentStage,int flgHasQuote,int flgAllowQuotation,
-                                 int flgSubmitFromQuotation,String flgGSTCapture,String flgGSTCompliance,String GSTNumber,int flgGSTRecordFromServer, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, int flgRestart, int flgStoreOrder, String StoreCity,String StorePinCode, String StoreState,String DBR,String OwnerName,String StoreContactNo,String StoreCatType,int flgRuleTaxVal,int flgTransType,String mobileFnl,String SalesPersonName,String SalesPersonContactNo)
+                                 int flgSubmitFromQuotation,String flgGSTCapture,String flgGSTCompliance,String GSTNumber,int flgGSTRecordFromServer, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, int flgRestart, int flgStoreOrder, String StoreCity,String StorePinCode, String StoreState,String DBR,String OwnerName,String StoreContactNo,String StoreCatType,int flgRuleTaxVal,int flgTransType,String mobileFnl,String SalesPersonName,String SalesPersonContactNo,int IsComposite)
     {
 
         int MaxAutoStore = 0;
@@ -2326,7 +2326,7 @@ public class PRJDatabase
             }
 
             //saveSOAPdataStoreList = DBR,flgRetailerCredit
-            saveSOAPdataStoreListNewStore(StoreID, ""+StoreTypeId, StoreName, Double.parseDouble(ActualLatitude.trim()), Double.parseDouble(ActualLongitude.trim()), "", "", prevDate2Send, MaxAutoStore,Sstat,Accuracy.trim(),LocProvider.trim(),RouteID,BatteryStatus,IsNewStoreDataCompleteSaved,fetchAddress,PaymentStage,flgHasQuote,flgAllowQuotation,flgSubmitFromQuotation,flgGSTCapture,flgGSTCompliance,GSTNumber,flgGSTRecordFromServer,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart,flgStoreOrder,StoreCity,StorePinCode,StoreState,DBR,OwnerName,StoreContactNo,StoreCatType,flgRuleTaxVal,flgTransType,SalesPersonName,SalesPersonContactNo); // in last parameter Fdate
+            saveSOAPdataStoreListNewStore(StoreID, ""+StoreTypeId, StoreName, Double.parseDouble(ActualLatitude.trim()), Double.parseDouble(ActualLongitude.trim()), "", "", prevDate2Send, MaxAutoStore,Sstat,Accuracy.trim(),LocProvider.trim(),RouteID,BatteryStatus,IsNewStoreDataCompleteSaved,fetchAddress,PaymentStage,flgHasQuote,flgAllowQuotation,flgSubmitFromQuotation,flgGSTCapture,flgGSTCompliance,GSTNumber,flgGSTRecordFromServer,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart,flgStoreOrder,StoreCity,StorePinCode,StoreState,DBR,OwnerName,StoreContactNo,StoreCatType,flgRuleTaxVal,flgTransType,SalesPersonName,SalesPersonContactNo,IsComposite); // in last parameter Fdate
 
             fnInsert_tblNewAddedStoreLocationDetails( StoreID, Sstat, ActualLatitude, ActualLongitude, prevDate2Send, LocProvider, Accuracy, BatteryStatus, flgLocationServicesOnOff, flgGPSOnOff, flgNetworkOnOff, flgFusedOnOff, flgInternetOnOffWhileLocationTracking);
         }
@@ -2334,7 +2334,7 @@ public class PRJDatabase
 
     }
 
-    public int checkRouteIDExistInStoreListTable(int StoreRouteID)
+    public static int checkRouteIDExistInStoreListTable(int StoreRouteID)
     {
 
         Cursor cursor = db.rawQuery("SELECT Count(*) FROM tblStoreList WHERE StoreRouteID="+StoreRouteID, null);
@@ -2363,7 +2363,7 @@ public class PRJDatabase
 
     }
 
-    public long inserttblForPDAGetLastVisitDate(String StoreID,String VisitDate,String flgOrder)
+    public static long inserttblForPDAGetLastVisitDate(String StoreID,String VisitDate,String flgOrder)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -2381,7 +2381,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN141 , null, initialValues);
     }
 
-    public int counttblForPDAGetLastVisitDate(String StoreID)
+    public static int counttblForPDAGetLastVisitDate(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblForPDAGetLastVisitDate WHERE StoreID ='"+ StoreID + "'", null);
         int chkI = 0;
@@ -2401,7 +2401,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String fnGetVisitDateAndflgOrderFromtblForPDAGetLastVisitDate(String StoreID) {
+    public static String fnGetVisitDateAndflgOrderFromtblForPDAGetLastVisitDate(String StoreID) {
 
         Cursor cursorE2 = db.rawQuery("SELECT VisitDate,flgOrder FROM tblForPDAGetLastVisitDate WHERE StoreID ='"
                 + StoreID + "'", null);
@@ -2425,7 +2425,7 @@ public class PRJDatabase
 
     }
 
-    public long inserttblForPDAGetLastOrderDate(String StoreID,String OrderDate,String flgExecutionSummary)
+    public static long inserttblForPDAGetLastOrderDate(String StoreID,String OrderDate,String flgExecutionSummary)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -2444,7 +2444,7 @@ public class PRJDatabase
 
     }
 
-    public int counttblForPDAGetLastOrderDate(String StoreID)
+    public static int counttblForPDAGetLastOrderDate(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblForPDAGetLastOrderDate WHERE StoreID ='"
                 + StoreID + "'", null);
@@ -2465,7 +2465,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String fnGettblForPDAGetLastOrderDate(String StoreID) {
+    public static String fnGettblForPDAGetLastOrderDate(String StoreID) {
         int ScodecolumnIndex = 0;
 
         Cursor cursorE2 = db.rawQuery("SELECT OrderDate,flgExecutionSummary FROM tblForPDAGetLastOrderDate WHERE StoreID ='"+ StoreID + "' Limit 1", null);
@@ -2488,7 +2488,7 @@ public class PRJDatabase
 
     }
 
-    public long inserttblForPDAGetLastVisitDetails(String StoreID,String Date123,String Order123,String Stock,String SKUName,String ExecutionQty)
+    public static long inserttblForPDAGetLastVisitDetails(String StoreID,String Date123,String Order123,String Stock,String SKUName,String ExecutionQty)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -2504,7 +2504,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN143, null, initialValues);
     }
 
-    public int counttblForPDAGetLastVisitDetails(String StoreID)
+    public static int counttblForPDAGetLastVisitDetails(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("select Count(*) from tblForPDAGetLastVisitDetails WHERE StoreID ='"+ StoreID + "'", null);
         int chkI = 0;
@@ -2524,7 +2524,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String[] fetchDateFromtblForPDAGetLastVisitDetails(String StoreID)
+    public static String[] fetchDateFromtblForPDAGetLastVisitDetails(String StoreID)
     {
 
         Cursor cursor = db
@@ -2558,7 +2558,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchAllDataFromtblForPDAGetLastVisitDetails(String StoreID)
+    public static String[] fetchAllDataFromtblForPDAGetLastVisitDetails(String StoreID)
     {
 
         Cursor cursor = db
@@ -2598,10 +2598,10 @@ public class PRJDatabase
 
     }
 
-    public HashMap<String, String> getProductPicInfoMaterial(File[] fileImageName,String storeId)
+    public static HashMap<String, String> getProductPicInfoMaterial(File[] fileImageName,String storeId)
     {
         HashMap<String, String> pathForPhotoInfo=new HashMap<String, String>();//=null;
-        open();
+        //open();
         for(int position=0;position<fileImageName.length;position++)
         {
             Cursor cur=db.rawQuery("Select PhotoName,MaterialID from tblStoreMaterialPhotoDetail where PhotoName = '"+fileImageName[position].getName().toString()+"' and StoreID = '"+storeId+"'", null);
@@ -2617,13 +2617,13 @@ public class PRJDatabase
             }
         }
 
-        close();
+       // close();
         return pathForPhotoInfo;
     }
 
-    public ArrayList<HashMap<String, String>> fetch_matID_ReturnData(String storeId) {
+    public static ArrayList<HashMap<String, String>> fetch_matID_ReturnData(String storeId) {
         // System.out.println("Abhinav Raj is 2");
-        open();
+        //open();
         ArrayList<HashMap<String, String>> totalProductDetail=new ArrayList<HashMap<String, String>>(4);
 
         HashMap<String, String> hmapMatIDExistingStock=new HashMap<String, String>();
@@ -2670,13 +2670,13 @@ public class PRJDatabase
         } finally {
             cursor.close();
 
-            close();
+           // close();
         }
 
 
     }
 
-    public long inserttblForPDAGetLastOrderDetails(String StoreID,String OrderDate,String ProductID,String OrderQty,String FreeQty,String PrdName,String ExecutionQty)
+    public static long inserttblForPDAGetLastOrderDetails(String StoreID,String OrderDate,String ProductID,String OrderQty,String FreeQty,String PrdName,String ExecutionQty)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -2695,7 +2695,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN144 , null, initialValues);
     }
 
-    public int counttblForPDAGetLastOrderDetails(String StoreID)
+    public static int counttblForPDAGetLastOrderDetails(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblForPDAGetLastOrderDetails WHERE StoreID ='"
                 + StoreID + "'", null);
@@ -2716,7 +2716,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String[] fetchOrderDateFromtblForPDAGetLastOrderDetails(String StoreID)
+    public static String[] fetchOrderDateFromtblForPDAGetLastOrderDetails(String StoreID)
     {
 
         Cursor cursor = db
@@ -2751,7 +2751,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchAllDataFromtblForPDAGetLastOrderDetails(String StoreID)
+    public static String[] fetchAllDataFromtblForPDAGetLastOrderDetails(String StoreID)
     {
 
         Cursor cursor = db
@@ -2792,7 +2792,7 @@ public class PRJDatabase
 
     }
 
-    public long inserttblspForPDAGetLastOrderDetails_TotalValues(String StoreID,String OrderValue,String ExecutionValue)
+    public static long inserttblspForPDAGetLastOrderDetails_TotalValues(String StoreID,String OrderValue,String ExecutionValue)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -2806,7 +2806,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN145 , null, initialValues);
     }
 
-    public int counttblspForPDAGetLastOrderDetails_TotalValues(String StoreID)
+    public static int counttblspForPDAGetLastOrderDetails_TotalValues(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblspForPDAGetLastOrderDetailsTotalValues WHERE StoreID ='"
                 + StoreID + "'", null);
@@ -2827,7 +2827,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String[] fetchAllDataFromtblspForPDAGetLastOrderDetails_TotalValues(String StoreID)
+    public static String[] fetchAllDataFromtblspForPDAGetLastOrderDetails_TotalValues(String StoreID)
     {
 
         Cursor cursor = db
@@ -2864,7 +2864,7 @@ public class PRJDatabase
 
     }
 
-    public long inserttblForPDAGetExecutionSummary(String StoreID,String OrderDate,String ProductID,
+    public static long inserttblForPDAGetExecutionSummary(String StoreID,String OrderDate,String ProductID,
                                                    String OrderQty,String flgInvStatus,String ProductQty,String PrdName)
     {
 
@@ -2886,7 +2886,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN146 , null, initialValues);
     }
 
-    public String[] fetchOrderDateFromtblForPDAGetExecutionSummary(String StoreID)
+    public static String[] fetchOrderDateFromtblForPDAGetExecutionSummary(String StoreID)
     {
 
         Cursor cursor = db
@@ -2927,7 +2927,7 @@ public class PRJDatabase
 	GROUP BY Category
 	ORDER BY MAX(CreationDate) DESC, Category*/
 
-    public int fnfetchMinNoOfSKUFromtblCouponMasterNewFormat()
+    public static int fnfetchMinNoOfSKUFromtblCouponMasterNewFormat()
     {
 
 
@@ -2959,7 +2959,7 @@ public class PRJDatabase
 
     }
 
-    public Double fnfetchAdditionalAmountFromtblCouponSlabNewFormat()
+    public static Double fnfetchAdditionalAmountFromtblCouponSlabNewFormat()
     {
 
         Cursor cursorE2 = db.rawQuery(
@@ -2990,7 +2990,7 @@ public class PRJDatabase
 
     }
 
-    public int countCouponNewFormatApplyOrNot(String StoreID)
+    public static int countCouponNewFormatApplyOrNot(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT ProductID,flgMust,Qty FROM tblTempNewFormat WHERE flgMust=1 AND Qty>=MinQty_Value And StoreID='"+StoreID+"'", null);
         //Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTempNewFormat WHERE (flgMust ="+1+" AND Qty>=MinQty_Value)", null);
@@ -3025,7 +3025,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public long fninsertPDAProductReturnDetails(int AutoReturnIdMstr,
+    public static long fninsertPDAProductReturnDetails(int AutoReturnIdMstr,
                                                 int AutoReturnIdDetails, String strProductId,
                                                 String strProdReturnQty, Double ProdRate, Double ProdReturnValue,
                                                 int proSingleAdjQty, Double proSingleAdjAmt,String CatId)
@@ -3061,7 +3061,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN20, null, initialValues);
     }
 
-    public int fnCheckflgToShowCouponNewFormat()
+    public static int fnCheckflgToShowCouponNewFormat()
     {
 
 
@@ -3093,7 +3093,7 @@ public class PRJDatabase
 
     }
 
-    public Double fnfetchMinInvoiceAmountFromtblCouponMasterNewFormat()
+    public static Double fnfetchMinInvoiceAmountFromtblCouponMasterNewFormat()
     {
 
         Cursor cursorE2 = db.rawQuery(
@@ -3124,7 +3124,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchProductIDFromtblForPDAGetExecutionSummary(String StoreID)
+    public static String[] fetchProductIDFromtblForPDAGetExecutionSummary(String StoreID)
     {
 
         Cursor cursor = db
@@ -3160,7 +3160,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchPrdNameFromtblForPDAGetExecutionSummary(String StoreID)
+    public static String[] fetchPrdNameFromtblForPDAGetExecutionSummary(String StoreID)
     {
 
         Cursor cursor = db
@@ -3196,7 +3196,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchAllDataNewFromtbltblForPDAGetExecutionSummary(String StoreID,String OrderDate,String ProductID)
+    public static String[] fetchAllDataNewFromtbltblForPDAGetExecutionSummary(String StoreID,String OrderDate,String ProductID)
     {
 
         Cursor cursor = db
@@ -3234,7 +3234,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchAllDataFromtbltblForPDAGetExecutionSummary(String StoreID)
+    public static String[] fetchAllDataFromtbltblForPDAGetExecutionSummary(String StoreID)
     {
 
         Cursor cursor = db
@@ -3276,7 +3276,7 @@ public class PRJDatabase
 
     }
 
-    public String fetchNoti_textFromtblNotificationMstr()
+    public static String fetchNoti_textFromtblNotificationMstr()
     {
 
         int LoncolumnIndex = 0;
@@ -3310,7 +3310,7 @@ public class PRJDatabase
         }
     }
 
-    public void updatetblNotificationMstr(int MsgServerID,String Noti_text,int Noti_ReadStatus,String Noti_ReadDateTime,int Sstat)
+    public static void updatetblNotificationMstr(int MsgServerID,String Noti_text,int Noti_ReadStatus,String Noti_ReadDateTime,int Sstat)
     {
 
         final ContentValues values = new ContentValues();
@@ -3324,7 +3324,7 @@ public class PRJDatabase
         Log.w(TAG, "tblNotificationMstr Updated..");
     }
 
-    public int countNoRowIntblNotificationMstr()
+    public static int countNoRowIntblNotificationMstr()
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblNotificationMstr", null);
         int chkI = 0;
@@ -3346,7 +3346,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String[] LastNitificationrListDB()
+    public static String[] LastNitificationrListDB()
     {
 
         int LoncolumnIndex = 0;
@@ -3387,7 +3387,7 @@ public class PRJDatabase
         }
     }
 
-    public void deletetblNotificationMstrOneRow(int SerialNo) {
+    public static void deletetblNotificationMstrOneRow(int SerialNo) {
 
         db.execSQL("DELETE FROM tblNotificationMstr WHERE SerialNo ="+ SerialNo);
         for(int i=0;i<9;i++)
@@ -3401,7 +3401,7 @@ public class PRJDatabase
 
     }
 
-    public long inserttblNotificationMstr(int SerialNo,String IMEI,String Noti_text,String Noti_DateTime,
+    public static long inserttblNotificationMstr(int SerialNo,String IMEI,String Noti_text,String Noti_DateTime,
                                           int Noti_ReadStatus,int Noti_NewOld,
                                           String Noti_ReadDateTime,int Sstat,int MsgServerID)
     {
@@ -3422,7 +3422,7 @@ public class PRJDatabase
         return db.insert(TABLE_tblNotificationMstr_Define , null, initialValues);
     }
 
-    public void updateInvoiceButtonRecordsSyncd(String flag) {
+    public static void updateInvoiceButtonRecordsSyncd(String flag) {
 
         try {
 
@@ -3450,7 +3450,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetPdaDate()
+    public static String fnGetPdaDate()
     {
 
         int LoncolumnIndex = 0;
@@ -3473,7 +3473,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnGetServerDate()
+    public static String fnGetServerDate()
     {
 
         int LoncolumnIndex = 0;
@@ -3496,7 +3496,7 @@ public class PRJDatabase
         }
     }
 
-    public long maintainPDADate()
+    public static long maintainPDADate()
     {
         db.execSQL("DELETE FROM tblPdaDate");
         Date pdaDate=new Date();
@@ -3508,7 +3508,7 @@ public class PRJDatabase
         return db.insert("tblPdaDate", null, initialValues);
     }
 
-    public long maintainSplashPDADate()
+    public static long maintainSplashPDADate()
     {
         db.execSQL("DELETE FROM tblPdaDate");
         Date pdaDate=new Date();
@@ -3520,7 +3520,7 @@ public class PRJDatabase
         return db.insert("tblPdaDate", null, initialValues);
     }
 
-    public int fnCheckPdaDateExistOrNot()
+    public static int fnCheckPdaDateExistOrNot()
     {
 
         int strReturnPDADateExistOrNot = 0;
@@ -3543,7 +3543,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] fnGetStoreListForInvoice(String DistID,String RouteID,String ForDate)
+    public static String[] fnGetStoreListForInvoice(String DistID,String RouteID,String ForDate)
     {
          /*  if(DistID.equals("null"))
            {
@@ -3613,7 +3613,7 @@ public class PRJDatabase
 
     }
 
-    /* public String[] fnGetStoreListForInvoice(String DistID,String RouteID,String ForDate)
+    /* public static String[] fnGetStoreListForInvoice(String DistID,String RouteID,String ForDate)
 	     {
 	            if(DistID.equals("null"))
 	            {
@@ -3683,7 +3683,7 @@ public class PRJDatabase
 
 	     }
 	*/
-    public String[] fnGetDistinctDistributorsID()
+    public static String[] fnGetDistinctDistributorsID()
     {
 
         Cursor cursor=db.rawQuery("SELECT DISTINCT DistID from tblInvoiceButtonStoreMstr Order BY DistId", null);
@@ -3721,7 +3721,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetDistinctDistributorsName()
+    public static String[] fnGetDistinctDistributorsName()
     {
         Cursor cursor=db.rawQuery("SELECT DISTINCT DistName from tblInvoiceButtonStoreMstr Order BY DistId", null);
 
@@ -3759,7 +3759,7 @@ public class PRJDatabase
 
     }
 
-    public long saveInvoiceButtonStoreTransac(String IMEIno, String TransDate,
+    public static long saveInvoiceButtonStoreTransac(String IMEIno, String TransDate,
                                               String StoreID, String ProdID,String ProductShortName,Double ProductRate,int OrderQty,
                                               int DelQty, int FreeQty,String OrderID,String CatID,String Sstat,int flgCancel,Double DiscountVal,String RutID
             ,String additionalDiscount) {
@@ -3794,7 +3794,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN114, null, initialValues);
     }
 
-    public String[] ProcessCancelStoreReq()
+    public static String[] ProcessCancelStoreReq()
     {
 
         int LoncolumnIndex = 0;
@@ -3830,7 +3830,7 @@ public class PRJDatabase
 
     }
 
-    public int CheckNonSubmitDataIntblInvoiceButtonStoreMstr()
+    public static int CheckNonSubmitDataIntblInvoiceButtonStoreMstr()
     {
 
         int LoncolumnIndex = 0;
@@ -3860,10 +3860,10 @@ public class PRJDatabase
 
     }
 
-    public HashMap<String, String> FetchtblStoreProductClassificationType()
+    public static HashMap<String, String> FetchtblStoreProductClassificationType()
     {
 
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT ProductTypeNodeID,CategoryNodeID,CategoryNodeType,Category,ProductTypeNodeType,ProductType FROM tblStoreProductClassificationTypeListMstr" ,null);
         try
         {
@@ -3884,7 +3884,7 @@ public class PRJDatabase
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
 
 
@@ -3894,7 +3894,7 @@ public class PRJDatabase
 			"CategoryNodeID integer null,CategoryNodeType integer null, Category text null,ProductTypeNodeID integer null,ProductTypeNodeType integer null,ProductType text null,IsCategorySeleted int null,IsSubCategorySeleted int null,SubCategoryValue text null);";
 */
 
-    public String[] ProcessConformStoreReq()
+    public static String[] ProcessConformStoreReq()
     {
 
         int LoncolumnIndex = 0;
@@ -3928,7 +3928,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetDistinctRouteId(String DistId)
+    public static String[] fnGetDistinctRouteId(String DistId)
     {
         //String[] DistinctDistributorsID;
         Cursor cursor=db.rawQuery("SELECT DISTINCT RouteId from tblInvoiceButtonStoreMstr Where DistId='"+DistId+"'  Order BY RouteId", null);
@@ -3966,7 +3966,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetDistinctRouteName(String DistId)
+    public static String[] fnGetDistinctRouteName(String DistId)
     {
         //String[] DistinctDistributorsID;
         Cursor cursor=db.rawQuery("SELECT DISTINCT RouteName from tblInvoiceButtonStoreMstr Where DistId='"+DistId+"'  Order BY RouteId", null);
@@ -4005,15 +4005,15 @@ public class PRJDatabase
 
     }
 
-    public void deleteOldInvoiceButtonStoreTransac(String sID2del) {
+    public static void deleteOldInvoiceButtonStoreTransac(String sID2del) {
         // int entryCount;
         db.execSQL("DELETE FROM tblInvoiceButtonTransac WHERE StoreID ='" + sID2del + "'");
 
 
     }
 
-    //public void UpdateInvoiceButtonStoreFlag(String sID, int flag2set, String RouteId, String DistId, String Invdate,int flgCancel)
-    public void UpdateInvoiceButtonStoreFlag(String sID, int flag2set,int flgCancel,String OrderID)
+    //public static void UpdateInvoiceButtonStoreFlag(String sID, int flag2set, String RouteId, String DistId, String Invdate,int flgCancel)
+    public static void UpdateInvoiceButtonStoreFlag(String sID, int flag2set,int flgCancel,String OrderID)
     {
 
         try
@@ -4044,7 +4044,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdatetblInvoiceButtonTransac(String sID, int flag2set,int flgCancel,String OrderID)
+    public static void UpdatetblInvoiceButtonTransac(String sID, int flag2set,int flgCancel,String OrderID)
     {
 
         try
@@ -4069,7 +4069,7 @@ public class PRJDatabase
 
     }
 
-    public void deleteInvoiceRelatedTableEtrySavedData(String sID,String OrderID)
+    public static void deleteInvoiceRelatedTableEtrySavedData(String sID,String OrderID)
     {
 
         try
@@ -4087,7 +4087,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateInvoiceButtonCancelStoreSynFlag(String sID, int flag2set,int flgCancel)
+    public static void UpdateInvoiceButtonCancelStoreSynFlag(String sID, int flag2set,int flgCancel)
     {
 
         try
@@ -4114,8 +4114,8 @@ public class PRJDatabase
 
     }
 
-    public String FetchPNameInvoice(String ProductId)
-    //public String FetchPNameInvoice()
+    public static String FetchPNameInvoice(String ProductId)
+    //public static String FetchPNameInvoice()
     {
 
         int ScodecolumnIndex = 0;
@@ -4145,7 +4145,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetchCategoryIDfromInvoiceProduct()
+    public static String[] FetchCategoryIDfromInvoiceProduct()
     {
         int ScodecolumnIndex = 0;
 
@@ -4172,7 +4172,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetchOrderQtyInvoice(String StoreID,String InvoiceForDate,String OrderID) {
+    public static String[] FetchOrderQtyInvoice(String StoreID,String InvoiceForDate,String OrderID) {
 
         int ScodecolumnIndex = 0;
 
@@ -4196,7 +4196,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetchOrderDiscountInvoice(String StoreID,String InvoiceForDate,String OrderID) {
+    public static String[] FetchOrderDiscountInvoice(String StoreID,String InvoiceForDate,String OrderID) {
 
         int ScodecolumnIndex = 0;
 
@@ -4220,7 +4220,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetchOrderFreeQtyInvoice(String StoreID,String InvoiceForDate,String OrderID) {
+    public static String[] FetchOrderFreeQtyInvoice(String StoreID,String InvoiceForDate,String OrderID) {
 
         int ScodecolumnIndex = 0;
 
@@ -4244,8 +4244,8 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetchRateInvoice(String StoreID,String InvoiceForDate,String OrderID)
-    //public String[] FetchRateInvoice()
+    public static String[] FetchRateInvoice(String StoreID,String InvoiceForDate,String OrderID)
+    //public static String[] FetchRateInvoice()
     {
 
         int ScodecolumnIndex = 0;
@@ -4272,8 +4272,8 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetchPidInvoice(String StoreID,String InvoiceForDate,String OrderID)
-    //public String[] FetchPidInvoice()
+    public static String[] FetchPidInvoice(String StoreID,String InvoiceForDate,String OrderID)
+    //public static String[] FetchPidInvoice()
 
     {
         int ScodecolumnIndex = 0;
@@ -4313,7 +4313,7 @@ public class PRJDatabase
         }
     }
 
-    public String FetchStoreNameBasedStoreID(String StoreID,String Data)
+    public static String FetchStoreNameBasedStoreID(String StoreID,String Data)
     {
 
         int ScodecolumnIndex = 0;
@@ -4347,7 +4347,7 @@ public class PRJDatabase
         }
     }
 
-    public String FetchDistNameBasedDistID(String DistId)
+    public static String FetchDistNameBasedDistID(String DistId)
     {
 
         int ScodecolumnIndex = 0;
@@ -4378,7 +4378,7 @@ public class PRJDatabase
         }
     }
 
-    public long inserttblInvoiceButtonStoreMstr(String StoreID,String StoreName,String RouteID,
+    public static long inserttblInvoiceButtonStoreMstr(String StoreID,String StoreName,String RouteID,
                                                 String RouteName,String DistID,String DistName,String InvoiceForDate,String flgSubmit,String IMEIno,String OrderID)
     {
 
@@ -4406,7 +4406,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN111 , null, initialValues);
     }
 
-    public long inserttblInvoiceButtonProductMstr(String ProductId,String ProductName)
+    public static long inserttblInvoiceButtonProductMstr(String ProductId,String ProductName)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -4418,7 +4418,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN112 , null, initialValues);
     }
 
-    public long inserttblInvoiceButtonStoreProductwiseOrder(String StoreID,String ProductID,String OrderQty,
+    public static long inserttblInvoiceButtonStoreProductwiseOrder(String StoreID,String ProductID,String OrderQty,
                                                             String ProductPrice,String InvoiceForDate,String OrderID,String CatID,int Freeqty,double TotLineDiscVal)
     {
 
@@ -4437,7 +4437,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN113 , null, initialValues);
     }
 
-    public int getOverAllSampleQty(String sID2Fetch) {
+    public static int getOverAllSampleQty(String sID2Fetch) {
 
         // id = getAllEntries();
 
@@ -4470,7 +4470,7 @@ public class PRJDatabase
 
     }
 
-    public int counttblCountRoute()
+    public static int counttblCountRoute()
     {
         Cursor cursorE2=null;
         int chkI = 0;
@@ -4499,7 +4499,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public long savetblAvailbUpdatedVersion(String VersionID, String VersionSerialNo,String VersionDownloadStatus,String ServerDate)
+    public static long savetblAvailbUpdatedVersion(String VersionID, String VersionSerialNo,String VersionDownloadStatus,String ServerDate)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -4511,8 +4511,8 @@ public class PRJDatabase
         return db.insert(TABLE_tblAvailableVersionMstr_Define, null, initialValues);
     }
 
-    public String FetchInvoiceButtonSstat1(String StoreID,String OrderID)
-    //public String[] FetchInvoiceButtonStoreStatus()
+    public static String FetchInvoiceButtonSstat1(String StoreID,String OrderID)
+    //public static String[] FetchInvoiceButtonStoreStatus()
     {
 
         int ScodecolumnIndex = 0;
@@ -4540,7 +4540,7 @@ public class PRJDatabase
             cursor.close();
         }
     }
-	/*public String getVersionNumber() {
+	/*public static String getVersionNumber() {
 		Cursor cursor = SQLiteDatabase.openOrCreateDatabase(":memory:", null).rawQuery("select sqlite_version() AS sqlite_version", null);
 		String sqliteVersion = "";
 		while(cursor.moveToNext()){
@@ -4552,8 +4552,8 @@ public class PRJDatabase
 
     //imei,startTS,rID,getVersionNumber,DayEndFlg,ChangeRouteFlg
 
-    public String FetchInvoiceButtonSstat(String StoreID,String OrderID)
-    //public String[] FetchInvoiceButtonStoreStatus()
+    public static String FetchInvoiceButtonSstat(String StoreID,String OrderID)
+    //public static String[] FetchInvoiceButtonStoreStatus()
     {
 
         int ScodecolumnIndex = 0;
@@ -4582,12 +4582,12 @@ public class PRJDatabase
         }
     }
 
-    public String[] fngetDistictOrderIdsForSubmission()
-    //public String[] FetchInvoiceButtonStoreStatus()
+    public static String[] fngetDistictOrderIdsForSubmission()
+    //public static String[] FetchInvoiceButtonStoreStatus()
     {
 
         int ScodecolumnIndex = 0;
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT DISTINCT OrderID FROM tblInvoiceButtonTransac  order by OrderID Desc", null);
         //Cursor cursor = db.rawQuery("SELECT Sstat FROM tblInvoiceButtonStoreMstr", null);
         // // System.out.println("Arjun cursor.getCount() :"+cursor.getCount());
@@ -4609,11 +4609,11 @@ public class PRJDatabase
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public void UpdateTblDayStartEndDetails(int rID, int btnClickFlg) {//btnClickFlg=1(clicked on Day End) , btnClickFlg=1(clicked on ChangeRoute)
+    public static void UpdateTblDayStartEndDetails(int rID, int btnClickFlg) {//btnClickFlg=1(clicked on Day End) , btnClickFlg=1(clicked on ChangeRoute)
 
         final ContentValues values = new ContentValues();
         long syncTIMESTAMP = System.currentTimeMillis();
@@ -4640,7 +4640,7 @@ public class PRJDatabase
         Log.w(TAG, "UpdatetblDayStartEndDetails Updated..");
     }
 
-    public long insertTblDayStartEndDetails(String imei,String startTS, String rID, int DayEndFlg, int ChangeRouteFlg, String ForDate, String strAppVersionID )//,int AppVersionID//, String getVersionNumber
+    public static long insertTblDayStartEndDetails(String imei,String startTS, String rID, int DayEndFlg, int ChangeRouteFlg, String ForDate, String strAppVersionID )//,int AppVersionID//, String getVersionNumber
     {
         db.execSQL("DELETE FROM tblDayStartEndDetails");
         ContentValues initialValues = new ContentValues();
@@ -4668,7 +4668,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN12, null, initialValues);
     }
 
-    public int FetchVersionDownloadStatus()
+    public static int FetchVersionDownloadStatus()
     {
         int SnamecolumnIndex1 = 0;
         int CatId=0;
@@ -4695,7 +4695,7 @@ public class PRJDatabase
 
     }
 
-    public long inserttblFirstOrderDetailsOnLastVisitDetailsActivity(String StoreID,String Date,String SKUID,int OrderQty,String FreeQty,
+    public static long inserttblFirstOrderDetailsOnLastVisitDetailsActivity(String StoreID,String Date,String SKUID,int OrderQty,String FreeQty,
                                                                      int Stock,String SKUName)
     {
 
@@ -4715,7 +4715,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN101 , null, initialValues);
     }
 
-    public long inserttblSecondVisitDetailsOnLastVisitDetailsActivity(String StoreID,String Date,String SKUID,int OrderQty,String SKUName)
+    public static long inserttblSecondVisitDetailsOnLastVisitDetailsActivity(String StoreID,String Date,String SKUID,int OrderQty,String SKUName)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -4731,7 +4731,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN102 , null, initialValues);
     }
 
-    public long inserttblLODOnLastSalesSummary(String StoreID,String Date,String SKUID,int Qty,String SKUName)
+    public static long inserttblLODOnLastSalesSummary(String StoreID,String Date,String SKUID,int Qty,String SKUName)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -4747,7 +4747,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN103 , null, initialValues);
     }
 
-    public String fnGettblFirstOrderDetailsOnLastVisitDetailsActivity(String StoreID) {
+    public static String fnGettblFirstOrderDetailsOnLastVisitDetailsActivity(String StoreID) {
         int ScodecolumnIndex = 0;
 
         Cursor cursorE2 = db.rawQuery("SELECT Date FROM tblFirstOrderDetailsOnLastVisitDetailsActivity WHERE StoreID ='"+ StoreID + "' Limit 1", null);
@@ -4770,7 +4770,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchAllDataFromtblFirstOrderDetailsOnLastVisitDetailsActivity(String strStoreID)
+    public static String[] fetchAllDataFromtblFirstOrderDetailsOnLastVisitDetailsActivity(String strStoreID)
     {
 		/*StoreID text null, " +
 		"Date string null,SKUID text  null,OrderQty integer null,FreeQty integer null,Stock integer null,SKUName text null);";
@@ -4814,7 +4814,7 @@ public class PRJDatabase
 
     }
 
-    public int counttblSecondVisitDetailsOnLastVisitDetailsActivity(String StoreID)
+    public static int counttblSecondVisitDetailsOnLastVisitDetailsActivity(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblSecondVisitDetailsOnLastVisitDetailsActivity WHERE StoreID ='"
                 + StoreID + "'", null);
@@ -4835,7 +4835,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String fnGettblSecondVisitDetailsOnLastVisitDetailsActivity(String StoreID) {
+    public static String fnGettblSecondVisitDetailsOnLastVisitDetailsActivity(String StoreID) {
 
         Cursor cursorE2 = db.rawQuery("SELECT Date FROM tblSecondVisitDetailsOnLastVisitDetailsActivity WHERE StoreID ='"
                 + StoreID + "'", null);
@@ -4858,7 +4858,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fetchtblSecondVisitDetailsOnLastVisitDetailsActivity(String sID2Fetch) {
+    public static String[] fetchtblSecondVisitDetailsOnLastVisitDetailsActivity(String sID2Fetch) {
 
         // id = getAllEntries();
 
@@ -4897,37 +4897,37 @@ public class PRJDatabase
 
     }
 
-    public void truncateSKUDataTable()
+    public static void truncateSKUDataTable()
     {
         db.execSQL("DELETE FROM tblSKUWiseDaySummary");
 
     }
 
-    public void truncateStoreWiseDataTable()
+    public static void truncateStoreWiseDataTable()
     {
         db.execSQL("DELETE FROM tblStoreWiseDaySummary");
 
     }
 
-    public void truncateStoreAndSKUWiseDataTable()
+    public static void truncateStoreAndSKUWiseDataTable()
     {
         db.execSQL("DELETE FROM tblStoreSKUWiseDaySummary");
 
     }
 
-    public void truncateAllSummaryDataTable()
+    public static void truncateAllSummaryDataTable()
     {
         db.execSQL("DELETE FROM tblAllSummary");
 
     }
 
-    public void reTruncateRouteTbl()
+    public static void reTruncateRouteTbl()
     {
         db.execSQL("DELETE FROM tblRouteMstr");
         //db.execSQL("DELETE FROM tblAvailableVersionMstr");
     }
 
-    public void reCreateDB()
+    public static void reCreateDB()
     {
         db.execSQL("DELETE FROM  tblStoreCheckInPic");
 
@@ -5039,7 +5039,7 @@ public class PRJDatabase
         Log.w(TAG, "Table re-creation completed..");
     }
 
-    public void refreshDataFromDB()
+    public static void refreshDataFromDB()
     {
         //db.execSQL("DELETE FROM tblProductList");
         //db.execSQL("DELETE FROM tblPDAProductReturnMstr");
@@ -5056,24 +5056,24 @@ public class PRJDatabase
     }
 
     // ---opens the database---
-	/*public PRJDatabase open() throws SQLException {
+	/*public static PRJDatabase open() throws SQLException {
 		db = DBHelper.getWritableDatabase();
 		return this;
 	}
 */
     // ---closes the database---
-	/*public void close() {
+	/*public static void close() {
 		DBHelper.close();
 	}*/
 
-    public void Delete_tblProductList_for_refreshData()
+    public static void Delete_tblProductList_for_refreshData()
     {
         db.execSQL("DELETE FROM tblProductList");
         db.execSQL("DELETE FROM tblProductSegementMap");
         db.execSQL("DELETE FROM tblPriceApplyType");
     }
 
-    public void Delete_tblLastOutstanding_for_refreshData()
+    public static void Delete_tblLastOutstanding_for_refreshData()
     {
         db.execSQL("DELETE FROM tblLastOutstanding");
         db.execSQL("DELETE FROM tblInvoiceLastVisitDetails");
@@ -5081,30 +5081,30 @@ public class PRJDatabase
     }
 
     //
-    public void Delete_tblCategory_for_refreshData()
+    public static void Delete_tblCategory_for_refreshData()
     {
         db.execSQL("DELETE FROM tblCatagoryMstr");
     }
 
-    public void Delete_tblStore_for_refreshData()
+    public static void Delete_tblStore_for_refreshData()
     {
         db.execSQL("DELETE FROM tblStoreList");
     }
 
-    public void Delete_tblStore_for_refreshDataButNotNewStore()
+    public static void Delete_tblStore_for_refreshDataButNotNewStore()
     {
         db.execSQL("DELETE FROM tblStoreList where ISNewStore<>1");
         db.execSQL("DELETE FROM tblNewAddedStoreLocationDetails where Sstat=4");
     }
 
-    public void Delete_tblMaterialAndStoreIDMap()
+    public static void Delete_tblMaterialAndStoreIDMap()
     {
         db.execSQL("DELETE FROM tblPOSMaterialMstr");
 
         db.execSQL("DELETE FROM tblStoreIDAndMaterialIDMap");
     }
 
-    public void Delete_tblStoreProductMap_for_refreshData()
+    public static void Delete_tblStoreProductMap_for_refreshData()
     {
         db.execSQL("DELETE FROM tblSchemeStoreMapping");
 
@@ -5125,55 +5125,55 @@ public class PRJDatabase
         db.execSQL("DELETE FROM tblProductRelatedScheme");
     }
 
-    public void Delete_tblSchemeList_for_refreshData()
+    public static void Delete_tblSchemeList_for_refreshData()
     {
         db.execSQL("DELETE FROM tblSchemeList");
     }
 
-    public void Delete_tblSchemeDetails_for_refreshData()
+    public static void Delete_tblSchemeDetails_for_refreshData()
     {
         db.execSQL("DELETE FROM tblLastTransactionDetails");
     }
 
-    public void Delete_tblschemeProductMap_for_refreshData()
+    public static void Delete_tblschemeProductMap_for_refreshData()
     {
         db.execSQL("DELETE FROM tblschemeProductMap");
     }
 
-    public void Delete_tblspForPDASchemeApplicableList_for_refreshData()
+    public static void Delete_tblspForPDASchemeApplicableList_for_refreshData()
     {
         db.execSQL("DELETE FROM tblspForPDASchemeApplicableList");
     }
 
-    public void Delete_tblLastTransactionDetails_for_refreshData()
+    public static void Delete_tblLastTransactionDetails_for_refreshData()
     {
         db.execSQL("DELETE FROM tblLastTransactionDetails");
     }
 
-    public void Delete_tblPDALastTranDateForSecondPage_for_refreshData()
+    public static void Delete_tblPDALastTranDateForSecondPage_for_refreshData()
     {
 
         db.execSQL("DELETE FROM tblPDALastTranDateForSecondPage");
     }
 
-    public void Delete_tblSyncSummuryForProductDetails_for_refreshData()
+    public static void Delete_tblSyncSummuryForProductDetails_for_refreshData()
     {
         db.execSQL("DELETE FROM tblSyncSummuryForProductDetails");
     }
 
-    public boolean doesDatabaseExist(ContextWrapper context, String dbName) {
+    public static boolean doesDatabaseExist(ContextWrapper context, String dbName) {
         File dbFile = context.getDatabasePath(dbName);
 
         return dbFile.exists();
     }
 
-    public void dropAvailbUpdatedVersionTBL()
+    public static void dropAvailbUpdatedVersionTBL()
     {
         db.execSQL("DROP TABLE IF EXISTS tblAvailableVersionMstr");
 
     }
 
-    public void createAvailbUpdatedVersionTBL()
+    public static void createAvailbUpdatedVersionTBL()
     {
         try
         {
@@ -5186,7 +5186,7 @@ public class PRJDatabase
 
     }
 
-    public long insertTblDaySummaryNew(int TargetCalls,int ActualCallOnRoute, int ActualCallOffRoute, int ProdCallOnRoute, int ProdCallOffRoute, Double TargetSalesForDay,Double TotalSalesForDay,int CallsRemaining,Double TargetSalesMTD,Double AchievedSalesMTD,int ProdStoresMTD,Double RunRate)
+    public static long insertTblDaySummaryNew(int TargetCalls,int ActualCallOnRoute, int ActualCallOffRoute, int ProdCallOnRoute, int ProdCallOffRoute, Double TargetSalesForDay,Double TotalSalesForDay,int CallsRemaining,Double TargetSalesMTD,Double AchievedSalesMTD,int ProdStoresMTD,Double RunRate)
     {
         ContentValues initialValues = new ContentValues();
         initialValues.put("TargetCalls",TargetCalls);
@@ -5204,7 +5204,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_SummaryDayTableSummaryNew, null, initialValues);
     }
 
-    public int getTargetCall()
+    public static int getTargetCall()
     {
         int LoncolumnIndex = 0;
         int TargetCall = 0;
@@ -5244,7 +5244,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnChkFlgTodayRoute(String CurrentRouteID)
+    public static int fnChkFlgTodayRoute(String CurrentRouteID)
     {
         int LoncolumnIndex = 0;
         int FchkFlgOnRoute = 0;
@@ -5272,7 +5272,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnGetActualCallOnRouteFromSummaryTable()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
+    public static int fnGetActualCallOnRouteFromSummaryTable()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
     {
 
         int LoncolumnIndex = 0;
@@ -5301,7 +5301,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnGetActualCallOffRouteFromSummaryTable()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
+    public static int fnGetActualCallOffRouteFromSummaryTable()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
     {
 
         int LoncolumnIndex = 0;
@@ -5330,7 +5330,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnGetProductiveCallOnRoute()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
+    public static int fnGetProductiveCallOnRoute()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
     {
 
         int LoncolumnIndex = 0;
@@ -5359,7 +5359,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnGetProductiveCallOffRoute()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
+    public static int fnGetProductiveCallOffRoute()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
     {
 
         int LoncolumnIndex = 0;
@@ -5388,7 +5388,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnGetActualCallOnOffRoute()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
+    public static int fnGetActualCallOnOffRoute()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
     {
 
         int LoncolumnIndex = 0;
@@ -5417,7 +5417,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnGetProductiveCallOnOffRoute()//If fnChkFlgTodayRoute=1 it will get added to Productive Call On Route Else get Added in Off Route
+    public static int fnGetProductiveCallOnOffRoute()//If fnChkFlgTodayRoute=1 it will get added to Productive Call On Route Else get Added in Off Route
     {
 
         int LoncolumnIndex = 0;
@@ -5447,7 +5447,7 @@ public class PRJDatabase
         }
     }
 
-    public double fnGetTargetSalesforDayRoute()
+    public static double fnGetTargetSalesforDayRoute()
     {
         int LoncolumnIndex = 0;
         Double TargetSalesForDay = 0.00;
@@ -5475,7 +5475,7 @@ public class PRJDatabase
         }
     }
 
-    public double fnGetTotalSalesforDay()
+    public static double fnGetTotalSalesforDay()
     {
 
         int LoncolumnIndex = 0;
@@ -5498,7 +5498,7 @@ public class PRJDatabase
 
     }
 
-    public double fnGetTotalSalesforDayRouteFromtblSummaryNew()
+    public static double fnGetTotalSalesforDayRouteFromtblSummaryNew()
     {
         int LoncolumnIndex = 0;
         Double TotalSalesForDay = 0.00;
@@ -5527,7 +5527,7 @@ public class PRJDatabase
         }
     }
 
-    public double fnGetTargetSalesMTDforDayRouteFromtblSummaryNew()
+    public static double fnGetTargetSalesMTDforDayRouteFromtblSummaryNew()
     {
         int LoncolumnIndex = 0;
         Double TotalSalesForDay = 0.00;
@@ -5555,7 +5555,7 @@ public class PRJDatabase
         }
     }
 
-    public double fnGetAchivedSalesMTDforDayRouteFromtblSummaryNew()
+    public static double fnGetAchivedSalesMTDforDayRouteFromtblSummaryNew()
     {
         int LoncolumnIndex = 0;
         Double TotalSalesForDay = 0.00;
@@ -5586,7 +5586,7 @@ public class PRJDatabase
         }
     }
 
-    public double fnGetOverAllAchivedSalesMTD()
+    public static double fnGetOverAllAchivedSalesMTD()
     {
 
         int LoncolumnIndex = 0;
@@ -5603,7 +5603,7 @@ public class PRJDatabase
 
     }
 
-    public int fnGetProdStoresMTD()
+    public static int fnGetProdStoresMTD()
     {
 
         int LoncolumnIndex = 0;
@@ -5632,7 +5632,7 @@ public class PRJDatabase
         }
     }
 
-    public double fnGetRunRate()
+    public static double fnGetRunRate()
     {
 
         int LoncolumnIndex = 0;
@@ -5661,11 +5661,11 @@ public class PRJDatabase
         }
     }
 
-    public HashMap<String,String> fetchHmapInvoiceOrderIDandStatus()
+    public static HashMap<String,String> fetchHmapInvoiceOrderIDandStatus()
     {
 
         HashMap<String, String> hmapOrderIDandClickStatus=new HashMap<String, String>();
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT OrderID,Sstat FROM tblInvoiceButtonStoreMstr", null);
         try
         {
@@ -5682,12 +5682,12 @@ public class PRJDatabase
             return hmapOrderIDandClickStatus;
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
     }
 
-    public String[] fnGetServerOrdersFlgWith1()
+    public static String[] fnGetServerOrdersFlgWith1()
     {
 
         int ScodecolumnIndex = 0;
@@ -5714,7 +5714,7 @@ public class PRJDatabase
         }
     }
 
-    public void fnDeletetblInvoiceButtonProductMstr()
+    public static void fnDeletetblInvoiceButtonProductMstr()
     {
         try
         {
@@ -5727,13 +5727,13 @@ public class PRJDatabase
 
     }
 
-    public void fnAllServerOrdersFlgWith0()
+    public static void fnAllServerOrdersFlgWith0()
     {
         try
         {
-            open();
+            //open();
             db.execSQL("Update tblInvoiceButtonStoreMstr Set ServerOrdersFlg=1 where ServerOrdersFlg=0");
-            close();
+           // close();
 
         }
         catch (Exception ex)
@@ -5743,7 +5743,7 @@ public class PRJDatabase
 
     }
 
-    public void fnDeleteUnWantedSubmitedInvoiceOrders()
+    public static void fnDeleteUnWantedSubmitedInvoiceOrders()
     {
         try
         {
@@ -5766,7 +5766,7 @@ public class PRJDatabase
 
     }
 
-    public void fnDeletetblInvoiceSubmittedRecords(String OrderID)
+    public static void fnDeletetblInvoiceSubmittedRecords(String OrderID)
     {
         try
         {
@@ -5781,7 +5781,7 @@ public class PRJDatabase
 
     }
 
-    public void reTruncateInvoiceButtonTable()
+    public static void reTruncateInvoiceButtonTable()
     {
         db.execSQL("DELETE FROM tblInvoiceButtonStoreMstr");
         //db.execSQL("DELETE FROM tblInvoiceButtonProductMstr");
@@ -5789,7 +5789,7 @@ public class PRJDatabase
         db.execSQL("DELETE FROM tblInvoiceButtonTransac");
     }
 
-    public int counttblCatagoryMstr()
+    public static int counttblCatagoryMstr()
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblCatagoryMstr", null);
         int chkI = 0;
@@ -5809,7 +5809,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    /*	public int fnChkStoreIdExistInDaySumaryTbl(String StrID)//On Store Selection VisitStart Activity
+    /*	public static int fnChkStoreIdExistInDaySumaryTbl(String StrID)//On Store Selection VisitStart Activity
 	{
 		int flgChkStatus=0;
 
@@ -5838,7 +5838,7 @@ public class PRJDatabase
 		}
 	}
 
-	public long fnInsertStoreIfNotExistIntblDaySummary(String StrID)//On Store Selection VisitStart Activity/Add Store Activity
+	public static long fnInsertStoreIfNotExistIntblDaySummary(String StrID)//On Store Selection VisitStart Activity/Add Store Activity
 	{
 		//This function will get called if fnChkStoreIdExistInDaySumaryTbl returns 0.
 
@@ -5859,7 +5859,7 @@ public class PRJDatabase
 
 	}
 
-	public void updatePDAStoreFlgActualVisitIntblDaySummary(String StrID) //On Store Selection VisitStart Activity
+	public static void updatePDAStoreFlgActualVisitIntblDaySummary(String StrID) //On Store Selection VisitStart Activity
 	{
 		final ContentValues values = new ContentValues();
 		values.put("flgActualVisited", 1);
@@ -5870,7 +5870,7 @@ public class PRJDatabase
 		Log.w(TAG, "UpdateStoreStartVisit Updated..");
 	}
 
-	public void updatePDAStoreFlgProductiveDayVisitIntblDaySummary(String StrID,int flgProductiveDay,int flgProductiveMTD)
+	public static void updatePDAStoreFlgProductiveDayVisitIntblDaySummary(String StrID,int flgProductiveDay,int flgProductiveMTD)
 	{
 		final ContentValues values = new ContentValues();
 		values.put("flgProductiveDay", flgProductiveDay);
@@ -5881,7 +5881,7 @@ public class PRJDatabase
 
 		Log.w(TAG, "UpdateStoreStartVisit Updated..");
 	}
-	public void updatePDAStoreProductiveDaySalesIntblDaySummary(String StrID,Double DaySales)
+	public static void updatePDAStoreProductiveDaySalesIntblDaySummary(String StrID,Double DaySales)
 	{
 		final ContentValues values = new ContentValues();
 		values.put("DaySales", DaySales);
@@ -5892,7 +5892,7 @@ public class PRJDatabase
 
 		Log.w(TAG, "UpdateStoreStartVisit Updated..");
 	}
-	public void updatePDAStoreProductiveMTDSalesIntblDaySummary(String StrID,Double MTDSales)
+	public static void updatePDAStoreProductiveMTDSalesIntblDaySummary(String StrID,Double MTDSales)
 	{
 		final ContentValues values = new ContentValues();
 		values.put("MTDSales", MTDSales);
@@ -5903,7 +5903,7 @@ public class PRJDatabase
 
 		Log.w(TAG, "UpdateStoreStartVisit Updated..");
 	}
-	public void fnChkStoreInvoiceUpdateProductiveFlgsAndSales(String StrID)//On Order Activity --Submit, Save, Save Exit
+	public static void fnChkStoreInvoiceUpdateProductiveFlgsAndSales(String StrID)//On Order Activity --Submit, Save, Save Exit
 	{//TotInv=is the total invoice on activity create method will be one time when ever the Order Activity Starts
 		//This should be done before deleting transaction table
 		String flgChkStoreInvoiceStatusAmount="";
@@ -5925,7 +5925,7 @@ public class PRJDatabase
 		dblstoreMTDSales=Double.parseDouble(decimalFormat.format(dblstoreMTDSales));
 		updatePDAStoreProductiveMTDSalesIntblDaySummary(StrID,dblstoreMTDSales);
 	}
-	public void fnUpdatetblSumrySalesColumn(String StrID)
+	public static void fnUpdatetblSumrySalesColumn(String StrID)
 	{//This will called after the Saving insertion of records in Transaction table
 		String StoreNewTotInvoice="";
 		StoreNewTotInvoice=fnGetStoreBasiscTotalSalesForSummarytbl(StrID);
@@ -5943,7 +5943,7 @@ public class PRJDatabase
 
 
 	}
-	public String fnGetStoreBasiscMTDSalesInSummarytbl(String StrID)
+	public static String fnGetStoreBasiscMTDSalesInSummarytbl(String StrID)
 	{
 
 		int LoncolumnIndex = 0;
@@ -5988,7 +5988,7 @@ public class PRJDatabase
 
 	}
 
-	public String fnGetStoreBasiscTotalSalesForSummarytbl(String StrID)
+	public static String fnGetStoreBasiscTotalSalesForSummarytbl(String StrID)
 	{
 		int LoncolumnIndex = 0;
 		String TotSalesValueStoreBasis = "0^0.00";
@@ -6032,7 +6032,7 @@ public class PRJDatabase
 	}
 
 
-	public String fnGetSummaryTargetCalls()//TargetCalls For Summary Activity
+	public static String fnGetSummaryTargetCalls()//TargetCalls For Summary Activity
 	{
 		Cursor cursorE2 = db.rawQuery("SELECT Count(StoreID) FROM tblDaySummary where flgTarget=1", null);
 		String TotalTargetCalls = "0";
@@ -6053,7 +6053,7 @@ public class PRJDatabase
 			cursorE2.close();
 		}
 	}
-	public String fnGetActualCallsOnRoute()//ActualCallsOnRoute For Summary Activity
+	public static String fnGetActualCallsOnRoute()//ActualCallsOnRoute For Summary Activity
 	{
 		Cursor cursorE2 = db.rawQuery("SELECT Count(StoreID) FROM tblDaySummary where flgTarget=1 and flgActualVisited=1", null);
 		String TotalTargetCalls = "0";
@@ -6075,7 +6075,7 @@ public class PRJDatabase
 		}
 	}
 
-	public String fnGetActualCallsOffRoute()//ActualCallsOffRoute For Summary Activity
+	public static String fnGetActualCallsOffRoute()//ActualCallsOffRoute For Summary Activity
 	{
 		Cursor cursorE2 = db.rawQuery("SELECT Count(StoreID) FROM tblDaySummary where flgTarget=0 and flgActualVisited=1", null);
 		String TotalTargetCalls = "0";
@@ -6096,7 +6096,7 @@ public class PRJDatabase
 			cursorE2.close();
 		}
 	}
-	public String fnGetProductiveCallsOnRoute()//ProductiveCallsOnRoute For Summary Activity
+	public static String fnGetProductiveCallsOnRoute()//ProductiveCallsOnRoute For Summary Activity
 	{
 		Cursor cursorE2 = db.rawQuery("SELECT Count(StoreID) FROM tblDaySummary where flgTarget=1 and flgActualVisited=1 and flgProductiveDay=1", null);
 		String TotalTargetCalls = "0";
@@ -6117,7 +6117,7 @@ public class PRJDatabase
 			cursorE2.close();
 		}
 	}
-	public String fnGetProductiveCallsOffRoute()//ProductiveCallsOffRoute For Summary Activity
+	public static String fnGetProductiveCallsOffRoute()//ProductiveCallsOffRoute For Summary Activity
 	{
 		Cursor cursorE2 = db.rawQuery("SELECT Count(StoreID) FROM tblDaySummary where flgTarget=0 and flgActualVisited=1 and flgProductiveDay=1", null);
 		String TotalTargetCalls = "0";
@@ -6138,7 +6138,7 @@ public class PRJDatabase
 			cursorE2.close();
 		}
 	}
-	public String fnGetTotalSalesValueForDay()//TotalSalesValueForDay For Summary Activity
+	public static String fnGetTotalSalesValueForDay()//TotalSalesValueForDay For Summary Activity
 	{
 		Cursor cursorE2 = db.rawQuery("SELECT Sum(DaySales) FROM tblDaySummary", null);
 		String TotalTargetCalls = "0";
@@ -6160,7 +6160,7 @@ public class PRJDatabase
 		}
 	}
 
-	public String fnGetAchievedSalesValueTillDate()//AchievedSalesValueTillDate For Summary Activity
+	public static String fnGetAchievedSalesValueTillDate()//AchievedSalesValueTillDate For Summary Activity
 	{
 		Cursor cursorE2 = db.rawQuery("SELECT Sum(MTDSales) FROM tblDaySummary", null);
 		String TotalTargetCalls = "0";
@@ -6182,7 +6182,7 @@ public class PRJDatabase
 		}
 	}
 	*/
-    public int fnGetAutoIdStoreOnReturnPAge(String StoreID) {
+    public static int fnGetAutoIdStoreOnReturnPAge(String StoreID) {
         // int chkValue=fnChkStoreIdExistsInReturnMstr(StoreID);
         // ////// System.out.println("chkValue :" + chkValue);
         // int inAutoIdForInsert=1;
@@ -6210,7 +6210,7 @@ public class PRJDatabase
         return autoid;
     }
 
-    public int fnGetMaxAutoIncrementForReturnMstr() {
+    public static int fnGetMaxAutoIncrementForReturnMstr() {
 
         int LoncolumnIndex = 0;
         int strAutoReturnIdMstr = 1;
@@ -6247,7 +6247,7 @@ public class PRJDatabase
 
     }
 
-    public int fnChkAutoIdMstrForReturnDetails(int ReturnIdMstr,String pdaOrderID,String TmpInvoiceCodePDA) {
+    public static int fnChkAutoIdMstrForReturnDetails(int ReturnIdMstr,String pdaOrderID,String TmpInvoiceCodePDA) {
 
         int LoncolumnIndex = 0;
         int strReturnIdDetails = 0;
@@ -6273,7 +6273,7 @@ public class PRJDatabase
 
     }
 
-    /*public int fnGetAutoIdStoreOnReturnPAgeMain(String StoreID,
+    /*public static int fnGetAutoIdStoreOnReturnPAgeMain(String StoreID,
 			String Returndate, Double previousCreditAmt) {
 		int chkValue = fnChkStoreIdExistsInReturnMstr(StoreID);
 		////// System.out.println("chkValue :" + chkValue);
@@ -6288,14 +6288,14 @@ public class PRJDatabase
 		////// System.out.println("autoid :" + autoid);
 		return autoid;
 	}*/
-    public void deletetblPDAProductReturnDetailsOnReturnIdMstr(int autoid) {
+    public static void deletetblPDAProductReturnDetailsOnReturnIdMstr(int autoid) {
 
         db.execSQL("DELETE FROM tblPDAProductReturnDetails WHERE ReturnIdMstr ="
                 + autoid);
 
     }
 
-    public String[] fnGetRecordsReturnDetails(int ReturnIdMstr) {
+    public static String[] fnGetRecordsReturnDetails(int ReturnIdMstr) {
 
         /*
          * Cursor cursorALL = db.rawQuery("SELECT * FROM tblStoreList", null);
@@ -6347,12 +6347,12 @@ public class PRJDatabase
 
     }
 
-    public int fnGetAutoIdStoreOnReturnDeatils() {
+    public static int fnGetAutoIdStoreOnReturnDeatils() {
         int inReturnDetailsAutoIdForInsert = fnGetMaxAutoIncrementForReturnDetails();
         return inReturnDetailsAutoIdForInsert;
     }
 
-    public int fnGetMaxAutoIncrementForReturnDetails()
+    public static int fnGetMaxAutoIncrementForReturnDetails()
 
     {
 
@@ -6390,7 +6390,7 @@ public class PRJDatabase
 
     }
 
-    public long fninsertPDAProductReturnDetails(int AutoReturnIdMstr,
+    public static long fninsertPDAProductReturnDetails(int AutoReturnIdMstr,
                                                 int AutoReturnIdDetails, String strProductId,
                                                 String strProdReturnQty, Double ProdRate, Double ProdReturnValue,
                                                 int proSingleAdjQty, Double proSingleAdjAmt)
@@ -6440,7 +6440,7 @@ public class PRJDatabase
     //ProdReturnReasonDescr text null, ProdLastOrderDate text null, ProdLastOrderQyt text null, Sstat integer null,
     //AdjustReturnQty integer null,AdjustReturnValue real null);";
 
-    public int fnGetAutoIDReturnMstr(String ReturnStoreId) {
+    public static int fnGetAutoIDReturnMstr(String ReturnStoreId) {
 
         int LoncolumnIndex = 0;
         int strReturnIdMstr = 0;
@@ -6467,7 +6467,7 @@ public class PRJDatabase
 
     }
 
-    public void updatePDAProductReturnMstr(int AutoReturnIdMstr,
+    public static void updatePDAProductReturnMstr(int AutoReturnIdMstr,
                                            String ReturnDate, String Comment, int TotalReturnQty,
                                            Double TotalReturnValue, int TotalAdjustQty,
                                            Double TotalAdujustValue, Double FinalBalanceAmount,
@@ -6495,7 +6495,7 @@ public class PRJDatabase
     //TotalReturnQty int null, TotalReturnValue real null, Sstat integer null,TotalAdjustQty integer null,
     //TotalAdjustValue real null,FinalBalanceAmount real null,LastCreditAmount real null);";
 
-    public int fnGetStockAgainstProduct(String StoreID, String Pid) {
+    public static int fnGetStockAgainstProduct(String StoreID, String Pid) {
 
         int ScodecolumnIndex = 0;
 
@@ -6521,7 +6521,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnChkStoreIdExistsInReturnMstr(String ReturnStoreId,String pdaOrderID,String TmpInvoiceCodePDA) {
+    public static int fnChkStoreIdExistsInReturnMstr(String ReturnStoreId,String pdaOrderID,String TmpInvoiceCodePDA) {
 
         int LoncolumnIndex = 0;
         int strReturnIdMstr = 0;
@@ -6547,7 +6547,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetRecordsReturnMaster(String strStoreID) {
+    public static String[] fnGetRecordsReturnMaster(String strStoreID) {
 
         /*
          * Cursor cursorALL = db.rawQuery("SELECT * FROM tblStoreList", null);
@@ -6589,7 +6589,7 @@ public class PRJDatabase
 
     }
 
-    /*public long insertPDAProductDistributionDetails(int CatId,int ProductID, String Stock, String StoreID)
+    /*public static long insertPDAProductDistributionDetails(int CatId,int ProductID, String Stock, String StoreID)
 	{
 		ContentValues initialValues = new ContentValues();
 
@@ -6610,7 +6610,7 @@ public class PRJDatabase
 		return db.insert(DATABASE_TABLE_MAIN7, null, initialValues);
 	}
 	*/
-    public int fnGetAutoIDReturnMstr(String DistribtutionStoreId, String DistributionProductId)
+    public static int fnGetAutoIDReturnMstr(String DistribtutionStoreId, String DistributionProductId)
     {
 
         int LoncolumnIndex = 0;
@@ -6643,7 +6643,7 @@ public class PRJDatabase
 
     //tblDistributionStoreProductWiseDetails (CatId integer not null,ProductID integer not null,StoreID text not null,
     //Stock text null,ProductMfgDate text null,Sstat integer not null);";
-	/* public int counttblDistributionStoreProductWiseDetails()
+	/* public static int counttblDistributionStoreProductWiseDetails()
 		{
 			int check=0;
 
@@ -6663,7 +6663,7 @@ public class PRJDatabase
 		}
 	*/
 
-    public String[] FetcReturnProductIdOverAllStock(String StoreID)
+    public static String[] FetcReturnProductIdOverAllStock(String StoreID)
     {
         int ScodecolumnIndex = 0;
         int ScodecolumnIndex1 = 1;
@@ -6690,7 +6690,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetcReturnProductIdOverAllStockDetails(int AutoDistributionIdMstr)
+    public static String[] FetcReturnProductIdOverAllStockDetails(int AutoDistributionIdMstr)
     {
         int ScodecolumnIndex = 0;
         int ScodecolumnIndex1 = 1;
@@ -6718,7 +6718,7 @@ public class PRJDatabase
         }
     }
 
-    public int counttblOutLetInfoOnQuadVolumeCategoryBasis()
+    public static int counttblOutLetInfoOnQuadVolumeCategoryBasis()
     {
         int check=0;
 
@@ -6738,7 +6738,7 @@ public class PRJDatabase
         }
     }
 
-    public long saveOutLetInfoOnQuadVolumeCategoryBasis(String OutID,String OutletName, String OwnerName,String ContactNo,
+    public static long saveOutLetInfoOnQuadVolumeCategoryBasis(String OutID,String OutletName, String OwnerName,String ContactNo,
                                                         String MarketAreaName,String Latitude,String Longitutde)
     {
 
@@ -6757,7 +6757,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN91, null, initialValues);
     }
 
-    public String[] fetchParticularStoreInfo(String OutID)
+    public static String[] fetchParticularStoreInfo(String OutID)
     {
 
         int LoncolumnIndex = 0;
@@ -6803,7 +6803,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] fetchStorelatLong()
+    public static String[] fetchStorelatLong()
     {
 
         int LoncolumnIndex = 0;
@@ -6850,21 +6850,21 @@ public class PRJDatabase
         }
     }
 
-    public void deleteAlertValueProduct(String storeId,String _schmAlrtId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteAlertValueProduct(String storeId,String _schmAlrtId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblAlrtVal where StoreId ='"+storeId+"' and schmAlrtId = '"+_schmAlrtId+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
         if(cur.getCount()>0)
         {
             db.delete(DATABASE_TABLE_Main214, "StoreID=? AND schmAlrtId=? AND TmpInvoiceCodePDA=? ",new String[] {storeId,_schmAlrtId,TmpInvoiceCodePDA});
         }
 
-        close();
+        //close();
     }
 
-    public void deleteProductOldSlab215(String storeId,String _schmId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteProductOldSlab215(String storeId,String _schmId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         //DATABASE_CREATE_TABLE_215 =tblProductMappedWithSchemeSlabApplied (StoreId,ProductID,schSlabId,schmIdMapped
 
         Cursor cur=db.rawQuery("Select ProductID from tblProductMappedWithSchemeSlabApplied where StoreId ='"+storeId+"'  and schmIdMapped ='"+_schmId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
@@ -6874,12 +6874,12 @@ public class PRJDatabase
             db.delete(DATABASE_TABLE_Main215, "StoreId=? AND schmIdMapped=? AND  TmpInvoiceCodePDA=?",new String[] {storeId,_schmId,TmpInvoiceCodePDA});
         }
 
-        close();
+       // close();
     }
 
-    public void deleteProductSchemeType3(String storeId,String _productId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteProductSchemeType3(String storeId,String _productId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         //DATABASE_CREATE_TABLE_215 =tblProductMappedWithSchemeSlabApplied (StoreId,ProductID,schSlabId,schmIdMapped
 
         Cursor cur=db.rawQuery("Select ProductID from tblProductMappedWithSchemeSlabApplied where StoreId ='"+storeId+"'  and ProductID='"+_productId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
@@ -6889,24 +6889,24 @@ public class PRJDatabase
             db.delete(DATABASE_TABLE_Main215, "StoreId=? AND ProductID=? AND  TmpInvoiceCodePDA=?",new String[] {storeId,_productId,TmpInvoiceCodePDA});
         }
 
-        close();
+       // close();
     }
 
-    public void deleteAllStoreAlertValueProduct(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteAllStoreAlertValueProduct(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblAlrtVal where StoreId ='"+storeId+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
         if(cur.getCount()>0)
         {
             db.delete(DATABASE_TABLE_Main214, "StoreID=?  AND TmpInvoiceCodePDA=?",new String[] {storeId,TmpInvoiceCodePDA});
         }
 
-        close();
+       // close();
     }
 
-    public void deleteProductBenifitSlabApplieddeleteProductBenifitSlabApplied(String storeId, String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteProductBenifitSlabApplieddeleteProductBenifitSlabApplied(String storeId, String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblProductMappedWithSchemeSlabApplied where StoreId ='"+storeId+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
         if(cur.getCount()>0)
         {
@@ -6915,16 +6915,16 @@ public class PRJDatabase
 
         }
 
-        close();
+        //close();
     }
 
-    public void deletetblOutLetInfoOnQuadVolumeCategoryBasis()
+    public static void deletetblOutLetInfoOnQuadVolumeCategoryBasis()
     {
         db.execSQL("DELETE FROM tblOutLetInfoOnQuadVolumeCategoryBasis ");
 
     }
 
-    public void dropRoutesTBL()
+    public static void dropRoutesTBL()
     {
         //db.execSQL("DROP TABLE IF EXISTS tblRouteMstr");
         db.execSQL("DELETE FROM tblRouteMstr");
@@ -6932,7 +6932,7 @@ public class PRJDatabase
 
     }
 
-    public void fnFinaldropRoutesTBL()
+    public static void fnFinaldropRoutesTBL()
     {
         db.execSQL("DROP TABLE IF EXISTS tblRouteMstr");
         //db.execSQL("DELETE FROM tblRouteMstr");
@@ -6940,7 +6940,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetRouteIdsForDDL()
+    public static String[] fnGetRouteIdsForDDL()
     {
 
         int LoncolumnIndex = 0;
@@ -6965,7 +6965,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetRouteInfoForDDL() {
+    public static String[] fnGetRouteInfoForDDL() {
 
         int LoncolumnIndex = 0;
         Cursor cursor2 = db.rawQuery("SELECT Descr FROM tblRouteMstr", null);
@@ -6991,7 +6991,7 @@ public class PRJDatabase
 
     }
 
-    public String[] FetchStorePDATargetQtyForSecondPage(String sID2Fetch) {
+    public static String[] FetchStorePDATargetQtyForSecondPage(String sID2Fetch) {
 
         // id = getAllEntries();
 
@@ -7032,9 +7032,9 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllSchSlabDescbasedOnSchemeSlabID(String SchemeSlabID)
+    public static String[] fnGetAllSchSlabDescbasedOnSchemeSlabID(String SchemeSlabID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT DISTINCT SchemeSlabDesc FROM tblSchemeSlabDetail WHERE SchemeSlabID ='"+ SchemeSlabID + "'", null);
         String AllSchemeSlabID[] = new String[cursorE2.getCount()];
 
@@ -7055,14 +7055,14 @@ public class PRJDatabase
             return AllSchemeSlabID;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String[] fnGetAllBenifitDescrbasedOnSchemeSlabID(String SchemeSlabID)
+    public static String[] fnGetAllBenifitDescrbasedOnSchemeSlabID(String SchemeSlabID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT DISTINCT BenifitDescr FROM tblSchemeSlabDetail WHERE SchemeSlabID ='"
                 + SchemeSlabID + "'", null);
         String AllSchemeSlabID[] = new String[cursorE2.getCount()];
@@ -7084,12 +7084,12 @@ public class PRJDatabase
             return AllSchemeSlabID;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String[] fnGetSchemeIdsAppliedOnStore(String strStoreID) {
+    public static String[] fnGetSchemeIdsAppliedOnStore(String strStoreID) {
         int ScodecolumnIndex = 0;
         Cursor cursor = db.rawQuery("SELECT SchemeID FROM tblSchemeStoreMapping Where StoreID='"+strStoreID+"'",null);
         try {
@@ -7109,7 +7109,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] PrevPDASchemeApplicableSecondPage(String strStoreID) {
+    public static String[] PrevPDASchemeApplicableSecondPage(String strStoreID) {
 
 
         String []strSchemeIds = fnGetSchemeIdsAppliedOnStore(strStoreID);
@@ -7142,7 +7142,7 @@ public class PRJDatabase
         return CompleteResult;
     }
 
-    String makePlaceholders(int len) {
+    public static String makePlaceholders(int len) {
         if (len < 1) {
             // It will lead to an invalid query anyway ..
             throw new RuntimeException("No placeholders");
@@ -7156,7 +7156,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] PrevPDASchemeApplicableSecondPageSpecialScheme(String strStoreID) {
+    public static String[] PrevPDASchemeApplicableSecondPageSpecialScheme(String strStoreID) {
 
         /*
          * Cursor cursorALL = db.rawQuery("SELECT * FROM tblStoreList", null);
@@ -7194,7 +7194,7 @@ public class PRJDatabase
 
     }
 
-    public String[] PrevPDALastTranDetForSecondPage(String strStoreID) {
+    public static String[] PrevPDALastTranDetForSecondPage(String strStoreID) {
 
         /*
          * Cursor cursorALL = db.rawQuery("SELECT * FROM tblStoreList", null);
@@ -7238,7 +7238,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetPDALastInvoiceDetlastDate(String strStoreID) {
+    public static String fnGetPDALastInvoiceDetlastDate(String strStoreID) {
 
         Cursor cursorE2 = db.rawQuery(
                 "SELECT LastTransDate FROM tblPDALastInvoiceDet WHERE StoreID ='"
@@ -7262,7 +7262,7 @@ public class PRJDatabase
 
     }
 
-    public long insertPDAProductReturnMstr(int AutoReturnIdMstr,
+    public static long insertPDAProductReturnMstr(int AutoReturnIdMstr,
                                            String StoreID, String ReturnDate, Double previousCreditAmt) {
         ContentValues initialValues = new ContentValues();
 
@@ -7288,7 +7288,7 @@ public class PRJDatabase
     //TotalReturnQty int null, TotalReturnValue real null, Sstat integer null,TotalAdjustQty integer null,
     //TotalAdjustValue real null,FinalBalanceAmount real null,LastCreditAmount real null);";
 
-    public int getExistingPicNos(String StoreID) {
+    public static int getExistingPicNos(String StoreID) {
 
         int ScodecolumnIndex = 0;
 
@@ -7311,7 +7311,7 @@ public class PRJDatabase
         }
     }
 
-    public Double fnGetDiscountValueOnRealSlabBasis(String strSchemeID, String SlabFrom) {
+    public static Double fnGetDiscountValueOnRealSlabBasis(String strSchemeID, String SlabFrom) {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
         Double strSchemeIDFreeProductId = 0.00;
@@ -7338,7 +7338,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnGetFreeQuantityOnRealSlabBasis(String strSchemeID, String SlabFrom) {
+    public static int fnGetFreeQuantityOnRealSlabBasis(String strSchemeID, String SlabFrom) {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
         int strSchemeIDFreeProductId = 0;
@@ -7365,7 +7365,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnGetFreeProdIDOnRealSlabBasis(String strSchemeID, String SlabFrom) {
+    public static String fnGetFreeProdIDOnRealSlabBasis(String strSchemeID, String SlabFrom) {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
         String strSchemeIDFreeProductId = "";
@@ -7392,7 +7392,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnGetMProdIDAccordingToSchemeID(String SchID)
+    public static String fnGetMProdIDAccordingToSchemeID(String SchID)
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -7420,7 +7420,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnGetMaxSlabofProductAccordingToOrder(
+    public static String fnGetMaxSlabofProductAccordingToOrder(
             String strSchemType, String strSchemeID, int strOrderValue) {
         int LoncolumnIndex = 0;
         //////// System.out.println("strFPIDSlb strMaxSlb :" + strMaxSlb);
@@ -7483,7 +7483,7 @@ public class PRJDatabase
         return strProductSabFreeOrDiscount;
     }
 
-    public String fnGetSchemeTypeonSchemeIDBasis(String strSchemeID)
+    public static String fnGetSchemeTypeonSchemeIDBasis(String strSchemeID)
     {
         int LoncolumnIndex = 0;
         //////// System.out.println("strFPIDSlb strMaxSlb :" + strMaxSlb);
@@ -7518,7 +7518,7 @@ public class PRJDatabase
     }
 
     // changes by sunil for Summary in Tab
-    public int fnCountDataIntblSyncSummuryForProductDetails()
+    public static int fnCountDataIntblSyncSummuryForProductDetails()
     {
 
 
@@ -7548,7 +7548,7 @@ public class PRJDatabase
 
     }
 
-    public int fnCountDataIntblStoreProdcutPurchaseDetails(int Sstat)
+    public static int fnCountDataIntblStoreProdcutPurchaseDetails(int Sstat)
     {
         Cursor cursorE2 = db.rawQuery("SELECT DISTINCT ProductShortName FROM tblTmpInvoiceDetails where Sstat='"+Sstat+"' and  (OrderQty<>0 OR SampleQuantity<>0 OR FreeQty<>0)", null);
 
@@ -7576,7 +7576,7 @@ public class PRJDatabase
 
     }
 
-    public int fnCountNumberOfSKUForBothServerAndPDATable()
+    public static int fnCountNumberOfSKUForBothServerAndPDATable()
     {
         int returnvalue=0;
 
@@ -7642,7 +7642,7 @@ public class PRJDatabase
 
     }
 
-    public HashMap<String,String> fnAllProductnameForShowingInTable()
+    public static HashMap<String,String> fnAllProductnameForShowingInTable()
     {
 
         HashMap<String, String> map = new HashMap<String, String>();
@@ -7755,7 +7755,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetTotalSales(int Sstat)
+    public static String fnGetTotalSales(int Sstat)
     {
         int LoncolumnIndex = 0;
         String TotSalesValue = "0.0";
@@ -7785,7 +7785,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnGetTotalDiscount(int Sstat)
+    public static String fnGetTotalDiscount(int Sstat)
     {
         int LoncolumnIndex = 0;
         String TotDiscountValue = "0.0";
@@ -7814,7 +7814,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnCalculateKGLitersForTabOne()
+    public static String fnCalculateKGLitersForTabOne()
     {
         int Sstat=4;
         int LoncolumnIndex = 0;
@@ -8072,7 +8072,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnarrUniqueProductsSaleSummry_NewWay(int Sstat)
+    public static String[] fnarrUniqueProductsSaleSummry_NewWay(int Sstat)
     {
 
         Cursor cursor2 = db.rawQuery("SELECT DISTINCT ProductShortName FROM tblTmpInvoiceDetails where Sstat='"+Sstat+"' and  (OrderQty<>0 OR SampleQuantity<>0 OR Stock<>0 OR FreeQty<>0) ", null);
@@ -8109,7 +8109,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] fnarrUniqueKGLiterAndDisplayUnitBasedProductName(String ProductShortName)
+    public static String[] fnarrUniqueKGLiterAndDisplayUnitBasedProductName(String ProductShortName)
     {
 
         Cursor cursor2 = db.rawQuery("SELECT  KGLiter, DisplayUnit FROM tblProductList where ProductShortName= '"+ProductShortName+"' ", null);
@@ -8139,7 +8139,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnCalculateKGLitersNotSync(int Sstat)
+    public static String fnCalculateKGLitersNotSync(int Sstat)
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -8396,7 +8396,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnCalculateProductsSaleSummryForSubmitAndNotSentToServer(int Sstat)
+    public static String[] fnCalculateProductsSaleSummryForSubmitAndNotSentToServer(int Sstat)
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -8611,7 +8611,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetFullSummryDetailsForSaleForTabTwoAndTabThree(int Sstat)
+    public static String fnGetFullSummryDetailsForSaleForTabTwoAndTabThree(int Sstat)
     {
 
         String FullSummryDetailsForSale;
@@ -8655,7 +8655,7 @@ public class PRJDatabase
         return FullSummryDetailsForSale;
     }
 
-    public String fnGetFullSummryDetailsForSaleForTabOne()
+    public static String fnGetFullSummryDetailsForSaleForTabOne()
     {
 
         String FullSummryDetailsForSale;
@@ -8698,7 +8698,7 @@ public class PRJDatabase
         return FullSummryDetailsForSale;
     }
 
-    public String[] fnCalculateProductsSaleSummryForTabOneNew()
+    public static String[] fnCalculateProductsSaleSummryForTabOneNew()
     {
         int Sstat=4;
         int LoncolumnIndex = 0;
@@ -8913,31 +8913,31 @@ public class PRJDatabase
 
     }
 
-    public void deleteAlrtProductWithSlab(String storeId,String _productID,String _schSlabId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteAlrtProductWithSlab(String storeId,String _productID,String _schSlabId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblAlrtVal where StoreId ='"+storeId+"' and ProductID = '"+_productID+"' and schSlabId = '"+_schSlabId+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
         if(cur.getCount()>0)
         {
             db.delete(DATABASE_TABLE_Main214, "StoreID=? AND ProductID=? AND schSlabId=? AND TmpInvoiceCodePDA=?",new String[] {storeId,_productID,_schSlabId,TmpInvoiceCodePDA});
         }
 
-        close();
+       // close();
     }
 
-    public void deleteAlertValueSlab(String storeId,String _schSlabId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteAlertValueSlab(String storeId,String _schSlabId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblAlrtVal where StoreId ='"+storeId+"'  and schSlabId = '"+_schSlabId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
         if(cur.getCount()>0)
         {
             db.delete(DATABASE_TABLE_Main214, "StoreID=? AND schSlabId=? AND  TmpInvoiceCodePDA=?",new String[] {storeId,_schSlabId,TmpInvoiceCodePDA});
         }
 
-        close();
+        //close();
     }
 
-    public String fnGetMinSlabofSchemeID(String strSchemeID) {
+    public static String fnGetMinSlabofSchemeID(String strSchemeID) {
         int LoncolumnIndex = 0;
         //////// System.out.println("strFPIDSlb strMaxSlb :" + strMaxSlb);
         String strProductSabFreeOrDiscount = "";
@@ -8970,12 +8970,12 @@ public class PRJDatabase
         return strProductSabFreeOrDiscount;
     }
 
-    public void reTruncateRouteMstrTbl()
+    public static void reTruncateRouteMstrTbl()
     {
         db.execSQL("DELETE FROM tblRouteMstr");
     }
 
-    public String[] fnGetProductIDIDOnSchemeIdBasisNew(String SchemeID) {
+    public static String[] fnGetProductIDIDOnSchemeIdBasisNew(String SchemeID) {
 
         Cursor cursor = db.rawQuery("SELECT ProductID  FROM tblschemeProductMap where SchemeID='" + SchemeID + "'", null);
 
@@ -9005,7 +9005,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllProductIDsAgainstSchemeIDsofClickedProductScheme(String AllSchmeIDs ) {
+    public static String[] fnGetAllProductIDsAgainstSchemeIDsofClickedProductScheme(String AllSchmeIDs ) {
 
         Cursor cursor = db.rawQuery("SELECT ProductId FROM tblschemeProductMap where SchemeID  IN ("+AllSchmeIDs+")", null); // where FreeProductID IN ("+AllFreeProductgainstSchemeID+")
         ////// System.out.println("New Logic SELECT ProductId FROM tblschemeProductMap where SchemeID  IN ("+AllSchmeIDs+")");
@@ -9035,7 +9035,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetAllSchemeIDsAgainstCommonFreeIDsofClickedProductScheme(String AllFreeProductgainstSchemeID ) {
+    public static String[] fnGetAllSchemeIDsAgainstCommonFreeIDsofClickedProductScheme(String AllFreeProductgainstSchemeID ) {
 
         Cursor cursor = db.rawQuery("SELECT DISTINCT SchemeID FROM tblSchemeDetails where FreeProductID IN ("+AllFreeProductgainstSchemeID+")", null); // where FreeProductID IN ("+AllFreeProductgainstSchemeID+")
 
@@ -9065,7 +9065,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetProdswithnewlogicNewNEw(String AllSchemeIds ) {
+    public static String fnGetProdswithnewlogicNewNEw(String AllSchemeIds ) {
 
         Cursor cursor = db.rawQuery("SELECT DISTINCT FreeProductID FROM tblSchemeDetails where SchemeID IN ("+AllSchemeIds+")", null);
 
@@ -9103,7 +9103,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetFreeProductIDetailswithnewlogicNew(String AllSchemeIds ) {
+    public static String fnGetFreeProductIDetailswithnewlogicNew(String AllSchemeIds ) {
 
         Cursor cursor = db.rawQuery("SELECT DISTINCT FreeProductID FROM tblSchemeDetails where SchemeID IN ("+AllSchemeIds+")", null);
 
@@ -9141,7 +9141,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetDistinctFreeProductIDetails(String AllSchemeIds ) {
+    public static String[] fnGetDistinctFreeProductIDetails(String AllSchemeIds ) {
 
         Cursor cursor = db.rawQuery("SELECT DISTINCT FreeProductID FROM tblSchemeDetails where SchemeID IN ("+AllSchemeIds+")", null);
 
@@ -9171,7 +9171,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetSchemeswithnewlogic(String AllFreeProductgainstSchemeID ) {
+    public static String fnGetSchemeswithnewlogic(String AllFreeProductgainstSchemeID ) {
 
         Cursor cursor = db.rawQuery("SELECT DISTINCT SchemeID FROM tblSchemeDetails where FreeProductID IN ("+AllFreeProductgainstSchemeID+")", null);
 
@@ -9209,7 +9209,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetFreeProductIDetailswithnewlogic(String SchemeID ) {
+    public static String fnGetFreeProductIDetailswithnewlogic(String SchemeID ) {
 
         Cursor cursor = db.rawQuery("SELECT DISTINCT FreeProductID FROM tblSchemeDetails where SchemeID='" + SchemeID + "'", null);
 
@@ -9247,7 +9247,7 @@ public class PRJDatabase
 
     }
 
-    public boolean countStockExists(String sID) {
+    public static boolean countStockExists(String sID) {
         // int entryCount;
         Cursor cursorE2 = db.rawQuery(
                 "SELECT SUM(Stock) FROM tblTransac WHERE StoreID ='" + sID
@@ -9271,7 +9271,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String[] FetchStoreTransacFreeSampleQty(String sID2Fetch) {
+    public static String[] FetchStoreTransacFreeSampleQty(String sID2Fetch) {
 
         // id = getAllEntries();
 
@@ -9307,7 +9307,7 @@ public class PRJDatabase
 
     }
 
-    public String[] FetchStoreInvoiceData(String sID2Fetch) {
+    public static String[] FetchStoreInvoiceData(String sID2Fetch) {
 
         // id = getAllEntries();
 
@@ -9403,7 +9403,7 @@ public class PRJDatabase
 
     }
 
-    public String[] FetchStoreTransacData(String sID2Fetch) {
+    public static String[] FetchStoreTransacData(String sID2Fetch) {
 
         // id = getAllEntries();
 
@@ -9460,7 +9460,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetSchemeIdOnStoreTypeBasis(String strStoreType) {
+    public static String fnGetSchemeIdOnStoreTypeBasis(String strStoreType) {
         int LoncolumnIndex = 0;
         String strSchemeID = "";
         Cursor cursor2 = db.rawQuery(
@@ -9493,7 +9493,7 @@ public class PRJDatabase
          */
     }
 
-    public String fnGetStoreTypeOnStoreIdBasis(String strStoreID) {
+    public static String fnGetStoreTypeOnStoreIdBasis(String strStoreID) {
 
         Cursor cursorE2 = db.rawQuery("SELECT StoreType FROM tblStoreList WHERE StoreID ='"+ strStoreID + "'", null);
         String StoreType = "";
@@ -9515,8 +9515,8 @@ public class PRJDatabase
 
     }
 
-    //public String[] FetchLODqty(String ssStoreID,String CatID)
-    public HashMap<String,String> FetchLODqty(String ssStoreID)
+    //public static String[] FetchLODqty(String ssStoreID,String CatID)
+    public static HashMap<String,String> FetchLODqty(String ssStoreID)
     {
 
         int ScodecolumnIndex = 0;
@@ -9526,7 +9526,7 @@ public class PRJDatabase
         HashMap<String, String> hmapCtgryPrdctDetail=new HashMap<String, String>();
 
 
-        open();
+        //open();
         //tblLODOnLastSalesSummary(StoreID text null,Date text null,SKUID text  null,Qty integer null,SKUName text null);";
 
 		/*Cursor cursor = db.rawQuery("SELECT LastTransDate, Quantity FROM tblLastTransactionDetails where StoreID= '"
@@ -9606,19 +9606,19 @@ public class PRJDatabase
             return hmapCtgryPrdctDetail;
         } finally {
             cursor.close();
-            close();
+            //close();
         }
 
     }
 
-    public String tViewDate(String PrevDate)
+    public static String tViewDate(String PrevDate)
     {
 
         //// System.out.println("PrevDate :"+PrevDate);
         StringTokenizer tokennewPdate=new StringTokenizer(PrevDate, "-");
         String md1e=tokennewPdate.nextToken().trim();
         String md2e=tokennewPdate.nextToken().trim();
-        if(md2e.toLowerCase().equals("Jan".toLowerCase()))
+       /* if(md2e.toLowerCase().equals("Jan".toLowerCase()))
         {
             md2e="01";
         }
@@ -9665,14 +9665,14 @@ public class PRJDatabase
         if(md2e.toLowerCase().equals("Dec".toLowerCase()))
         {
             md2e="12";
-        }
+        }*/
         String md3e=tokennewPdate.nextToken().trim();
         PrevDate=md1e +"-"+md2e+"-"+ md3e;
 
         return PrevDate;
     }
 
-    /*public String[] FetchRate() {
+    /*public static String[] FetchRate() {
 
 		// id = getAllEntries();
 
@@ -9697,7 +9697,7 @@ public class PRJDatabase
 			cursor.close();
 		}
 	}*/
-    public Double fnGetLastCreditAmountFromLastInvoiceTable(String strStoreID) {
+    public static Double fnGetLastCreditAmountFromLastInvoiceTable(String strStoreID) {
 
         int ScodecolumnIndex = 0;
         Double strLastBalanceAmt = 0.00;
@@ -9733,7 +9733,7 @@ public class PRJDatabase
         }
     }
 
-    public Double fnGetActualValueTotalReturnValue(String ReturnStoreId) {
+    public static Double fnGetActualValueTotalReturnValue(String ReturnStoreId) {
 
         int LoncolumnIndex = 0;
         Double strActualValueTotalReturnValue = 0.00;
@@ -9763,7 +9763,7 @@ public class PRJDatabase
 
     }
 
-    public Double fnGetActualValueAdjAmt(String ReturnStoreId) {
+    public static Double fnGetActualValueAdjAmt(String ReturnStoreId) {
 
         int LoncolumnIndex = 0;
         Double strActualValueTotalAdjAmt = 0.00;
@@ -9792,7 +9792,7 @@ public class PRJDatabase
 
     }
 
-    public int fnCkhTotalReturnValue(String ReturnStoreId) {
+    public static int fnCkhTotalReturnValue(String ReturnStoreId) {
 
         int LoncolumnIndex = 0;
         int strReturnIdMstr = 0;
@@ -9818,7 +9818,7 @@ public class PRJDatabase
 
     }
 
-    public Double fnGetAdjAmtProdReturns(String StoreID) {
+    public static Double fnGetAdjAmtProdReturns(String StoreID) {
         Double TotalAdjAmt = 0.00;
         int chkValue = fnCkhTotalReturnValue(StoreID);
         if (chkValue == 1) {
@@ -9829,7 +9829,7 @@ public class PRJDatabase
         return TotalAdjAmt;
     }
 
-    public Double fnGetTotalReturnValueOnOrderPage(String StoreID) {
+    public static Double fnGetTotalReturnValueOnOrderPage(String StoreID) {
         Double TotalReturnValue = 0.00;
         int chkValue = fnCkhTotalReturnValue(StoreID);
         if (chkValue == 1) {
@@ -9840,7 +9840,7 @@ public class PRJDatabase
         return TotalReturnValue;
     }
 
-    public int fnCheckflgToShowStrachRowOrNot()
+    public static int fnCheckflgToShowStrachRowOrNot()
     {
 
 
@@ -9872,7 +9872,7 @@ public class PRJDatabase
 
     }
 
-    public int checkStoreIdForNewStore(String ssStoreID){
+    public static int checkStoreIdForNewStore(String ssStoreID){
         int ScodecolumnIndex = 0;
 
         Cursor cursor = db.rawQuery(
@@ -9896,7 +9896,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetPDALastInvoiceDetDueAmt(String strStoreID) {
+    public static String fnGetPDALastInvoiceDetDueAmt(String strStoreID) {
 
         Cursor cursorE2 = db.rawQuery(
                 "SELECT BalanceAmount FROM tblPDALastInvoiceDet WHERE StoreID ='"
@@ -9925,7 +9925,7 @@ public class PRJDatabase
 
     }
 
-    public int fnGetStrachIDMinSlabQtyForCalculation(int strSchemeID)
+    public static int fnGetStrachIDMinSlabQtyForCalculation(int strSchemeID)
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -9964,7 +9964,7 @@ public class PRJDatabase
         return strProductSabCardStrachIDQty;
     }
 
-	/*public Double[] FetchProdTaxAmt() {
+	/*public static Double[] FetchProdTaxAmt() {
 
 		// id = getAllEntries();
 
@@ -9988,7 +9988,7 @@ public class PRJDatabase
 		}
 	}*/
 
-    public String fnGetStrachIDSlabQtyForCalculation(int Slab, int strSchemeID)
+    public static String fnGetStrachIDSlabQtyForCalculation(int Slab, int strSchemeID)
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -10026,7 +10026,7 @@ public class PRJDatabase
         return strProductSabCardStrachIDQty;
     }
 
-    public int fnGetStrachIDMaxSlabQtyForCalculation(int strSchemeID, int strOrderValue)
+    public static int fnGetStrachIDMaxSlabQtyForCalculation(int strSchemeID, int strOrderValue)
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -10065,7 +10065,7 @@ public class PRJDatabase
         return strProductSabCardStrachIDQty;
     }
 
-    public String[] fnGetOtherProductIdForStrachCoupons(int strSchemID) {
+    public static String[] fnGetOtherProductIdForStrachCoupons(int strSchemID) {
 
 
         int ScodecolumnIndex = 0;
@@ -10090,7 +10090,7 @@ public class PRJDatabase
         }
     }
 
-    public int fnCheckIsStrachCardApplicableonSlabOrValue(int SchemeID)
+    public static int fnCheckIsStrachCardApplicableonSlabOrValue(int SchemeID)
     {
 
         int LoncolumnIndex = 0;
@@ -10117,7 +10117,7 @@ public class PRJDatabase
 
     }
 
-    public int fnCheckIsStrachCardApplicableonSchemeID(int SchemeID)
+    public static int fnCheckIsStrachCardApplicableonSchemeID(int SchemeID)
     {
 
 
@@ -10150,7 +10150,7 @@ public class PRJDatabase
 
     }
 
-    public String[] fnGetUniqueSchemeId()
+    public static String[] fnGetUniqueSchemeId()
     {
         int LoncolumnIndex = 0;
 
@@ -10181,7 +10181,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnGetFreeProductNameOnProcutIdBasisCombo(String strProductId) {
+    public static String fnGetFreeProductNameOnProcutIdBasisCombo(String strProductId) {
 
         int ScodecolumnIndex = 0;
 
@@ -10206,7 +10206,7 @@ public class PRJDatabase
         }
     }
 
-    public HashMap<String, String> checkForStoreIdSstat()
+    public static HashMap<String, String> checkForStoreIdSstat()
     {
         Cursor cursor=db.rawQuery("Select StoreID,Sstat from tblStoreList",null);// where Sstat in(1,3,4,5)
         HashMap<String, String> hmapStoreIDSstat=new HashMap<String, String>();
@@ -10224,7 +10224,7 @@ public class PRJDatabase
         return hmapStoreIDSstat;
     }
 
-    public String fnValueFreeQtyOrDiscountForCaculation(String strSchemType,
+    public static String fnValueFreeQtyOrDiscountForCaculation(String strSchemType,
                                                         String strSchemeID, int MaxValue) {
         int LoncolumnIndex = 0;
 
@@ -10293,7 +10293,7 @@ public class PRJDatabase
         return strProductSabFreeOrDiscount;
     }
 
-    public String fnGetSchemeDetailsOfProductOnSchemeTypeSchemeIDBasisNew(
+    public static String fnGetSchemeDetailsOfProductOnSchemeTypeSchemeIDBasisNew(
             String strSchemType, String strSchemeID, String strFreeProductID,
             String strCombTypeID, String strSchemeName) {
         int LoncolumnIndex = 0;
@@ -10441,7 +10441,7 @@ public class PRJDatabase
         return strProductSabFreeOrDiscount;
     }
 
-    public String fnGetSchemeIDOnProductIDIdBasisNew(String strProductId) {
+    public static String fnGetSchemeIDOnProductIDIdBasisNew(String strProductId) {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
         String strSchemeIDFreeProductId = "";
@@ -10468,7 +10468,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnGetAllSchemeDetailsOnProductNewClick(String strProductId)
+    public static String fnGetAllSchemeDetailsOnProductNewClick(String strProductId)
     {
 
         String strSchemeIDFreePRoductId = "";
@@ -10495,7 +10495,7 @@ public class PRJDatabase
         return strForAllScehmesAgainstProduct;
     }
 
-    public String fnFreeQuantity(String strProductId, int MaxValue) {
+    public static String fnFreeQuantity(String strProductId, int MaxValue) {
         String strSchemeIDFreePRoductId = "";
 
         strSchemeIDFreePRoductId = fnGetSchemeIDOnProductIDIdBasis(strProductId);
@@ -10523,7 +10523,7 @@ public class PRJDatabase
         return strValueFreeQtyOrDiscount;
     }
 
-    public String fnGetSchemeDetailsOfProductOnSchemeTypeSchemeIDBasisForCaculation(
+    public static String fnGetSchemeDetailsOfProductOnSchemeTypeSchemeIDBasisForCaculation(
             String strSchemType, String strSchemeID, int strOrderValue) {
         int LoncolumnIndex = 0;
         //////// System.out.println("strFPIDSlb strMaxSlb :" + strMaxSlb);
@@ -10588,7 +10588,7 @@ public class PRJDatabase
         return strProductSabFreeOrDiscount;
     }
 
-    public String fnCallSchemeDetailsOfProductOnSchemeTypeSchemeIDBasisForCaculationOverAll(
+    public static String fnCallSchemeDetailsOfProductOnSchemeTypeSchemeIDBasisForCaculationOverAll(
             String strSchemeType, String strSchemeID, int strOrderValue) {
         String strForCalculation = "";
         strForCalculation = fnGetSchemeDetailsOfProductOnSchemeTypeSchemeIDBasisForCaculation(
@@ -10596,7 +10596,7 @@ public class PRJDatabase
         return strForCalculation;
     }
 
-    public String fnGetSchemTypeOnSchemIDIdBasis(String strSchemID)
+    public static String fnGetSchemTypeOnSchemIDIdBasis(String strSchemID)
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -10626,7 +10626,7 @@ public class PRJDatabase
         }
     }
 
-	/*public String[] fnGetOtherProductIdOfCombo(String strSchemID) {
+	/*public static String[] fnGetOtherProductIdOfCombo(String strSchemID) {
 
 		// id = getAllEntries();
 
@@ -10654,7 +10654,7 @@ public class PRJDatabase
 		}
 	}*/
 
-    public String fnGetProductSchemeIDandComboTypeIdDetails(String strProductId) {
+    public static String fnGetProductSchemeIDandComboTypeIdDetails(String strProductId) {
         String strSchemeIDFreePRoductId = "";
 
         strSchemeIDFreePRoductId = fnGetSchemeIDOnProductIDIdBasis(strProductId);
@@ -10684,7 +10684,7 @@ public class PRJDatabase
         return strProductIdSchemeIDFreeProductIDSchemeTypeCombTypeID;
     }
 
-    public String[] fnGetFreeProductIDetails(String SchemeID ) {
+    public static String[] fnGetFreeProductIDetails(String SchemeID ) {
 
         Cursor cursor = db.rawQuery("SELECT DISTINCT FreeProductID FROM tblSchemeDetails where SchemeID='" + SchemeID + "'", null);
 
@@ -10714,7 +10714,7 @@ public class PRJDatabase
 
     }
 
-    public String fnGetFreeProIdDefault(String strSchemeID, int strOrderValue) {
+    public static String fnGetFreeProIdDefault(String strSchemeID, int strOrderValue) {
         int LoncolumnIndex = 0;
         //////// System.out.println("strFPIDSlb strMaxSlb :" + strMaxSlb);
         String strProductSabFreeOrDiscount = "";
@@ -10747,7 +10747,7 @@ public class PRJDatabase
         return strProductSabFreeOrDiscount;
     }
 
-    public String fnGetSchemeIDOnProductIDIdBasis(String strProductId) {
+    public static String fnGetSchemeIDOnProductIDIdBasis(String strProductId) {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
         String strSchemeIDFreeProductId = "";
@@ -10774,7 +10774,7 @@ public class PRJDatabase
         }
     }
 
-    public String fnCheckIfSchemeApplicableOnProduct(String strProductId) {
+    public static String fnCheckIfSchemeApplicableOnProduct(String strProductId) {
         int LoncolumnIndex = 0;
         String strSchemeID = "";
         Cursor cursor2 = db.rawQuery(
@@ -10796,7 +10796,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] fnGetOtherSchemeIdBasedOnFreeProductId(
+    public static String[] fnGetOtherSchemeIdBasedOnFreeProductId(
             String strFreeProductID) {
 
         // id = getAllEntries();
@@ -10826,7 +10826,7 @@ public class PRJDatabase
         }
     }
 
-    public long saveStoreTransac(String IMEIno, String TransDate,
+    public static long saveStoreTransac(String IMEIno, String TransDate,
                                  String StoreID, String ProdID, int Stock, int OrderQty,
                                  Double OrderVal, int FreeQty, Double DisVal,
                                  String AppliedSchemeID, String AppliedSlab, String AppliedAbsVal,
@@ -10871,7 +10871,7 @@ public class PRJDatabase
     //DisVal real not null, SchemeID text null, AppliedSlab text null, AppliedAbsVal text null, Sstat integer not null,
     //SampleQuantity int null, ProductShortName text null, ProductPrice real null);";//, DisplayUnit text null
 
-    public long saveStoreInvoice(String IMEIno, String StoreID,String InvoiceDate, Double TotalBeforeTaxDis, Double TaxAmt,
+    public static long saveStoreInvoice(String IMEIno, String StoreID,String InvoiceDate, Double TotalBeforeTaxDis, Double TaxAmt,
                                  Double TotalDis, Double InvoiceVal, int FreeTotal,
                                  Double InvAfterDis, Double AddDis, Double AmtPrevDue,
                                  Double AmtColl, Double AmtOut, int NoOfCouponValue, Double TotalCoupunAmount,int Outstat,String OrderIDPDA,String TmpInvoiceCodePDA,String strFinalAllotedInvoiceIds)// , Double CreditAmt, Double
@@ -10924,24 +10924,24 @@ public class PRJDatabase
     //TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null, Sstat integer not null, InvAfterDis real not null, AddDis real not null,
     //AmtPrevDue real null, AmtColl real null, AmtOut real null, NoCoupon int null, TotalCoupunAmount real null);";
 
-    public void deleteOldStoreTransac(String sID2del) {
+    public static void deleteOldStoreTransac(String sID2del) {
         // int entryCount;
         db.execSQL("DELETE FROM tblTransac WHERE StoreID ='" + sID2del + "'");
 
 
     }
 
-    public void deleteOldStoreInvoice(String sID2del,String OrderIDPDA,String TmpInvoiceCodePDA) {
+    public static void deleteOldStoreInvoice(String sID2del,String OrderIDPDA,String TmpInvoiceCodePDA) {
         // int entryCount;
-        open();
+        //open();
         db.execSQL("DELETE FROM tblTmpInvoiceHeader WHERE StoreID ='" + sID2del + "'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");//and OrderIDPDA='"+OrderIDPDA+"'
-        close();
+        //close();
         // Cursor cursorE2 =
 
 
     }
 
-    public long fninsertSchemeCouponSlab(int SchemeID,int CardSlabID,int Slab,int Qtny, int ProductValueOrSlabBased)
+    public static long fninsertSchemeCouponSlab(int SchemeID,int CardSlabID,int Slab,int Qtny, int ProductValueOrSlabBased)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -10959,7 +10959,7 @@ public class PRJDatabase
 
     //tblStrachOnSchemeDetails (SchID int null, cardStrachID int null, Slab int Null, Qty int null, ProductValueOrSlabBased int null);";
 
-    public long fninsertSchemeCoupon(int SchemeID,int IsCouponApplicable)
+    public static long fninsertSchemeCoupon(int SchemeID,int IsCouponApplicable)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -10974,7 +10974,7 @@ public class PRJDatabase
 
     // tblStrachApplicableOnScheme (SchID int null, flgIsStrachApplicable int null);";
 
-    public long SavetblSyncSummuryForProductDetails(String SkuName, String OrderQty, String FreeQty, String SampleQty,
+    public static long SavetblSyncSummuryForProductDetails(String SkuName, String OrderQty, String FreeQty, String SampleQty,
                                                     String TotalOrderKgs, String TotalFreeKgs, String TotalSampleKgs, String TotalSales,int Lines)
     {
 
@@ -11002,7 +11002,7 @@ public class PRJDatabase
     //tblSyncSummuryForProductDetails (SkuName text null,OrderQty text null, FreeQty text null, SampleQty text null, TotalOrderKgs text null,
     //TotalFreeKgs text null, TotalSampleKgs text null, TotalSales text null);";
 
-    public long SavetblSyncSummuryDetails(String ActualCalls, String ProductiveCalls, String TotSalesValue, String TotKGSales,
+    public static long SavetblSyncSummuryDetails(String ActualCalls, String ProductiveCalls, String TotSalesValue, String TotKGSales,
                                           String TotFreeQtyKGSales, String TotSampleKGSales, String TotLTSales,
                                           String TotFreeQtyLTSales, String TotSampleLTSales, String TotDiscountKGSales, String TotDiscountLTales,int Lines)
     {
@@ -11032,7 +11032,7 @@ public class PRJDatabase
     // tblSyncSummuryDetails (ActualCalls int null,ProductiveCalls int null, TotSalesValue text null, TotKGSales text null, TotFreeQtyKGSales text null,
     //TotSampleKGSales text null, TotLTSales text null, TotFreeQtyLTSales text null, TotSampleLTSales text null, TotDiscountKGSales text null, TotDiscountLTales text null);";
 
-    public long SavePDAIsSchemeApplicable(int IsSchemeApplicable) {
+    public static long SavePDAIsSchemeApplicable(int IsSchemeApplicable) {
         ContentValues initialValues = new ContentValues();
         initialValues.put("IsSchemeApplicable",IsSchemeApplicable);
 
@@ -11044,7 +11044,7 @@ public class PRJDatabase
 
     //tblPDAIsSchemeApplicable (IsSchemeApplicable int null);";
 
-    public long saveStoreTypeDetails(String SidType, String SidDesc) {
+    public static long saveStoreTypeDetails(String SidType, String SidDesc) {
         ContentValues initialValues = new ContentValues();
 
         initialValues.put("ID", SidType.trim());
@@ -11057,7 +11057,7 @@ public class PRJDatabase
 
     //private static final String DATABASE_CREATE_TABLE_63 = "create table tblStorTypeMstr(ID string null, Descr string null);";
 
-    public long saveSOAPdataPdaSchAppListForSecondPage(String SchemeID,
+    public static long saveSOAPdataPdaSchAppListForSecondPage(String SchemeID,
                                                        String StoreType, String SchemeDesc,int flgSpecialScheme) {
         ContentValues initialValues = new ContentValues();
 
@@ -11073,7 +11073,7 @@ public class PRJDatabase
 
     //tblspForPDASchemeApplicableList(SchemeID string null, StoreType string null, SchemeDesc string null);";
 
-    public long saveSOAPdataPdaLastTranDateForSecondPage(String StoreID,
+    public static long saveSOAPdataPdaLastTranDateForSecondPage(String StoreID,
                                                          String LastTransDate, String RetailerName, String SKUName,
                                                          String Stock, String OrderQty, String FreeQty) {
         ContentValues initialValues = new ContentValues();
@@ -11093,7 +11093,7 @@ public class PRJDatabase
 
     //tblPDALastTranDateForSecondPage(StoreID text null, LastTransDate string null, RetailerName string null, SKUName string null, Stock string null, OrderQty string null, FreeQty string null);";
 
-    public long saveSOAPdataschemeProductMap(String InSchemeID,
+    public static long saveSOAPdataschemeProductMap(String InSchemeID,
                                              String InProductID, int strSchemeType) {
         ContentValues initialValues = new ContentValues();
 
@@ -11110,7 +11110,7 @@ public class PRJDatabase
 
     //tblschemeProductMap (SchemeID text not null, ProductID text not null, SchemeType int null);";
 
-    public long saveSOAPdataSchemeSchemeStoreTypeMap(String InSchemeID,
+    public static long saveSOAPdataSchemeSchemeStoreTypeMap(String InSchemeID,
                                                      int InStoreTypeID) {
         ContentValues initialValues = new ContentValues();
 
@@ -11125,7 +11125,7 @@ public class PRJDatabase
 
     //tblschemeStoreTypeMap (SchemeID text not null, StoreTypeID integer not null);";
 
-    public long saveSOAPdataLastTransactionDetails(String ltdetSCode,
+    public static long saveSOAPdataLastTransactionDetails(String ltdetSCode,
                                                    String ltdetProdCode, String ltdetLTdate, int ltdetQTY,
                                                    int pSampleQty,int CategoryID) {
         ContentValues initialValues = new ContentValues();
@@ -11145,7 +11145,7 @@ public class PRJDatabase
 
     //tblLastTransactionDetails (StoreID text not null, ProductID text not null, LastTransDate string not null, Quantity integer not null, SampleQuantity int null);";
 
-    public long saveSOAPdataSchemeDetails(String schdetDetCode,
+    public static long saveSOAPdataSchemeDetails(String schdetDetCode,
                                           String schdetCode, int schdetSF, int schdetST, int schdetFQ,
                                           Double schdetDIS, String NewFreePrdID) {
         ContentValues initialValues = new ContentValues();
@@ -11167,7 +11167,7 @@ public class PRJDatabase
 //tblSchemeDetails (SchemeDetID text not null, SchemeID text not null, SlabFrom integer not null, SlabTo integer not null, FreeQuantity integer not null,
     //Discount real not null, FreeProductID text null);";
 
-    public long saveSOAPdataSchemeList(String schCode, String schName,
+    public static long saveSOAPdataSchemeList(String schCode, String schName,
                                        String schType, String SchListStoreType, int inCombTypeID,int flgDiscountType) {
         ContentValues initialValues = new ContentValues();
 
@@ -11185,7 +11185,7 @@ public class PRJDatabase
 
     // tblSchemeList (SchemeID text not null, SchemeName string not null, SchemeType string not null, StoreType string null, CombTypeID integer null);";
 
-    public long saveSOAPdataStoreProductMap(String StoreID,String ProductID,
+    public static long saveSOAPdataStoreProductMap(String StoreID,String ProductID,
                                             Double ProductMRP, Double ProductRLP, Double ProductTaxAmount, Double DistributorPrice,int CategoryID)
     {
         ContentValues initialValues = new ContentValues();
@@ -11214,7 +11214,7 @@ public class PRJDatabase
 
     //(StoreID text  null,ProductID text  null, ProductMRP real  null, ProductRLP real  null, ProductTaxAmount real  null, DistributorPrice real null);";
 
-    public long SavePDATargetQtyForSecondPage(
+    public static long SavePDATargetQtyForSecondPage(
             String PDATargetQtyForSecondPageStoreID,
             String PDATargetQtyForSecondPageProductID,
             String PDATargetQtyForSecondPageSKUShortName,
@@ -11236,7 +11236,7 @@ public class PRJDatabase
 
 // tblPDATargetQtyForSecondPage (StoreID text null, ProductID text null, SKUShortName text not null, TargetQty text null);";
 
-    public long SavePDALastInvoiceDet(String SID, String invID, String LTDate,
+    public static long SavePDALastInvoiceDet(String SID, String invID, String LTDate,
                                       String BalAmt, Double CreditPreviousDue) {
         ContentValues initialValues = new ContentValues();
         initialValues.put("StoreID", SID.trim());
@@ -11257,7 +11257,7 @@ public class PRJDatabase
     //BalanceAmount text null,CreditPreviousDue real null);";
 
     // start Table 10
-    public long saveVisibilityDetails(String storeID,String VisibilityID, String VisibilityStock,int Sstat)
+    public static long saveVisibilityDetails(String storeID,String VisibilityID, String VisibilityStock,int Sstat)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -11271,13 +11271,13 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN10, null, initialValues);
     }
 
-    public void deleteVisibilityDetails(String StoreID) {
+    public static void deleteVisibilityDetails(String StoreID) {
         // int entryCount;
         db.execSQL("DELETE FROM tblVisibilityDetails WHERE StoreID ='" + StoreID + "'");
 
     }
 
-    public int FetchVisibilityDetailsAvailable(String StoreID)
+    public static int FetchVisibilityDetailsAvailable(String StoreID)
     {
         int columnIndex = 0;
         int columnIndex1 = 1;
@@ -11310,7 +11310,7 @@ public class PRJDatabase
 
     }
 
-    public String[] FetchVisibilityDetails(String StoreID)
+    public static String[] FetchVisibilityDetails(String StoreID)
     {
         int columnIndex = 0;
         int columnIndex1 = 1;
@@ -11342,7 +11342,7 @@ public class PRJDatabase
     }
 
     // start Table 9
-    public long saveVisibility(String VisibilityID, String VisibilityDescr)
+    public static long saveVisibility(String VisibilityID, String VisibilityDescr)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -11357,7 +11357,7 @@ public class PRJDatabase
 
     // end Table 10
 
-    public String[] FetchVisibilityDescr()
+    public static String[] FetchVisibilityDescr()
     {
         int ScodecolumnIndex = 0;
 
@@ -11384,7 +11384,7 @@ public class PRJDatabase
         }
     }
 
-    public String FetchRouteType(String ID)
+    public static String FetchRouteType(String ID)
     {
         int ScodecolumnIndex = 0;
         String RouteType ="0";
@@ -11417,7 +11417,7 @@ public class PRJDatabase
         }
     }
 
-    public String[] FetchVisibilityID()
+    public static String[] FetchVisibilityID()
     {
         int ScodecolumnIndex = 0;
 
@@ -11444,7 +11444,7 @@ public class PRJDatabase
         }
     }
 
-    public String FetchStoreName(String storeID)
+    public static String FetchStoreName(String storeID)
     {
 
         int ScodecolumnIndex = 0;
@@ -11477,7 +11477,7 @@ public class PRJDatabase
 
     }
 
-    public int fnGetDisType(String schID,String schType) {
+    public static int fnGetDisType(String schID,String schType) {
         // int entryCount;
         Cursor cursorE2 = db.rawQuery(
                 "SELECT flgDiscountType FROM tblSchemeList WHERE SchemeID ='" + schID + "' and SchemeType='" + schType + "'", null);
@@ -11493,8 +11493,8 @@ public class PRJDatabase
         }
         return flgDiscountType;
     }
-    //public String[] FetchRate(String CatID)
-	/*public String[] FetchRate()
+    //public static String[] FetchRate(String CatID)
+	/*public static String[] FetchRate()
 	{
 
 		// id = getAllEntries();
@@ -11525,7 +11525,7 @@ public class PRJDatabase
 	}*/
 
 
-	/*public Double[] FetchProductTax(String SID)
+	/*public static Double[] FetchProductTax(String SID)
 	{
 		int ScodecolumnIndex = 0;
 
@@ -11552,7 +11552,7 @@ public class PRJDatabase
 		}
 	}*/
 
-    public int countIfStoreTransacExists(String sID2del) {
+    public static int countIfStoreTransacExists(String sID2del) {
         // int entryCount;
         Cursor cursorE2 = db.rawQuery(
                 "SELECT COUNT(*) FROM tblTransac WHERE StoreID ='" + sID2del
@@ -11574,7 +11574,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public String[] FetchOrderTransactionDetails(String IMEIno,String StoreID)
+    public static String[] FetchOrderTransactionDetails(String IMEIno,String StoreID)
     {
         int columnIndex = 0;
         int columnIndex1 = 1;
@@ -11612,7 +11612,7 @@ public class PRJDatabase
 
     }
 
-	/*public String FetchProductName(String ProductID)
+	/*public static String FetchProductName(String ProductID)
 	{
 
         int ScodecolumnIndex = 0;
@@ -11649,7 +11649,7 @@ public class PRJDatabase
 
 	}*/
 
-    public String[] FetchOrderInvoiceDetails(String IMEIno,String StoreID)
+    public static String[] FetchOrderInvoiceDetails(String IMEIno,String StoreID)
     {
         int columnIndex = 0;
         int columnIndex1 = 1;
@@ -11689,19 +11689,19 @@ public class PRJDatabase
 
     }
 
-    public void deleteOrderTransactionDetails(String storeID) {
+    public static void deleteOrderTransactionDetails(String storeID) {
         // int entryCount;
         db.execSQL("DELETE FROM tblTransac WHERE StoreID='"+ storeID +"'");
 
     }
 
-    public void deleteOrderInvoiceDetails(String storeID) {
+    public static void deleteOrderInvoiceDetails(String storeID) {
         // int entryCount;
         db.execSQL("DELETE FROM tblTmpInvoiceHeader WHERE StoreID='"+ storeID +"'");
 
     }
 
-    public long saveOrderTransactionDetails(String IMEIno, String TransDate,String StoreID,String ProdID,
+    public static long saveOrderTransactionDetails(String IMEIno, String TransDate,String StoreID,String ProdID,
                                             int OrderQty ,Double OrderVal,Double ProductMRP,Double TaxRate)
     {
 
@@ -11721,7 +11721,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN31, null, initialValues);
     }
 
-    public long saveOrderInvoiceDetails(String IMEIno,String StoreID, String InvoiceDate,Double TaxAmt,
+    public static long saveOrderInvoiceDetails(String IMEIno,String StoreID, String InvoiceDate,Double TaxAmt,
                                         Double InvoiceVal,int Sstat,Double AmtColl,Double AmtOut,Double GrossVal,String TmpInvoiceCodePDA)
     {
 
@@ -11742,7 +11742,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN32, null, initialValues);
     }
 
-    public long saveCategory(String CategoryID, String CategoryDescr,int CatOrdr)
+    public static long saveCategory(String CategoryID, String CategoryDescr,int CatOrdr)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -11755,7 +11755,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN15, null, initialValues);
     }
 
-    /*public int FetchCheckCategoryForStockValues(String selected_Competitor_id,String StoreID)
+    /*public static int FetchCheckCategoryForStockValues(String selected_Competitor_id,String StoreID)
 	{
         int columnIndex = 0;
        // int columnIndex1 = 1;
@@ -11788,7 +11788,7 @@ public class PRJDatabase
 
 	}
 	*/
-    public String[] FetchCategoryDesc()
+    public static String[] FetchCategoryDesc()
     {
         int ScodecolumnIndex = 0;
 
@@ -11815,7 +11815,7 @@ public class PRJDatabase
         }
     }
 
-	/*public long saveCategoryProductINformation(String CompetitionID,String ProductID,String Stock,int Sstat,String storeID )
+	/*public static long saveCategoryProductINformation(String CompetitionID,String ProductID,String Stock,int Sstat,String storeID )
 	{
 
 		ContentValues initialValues = new ContentValues();
@@ -11833,7 +11833,7 @@ public class PRJDatabase
 		return db.insert(DATABASE_TABLE_MAIN5, null, initialValues);
 	}*/
 
-	/*public String[] FetchCategoryProductID(String CategoryID)
+	/*public static String[] FetchCategoryProductID(String CategoryID)
 	{
         int columnIndex = 0;
         //int columnIndex1 = 1;
@@ -11865,7 +11865,7 @@ public class PRJDatabase
 
 	}
 	*/
-	/*public String[] FetchCatergoryProductDescription(String CompetitionID)
+	/*public static String[] FetchCatergoryProductDescription(String CompetitionID)
 	{
         int columnIndex = 0;
         //int columnIndex1 = 1;
@@ -11897,7 +11897,7 @@ public class PRJDatabase
 
 	}*/
 
-	/*public String[] FetchCategoeyProductINformation(String CategoryID, String storeID)
+	/*public static String[] FetchCategoeyProductINformation(String CategoryID, String storeID)
 	{
         int columnIndex = 0;
         int columnIndex1 = 1;
@@ -11928,7 +11928,7 @@ public class PRJDatabase
 
 	}*/
 
-    public String[] FetchCategoryID()
+    public static String[] FetchCategoryID()
     {
         int ScodecolumnIndex = 0;
 
@@ -11959,7 +11959,7 @@ public class PRJDatabase
     //CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null,
     //KGLiter string nulll);";
 
-	/*public String[] FetchCategoryIDfromProduct()
+	/*public static String[] FetchCategoryIDfromProduct()
 	{
 		int ScodecolumnIndex = 0;
 
@@ -11986,7 +11986,7 @@ public class PRJDatabase
 		}
 	}*/
 
-    public boolean GetPrevDateChk() {
+    public static boolean GetPrevDateChk() {
 
         Cursor cursorDateE = db.rawQuery("SELECT ForDate FROM tblStoreList",null);
         boolean ifApplicableToPassIntent=GetIfApplicableToForward();
@@ -12014,8 +12014,8 @@ public class PRJDatabase
     }
 
 
-    //public String[] FetchPid(String CATID)
-	/*public String[] FetchPid()
+    //public static String[] FetchPid(String CATID)
+	/*public static String[] FetchPid()
 	{
 		int ScodecolumnIndex = 0;
 		////// System.out.println("a");
@@ -12051,8 +12051,8 @@ public class PRJDatabase
 	}
 	*/
 
-    //public String[] FetchPName(String CATID)
-	/*public String[] FetchPName()
+    //public static String[] FetchPName(String CATID)
+	/*public static String[] FetchPName()
 	{
 
 		int ScodecolumnIndex = 0;
@@ -12082,7 +12082,7 @@ public class PRJDatabase
 	}
 	*/
 
-    /* public boolean GetIfApplicableToForward() {
+    /* public static boolean GetIfApplicableToForward() {
 
 	  Cursor cursorDateE = db.rawQuery("SELECT IsSchemeApplicable FROM tblPDAIsSchemeApplicable",null);
 
@@ -12104,7 +12104,7 @@ public class PRJDatabase
 	  }
 
 	 }*/
-    public boolean GetIfApplicableToForward() {
+    public static boolean GetIfApplicableToForward() {
 
         Cursor cursorDateE = db.rawQuery("SELECT IsSchemeApplicable FROM tblPDAIsSchemeApplicable",null);
 
@@ -12128,14 +12128,14 @@ public class PRJDatabase
 
     }
 
-    public int CheckProductListPresentOrNot()
+    public static int CheckProductListPresentOrNot()
     {
         Cursor cursorE2 = null;
         int chkI = 0;
 
         try
         {
-            open();
+            //open();
             cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblProductList", null);
 
             if (cursorE2.moveToFirst())
@@ -12157,12 +12157,12 @@ public class PRJDatabase
             {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public boolean PrevLocChk(String passedStoreID,String StoreVisitCode)
+    public static boolean PrevLocChk(String passedStoreID,String StoreVisitCode)
     {
         boolean abc = false;
 
@@ -12199,7 +12199,7 @@ public class PRJDatabase
         return abc;
     }
 
-    public void UpdateStoreStartVisit(String StoreID, String strVisitStartTS)
+    public static void UpdateStoreStartVisit(String StoreID, String strVisitStartTS)
     {
 
 
@@ -12207,7 +12207,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreStoreClose(String StoreID, int StoreClose,String StoreVisitCode)
+    public static void UpdateStoreStoreClose(String StoreID, int StoreClose,String StoreVisitCode)
     {
 
 
@@ -12222,7 +12222,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreSstat(String StoreID, int Sstat,String StoreVisitCode)
+    public static void UpdateStoreSstat(String StoreID, int Sstat,String StoreVisitCode)
     {
 
 
@@ -12237,7 +12237,7 @@ public class PRJDatabase
 
     }
 
-    public void deleteStoreTblsRecordsInCaseCancelOrderInOrderBooking(String StoreID,int flag,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteStoreTblsRecordsInCaseCancelOrderInOrderBooking(String StoreID,int flag,String pdaOrderID,String TmpInvoiceCodePDA)
     {
         db.execSQL("DELETE FROM tblTmpInvoiceDetails WHERE StoreID='"+ StoreID +"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
         db.execSQL("DELETE FROM tblTmpInvoiceHeader WHERE StoreID='"+ StoreID +"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
@@ -12253,26 +12253,26 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreStoreReturnDetail(String StoreID, String Sstat,String pdaOrderID,String TmpInvoiceCodePDA) {
+    public static void UpdateStoreStoreReturnDetail(String StoreID, String Sstat,String pdaOrderID,String TmpInvoiceCodePDA) {
         final ContentValues values = new ContentValues();
         values.put("Sstat", Sstat);
         int affected = db.update("tblStoreReturnDetail", values,"StoreID=?  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and Sstat is not null",new String[] { StoreID });
     }
 
-    public void UpdateStoreProductAppliedSchemesBenifitsRecords(String StoreID, String Sstat,String pdaOrderID,String TmpInvoiceCodePDA) {
+    public static void UpdateStoreProductAppliedSchemesBenifitsRecords(String StoreID, String Sstat,String pdaOrderID,String TmpInvoiceCodePDA) {
         final ContentValues values = new ContentValues();
         values.put("Sstat", Sstat);
         int affected = db.update("tblStoreProductAppliedSchemesBenifitsRecords", values,"StoreID=? AND TmpInvoiceCodePDA=? and Sstat is not null",
                 new String[] { StoreID,TmpInvoiceCodePDA });
     }
 
-    public void UpdateStoreEndVisit(String StoreID, String strVisitEndTS) {
+    public static void UpdateStoreEndVisit(String StoreID, String strVisitEndTS) {
       /*  final ContentValues values = new ContentValues();
         values.put("VisitEndTS", strVisitEndTS);
         int affected = db.update("tblStoreList", values,"StoreID=? and VisitStartTS is not null",new String[] { StoreID });*/
     }
 
-    public String[] FetchStoreStatus(String rID)
+    public static String[] FetchStoreStatus(String rID)
     {
 
         int ScodecolumnIndex = 0;
@@ -12301,7 +12301,7 @@ public class PRJDatabase
         }
     }
 
-/*	public void UpdateStoreCloseNextDay(String StoreID, int outStat) {
+/*	public static void UpdateStoreCloseNextDay(String StoreID, int outStat) {
 
 		final ContentValues values = new ContentValues();
 		values.put("Sstat", outStat);
@@ -12313,7 +12313,7 @@ public class PRJDatabase
 		Log.w(TAG, "UpdateStoreEndVisit Updated..");
 	}*/
 
-    public String[] FetchStoreList(String rID)
+    public static String[] FetchStoreList(String rID)
     {
         int ScodecolumnIndex = 0;
         int SnamecolumnIndex = 1;
@@ -12344,7 +12344,7 @@ public class PRJDatabase
 
     //Cursor cursorLocE = db.rawQuery("SELECT ActualLatitude FROM tblStoreList WHERE StoreID ='"+ passedStoreID + "'", null);
 
-    public String[] ProcessStoreReq()
+    public static String[] ProcessStoreReq()
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex2 = 1;
@@ -12373,7 +12373,7 @@ public class PRJDatabase
 
     }
 
-    public boolean GetLeftStoresChk()
+    public static boolean GetLeftStoresChk()
     {
 
         Cursor cursorDateE = db.rawQuery("SELECT DISTINCT tblStoreVisitMstr.StoreID, tblStoreList.StoreName FROM tblStoreVisitMstr inner join tblStoreList On tblStoreVisitMstr.StoreID=tblStoreList.StoreID WHERE (tblStoreList.Sstat = 3  OR tblStoreVisitMstr.StoreClose = 1 OR tblStoreVisitMstr.StoreNextDay = 1) AND tblStoreList.Sstat<>4 AND tblStoreList.Sstat<>5 AND tblStoreList.Sstat<>6",null);
@@ -12399,7 +12399,7 @@ public class PRJDatabase
 
     }
 
-    public long insertTblSelectedStoreIDinChangeRouteCase(String StorID)
+    public static long insertTblSelectedStoreIDinChangeRouteCase(String StorID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -12409,7 +12409,7 @@ public class PRJDatabase
         return db.insert(DATABASE_TABLE_MAIN92, null, initialValues);
     }
 
-    public String[] getStoreIDTblSelectedStoreIDinChangeRouteCase() {
+    public static String[] getStoreIDTblSelectedStoreIDinChangeRouteCase() {
 
         int SnamecolumnIndex1 = 0;
 
@@ -12438,7 +12438,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreFlagAtDayEndOrChangeRoute(String sID, int flag2set)
+    public static void UpdateStoreFlagAtDayEndOrChangeRoute(String sID, int flag2set)
     {
 
         try
@@ -12541,7 +12541,7 @@ public class PRJDatabase
     }
 
 
-    public void UpdatetblStoreClosedPhotoDetail(String sID, int flag2set)
+    public static void UpdatetblStoreClosedPhotoDetail(String sID, int flag2set)
     {
 
         try
@@ -12558,7 +12558,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreImage(String sID, int flag2set)
+    public static void UpdateStoreImage(String sID, int flag2set)
     {
 
         try
@@ -12580,7 +12580,7 @@ public class PRJDatabase
 
     }
 
-    public int fnChkAutoIdMstrForReturnDetailsChangeRouteDayEnd(int ReturnIdMstr) {
+    public static int fnChkAutoIdMstrForReturnDetailsChangeRouteDayEnd(int ReturnIdMstr) {
 
         int LoncolumnIndex = 0;
         int strReturnIdDetails = 0;
@@ -12606,7 +12606,7 @@ public class PRJDatabase
 
     }
 
-    public int fnChkStoreIdExistsInReturnMstrDayEndChangeRoute(String ReturnStoreId) {
+    public static int fnChkStoreIdExistsInReturnMstrDayEndChangeRoute(String ReturnStoreId) {
 
         int LoncolumnIndex = 0;
         int strReturnIdMstr = 0;
@@ -12632,7 +12632,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreFlag(String sID, int flag2set)
+    public static void UpdateStoreFlag(String sID, int flag2set)
     {
 
         try
@@ -12698,7 +12698,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreOtherMainTablesFlag(String sID, int flag2set,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void UpdateStoreOtherMainTablesFlag(String sID, int flag2set,String pdaOrderID,String TmpInvoiceCodePDA)
     {
 
         try
@@ -12759,7 +12759,7 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreVisitBatt(String StoreID, String vBatt) {
+    public static void UpdateStoreVisitBatt(String StoreID, String vBatt) {
 
       /*  final ContentValues values = new ContentValues();
         values.put("BateryLeftStatus", vBatt);
@@ -12769,19 +12769,19 @@ public class PRJDatabase
 
     }
 
-    public void UpdateStoreVisitBattVisitWise(String StoreID, String vBatt,String StoreVisitCode) {
-open();
+    public static void UpdateStoreVisitBattVisitWise(String StoreID, String vBatt,String StoreVisitCode) {
+//open();
         final ContentValues values = new ContentValues();
         values.put("BateryLeftStatus", vBatt);
         int affected = db.update("tblStoreVisitMstr", values, "StoreID=? AND StoreVisitCode=?",
                 new String[] { StoreID,StoreVisitCode });
-        close();
+        //close();
         Log.w(TAG, "affected records: " + affected);
 
     }
 
     // ---insert XML data into the database---
-    public void createRouteTBL() {
+    public static void createRouteTBL() {
         try {
 
             db.execSQL(TABLE_tblRouteMstr_Definition);
@@ -12792,11 +12792,11 @@ open();
 
     }
 
-   /* public void UpdateStoreActualLatLongi(String StoreID,
+   /* public static void UpdateStoreActualLatLongi(String StoreID,
                                           String ActualLatitude, String ActualLongitude, String Accuracy,
                                           String LocProvider, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, int flgRestart, int flgStoreOrder)
     {
-        open();
+        //open();
         final ContentValues values = new ContentValues();
         values.put("ActualLatitude", ActualLatitude);
         values.put("ActualLongitude", ActualLongitude);
@@ -12823,7 +12823,7 @@ open();
     // ---insert sample data into the database---
     //
 
-    public void fnSetAllRouteActiveStatus() {
+    public static void fnSetAllRouteActiveStatus() {
 
         try {
 
@@ -12842,7 +12842,7 @@ open();
 
     // tblRouteMstr(ID string null, Descr string null, Active int null);";
 
-    public void updateActiveRoute(String sID, int flag2set) {
+    public static void updateActiveRoute(String sID, int flag2set) {
 
         try {
 
@@ -12862,7 +12862,7 @@ open();
 
     }
 
-    public String GetRouteNameBasedOnRouteID(String ID) {
+    public static String GetRouteNameBasedOnRouteID(String ID) {
 
         int LoncolumnIndex = 0;
 
@@ -12887,7 +12887,7 @@ open();
 
     }
 
-    public String GetRouteDateBasedOnRouteID(String ID) {
+    public static String GetRouteDateBasedOnRouteID(String ID) {
 
         int LoncolumnIndex = 0;
 
@@ -12912,7 +12912,7 @@ open();
 
     }
 
-    public String GetActiveRouteIDForToday(String fDate) {
+    public static String GetActiveRouteIDForToday(String fDate) {
 
         int LoncolumnIndex = 0;
 
@@ -12937,7 +12937,7 @@ open();
 
     }
 
-    public String GetActiveRouteIDForTomorrow(String fDate) {
+    public static String GetActiveRouteIDForTomorrow(String fDate) {
 
         int LoncolumnIndex = 0;
 
@@ -12964,7 +12964,7 @@ open();
 
     //StoreID ='"+ StoreID + "'"
 
-    public String GetAllActiveRouteDescr()
+    public static String GetAllActiveRouteDescr()
     {
         int LoncolumnIndex = 0;
 
@@ -12997,7 +12997,7 @@ open();
 
     }
 
-    public String GetAllActiveRouteID()
+    public static String GetAllActiveRouteID()
     {
         int LoncolumnIndex = 0;
 
@@ -13030,7 +13030,7 @@ open();
 
     }
 
-    public String GetActiveRouteID()
+    public static String GetActiveRouteID()
     {
         int LoncolumnIndex = 0;
         String activeRouteID = "0";
@@ -13067,11 +13067,11 @@ open();
         }
     }
 
-    public String GetNOActiveRouteIDSunil()
+    public static String GetNOActiveRouteIDSunil()
     {
         int LoncolumnIndex = 0;
 
-        open();
+        //open();
         Cursor cursor2 = null;
         try
         {
@@ -13093,12 +13093,12 @@ open();
             return activeRouteID;
         } finally {
             cursor2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String GetNotActiveRouteID()
+    public static String GetNotActiveRouteID()
     {
         int LoncolumnIndex = 0;
         String activeRouteID = "0";
@@ -13124,11 +13124,11 @@ open();
 
     }
 
-    public String GetActiveRouteIDSunil()
+    public static String GetActiveRouteIDSunil()
     {
         int LoncolumnIndex = 0;
 
-        open();
+        //open();
         Cursor cursor2 = null;
         try
         {
@@ -13152,12 +13152,12 @@ open();
             return activeRouteID;
         } finally {
             cursor2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String GetCurrentDayActiveRouteID()
+    public static String GetCurrentDayActiveRouteID()
     {
         int LoncolumnIndex = 0;
 
@@ -13182,7 +13182,7 @@ open();
 
     }
 
-    public int GetActiveRouteIDForRadioButton()
+    public static int GetActiveRouteIDForRadioButton()
     {
         int LoncolumnIndex = 0;
 
@@ -13205,7 +13205,7 @@ open();
 
     }
 
-    public long savetblPOSMaterialMstr(String POSMaterialID, String POSMaterialDescr)
+    public static long savetblPOSMaterialMstr(String POSMaterialID, String POSMaterialDescr)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13217,7 +13217,7 @@ open();
 
     }
 
-    public long savetblStoreIDAndMaterialIDMap(String StoreID, String VisitID,String MaterialID,String CurrentStockQty)
+    public static long savetblStoreIDAndMaterialIDMap(String StoreID, String VisitID,String MaterialID,String CurrentStockQty)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13231,7 +13231,7 @@ open();
         return db.insert(DATABASE_TABLE_MAIN162, null, initialValues);
     }
 
-    public long savetblSchemeStoreMapping(String StoreID, String SchemeID)
+    public static long savetblSchemeStoreMapping(String StoreID, String SchemeID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13245,7 +13245,7 @@ open();
 
     }
 
-    public long savetblSchemeMstr(String SchemeID, String SchemeName,String SchemeApplicationID,String SchemeAppliedRule)
+    public static long savetblSchemeMstr(String SchemeID, String SchemeName,String SchemeApplicationID,String SchemeAppliedRule)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13262,7 +13262,7 @@ open();
         return db.insert(DATABASE_TABLE_MAIN202, null, initialValues);
     }
 
-    public long savetblSchemeSlabDetail(String SchemeID, String SchemeSlabID,String SchemeSlabDesc,String BenifitDescr)
+    public static long savetblSchemeSlabDetail(String SchemeID, String SchemeSlabID,String SchemeSlabDesc,String BenifitDescr)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13275,7 +13275,7 @@ open();
         return db.insert(DATABASE_TABLE_MAIN203, null, initialValues);
     }
 
-    public long savetblSchemeSlabBucketDetails(String RowID, String SchemeID,String SchemeSlabID,
+    public static long savetblSchemeSlabBucketDetails(String RowID, String SchemeID,String SchemeSlabID,
                                                String BucketID,String SubBucketID,String SlabSubBucketType,String SlabSubBucketValue,String SubBucketValType)
     {
 
@@ -13294,7 +13294,7 @@ open();
         return db.insert(DATABASE_TABLE_MAIN204, null, initialValues);
     }
 
-    public long savetblSchemeSlabBucketProductMapping(String RowID, String ProductID)
+    public static long savetblSchemeSlabBucketProductMapping(String RowID, String ProductID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13308,7 +13308,7 @@ open();
 
     //tblSchemeSlabBucketProductMapping (RowID text null,ProductID text null);";
 
-    public long savetblSchemeSlabBenefitsBucketDetails(String RowID, String SchemeID,String SchemeSlabID,
+    public static long savetblSchemeSlabBenefitsBucketDetails(String RowID, String SchemeID,String SchemeSlabID,
                                                        String BucketID,String SubBucketID,String BenSubBucketType,String BenDiscApplied,String CouponCode
             ,String BenSubBucketValue,String per,String UOM,int ProRata)
     {
@@ -13340,7 +13340,7 @@ open();
      		SubBucketID,BenSubBucketType,BenDiscApplied,CouponCode,BenSubBucketValue);
      */
 
-    public long savetblSchemeSlabBenefitsProductMappingDetail(String RowID, String ProductID)
+    public static long savetblSchemeSlabBenefitsProductMappingDetail(String RowID, String ProductID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13351,7 +13351,7 @@ open();
         return db.insert(DATABASE_TABLE_MAIN207, null, initialValues);
     }
 
-    public long savetblSchemeSlabBenefitsValueDetail(String RowID, String BenValue,String Remarks,String Type)
+    public static long savetblSchemeSlabBenefitsValueDetail(String RowID, String BenValue,String Remarks,String Type)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13366,7 +13366,7 @@ open();
 
     //tblSchemeSlabBenefitsValueDetail (RowID text null,BenValue text null,Remarks text null,Type text null);";
 
-    public long savetblProductRelatedScheme(String ProductID, String PrdString)
+    public static long savetblProductRelatedScheme(String ProductID, String PrdString)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13379,7 +13379,7 @@ open();
 
     //tblProductRelatedScheme (ProductID text null,PrdString text null);";
 
-    public long saveRoutesInfo(String ID,String RouteType, String Descr,int ActiveFlg,int flgTodayRoute,String RouteDate)
+    public static long saveRoutesInfo(String ID,String RouteType, String Descr,int ActiveFlg,int flgTodayRoute,String RouteDate)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -13394,9 +13394,9 @@ open();
         return db.insert(TABLE_tblRouteMstr_Define, null, initialValues);
     }
 
-    public int fncheckStoreIsNewOrOld(String StoreID)
+    public static int fncheckStoreIsNewOrOld(String StoreID)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT ISNewStore FROM tblStoreList WHERE StoreID='"+StoreID+"'" , null);
         try {
             int ISNewStore =0;
@@ -13413,7 +13413,7 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
 
     }
@@ -13433,9 +13433,9 @@ open();
    Accuracy text null, BateryLeftStatus text null,StoreRouteID text null);";
 */
 
-    public int fncheckStoreIsNewStoreDataCompleteSaved(String StoreID)
+    public static int fncheckStoreIsNewStoreDataCompleteSaved(String StoreID)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT IsNewStoreDataCompleteSaved FROM tblStoreList WHERE StoreID='"+StoreID+"'" , null);
         try {
             int IsNewStoreDataCompleteSaved =0;
@@ -13452,15 +13452,15 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
 
     }
 
-    public long saveSOAPdataStoreList(String StoreID,String  StoreName ,String OwnerName ,String StoreContactNo ,
+    public static long saveSOAPdataStoreList(String StoreID,String  StoreName ,String OwnerName ,String StoreContactNo ,
                                       String StoreAddress ,String StoreCatType
             ,Double StoreLatitude ,Double StoreLongitude ,String  LastVisitDate,String  LastTransactionDate
-            ,int Sstat,int StoreRouteID ,int RouteNodeType,int StoreCatNodeId ,String PaymentStage ,int flgHasQuote ,int flgAllowQuotation,String flgGSTCapture,String flgGSTCompliance,String GSTNumber ,int flgGSTRecordFromServer ,String StoreCity ,String StorePinCode ,String StoreState,String OutStanding ,String OverDue ,String DBR ,int flgRuleTaxVal,int flgTransType,int StoreType,int IsClose,String SalesPersonName,String SalesPersonContactNo)
+            ,int Sstat,int StoreRouteID ,int RouteNodeType,int StoreCatNodeId ,String PaymentStage ,int flgHasQuote ,int flgAllowQuotation,String flgGSTCapture,String flgGSTCompliance,String GSTNumber ,int flgGSTRecordFromServer ,String StoreCity ,String StorePinCode ,String StoreState,String OutStanding ,String OverDue ,String DBR ,int flgRuleTaxVal,int flgTransType,int StoreType,int IsClose,String SalesPersonName,String SalesPersonContactNo,int IsComposite)
     {
 
 
@@ -13540,14 +13540,15 @@ open();
         initialValues.put("flgTransType", flgTransType);
 
         initialValues.put("StoreClose", IsClose);
+        initialValues.put("IsComposite", IsComposite);
         return db.insert(DATABASE_TABLE_MAIN13, null, initialValues);
     }
 
-    /*public long saveSOAPdataProductList(String CategoryID,String ProductID, String ProductShortName,
+    /*public static long saveSOAPdataProductList(String CategoryID,String ProductID, String ProductShortName,
 			String DisplayUnit, Double CalculateKilo,Double pMRP, Double pRLP, Double pTA, String KGLiter,
 			Double RetMarginPer, Double VatTax,Double StandardRate,Double StandardRateBeforeTax,
 			Double StandardTax,int CatOrdr,int PrdOrdr,int StoreCatNodeId,String SearchField)*/
-    public long saveSOAPdataProductList(String CategoryID,String ProductID, String ProductShortName,
+    public static long saveSOAPdataProductList(String CategoryID,String ProductID, String ProductShortName,
                                         String DisplayUnit, Double CalculateKilo, String KGLiter,int CatOrdr,int PrdOrdr,int StoreCatNodeId,String SearchField,int ManufacturerID,String RptUnitName,String PerbaseUnit)
     {
         ContentValues initialValues = new ContentValues();
@@ -13587,7 +13588,7 @@ open();
     //CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null,
     //KGLiter string nulll);";
 
-    public long saveProductSegementMap(String ProductID,double pMRP,double pRLP,double pTA,double RetMarginPer,double VatTax,double StandardRate,double StandardRateBeforeTax,double StandardTax,int BusinessSegmentId,int flgPriceAva,int flgWholeSellApplicable,double PriceRangeWholeSellApplicable,double StandardRateWholeSale,double StandardRateBeforeTaxWholeSell,double StandardTaxWholeSale)
+    public static long saveProductSegementMap(String ProductID,double pMRP,double pRLP,double pTA,double RetMarginPer,double VatTax,double StandardRate,double StandardRateBeforeTax,double StandardTax,int BusinessSegmentId,int flgPriceAva,int flgWholeSellApplicable,double PriceRangeWholeSellApplicable,double StandardRateWholeSale,double StandardRateBeforeTaxWholeSell,double StandardTaxWholeSale)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -13621,7 +13622,7 @@ open();
 
 
     //dbengine.saveProductSegementMap(ProductID,ProductMRP, ProductRLP, ProductTaxAmount,RetMarginPer,VatTax,StandardRate,StandardRateBeforeTax,StandardTax,BusinessSegmentId);
-/*	public long saveProductSegementMap(String ProductID,double pMRP,double pRLP,double pTA,double RetMarginPer,double VatTax,double StandardRate,double StandardRateBeforeTax,double StandardTax,int BusinessSegmentId,int flgPriceAva)
+/*	public static long saveProductSegementMap(String ProductID,double pMRP,double pRLP,double pTA,double RetMarginPer,double VatTax,double StandardRate,double StandardRateBeforeTax,double StandardTax,int BusinessSegmentId,int flgPriceAva)
 	{
 		ContentValues initialValues = new ContentValues();
 
@@ -13645,7 +13646,7 @@ open();
 	}
 	*/
 
-    public int getFwdPgIdonNextBtnClick(String StoreID, String PgId, String ChainId)
+    public static int getFwdPgIdonNextBtnClick(String StoreID, String PgId, String ChainId)
     {
         int ScodecolumnIndex = 0;
 
@@ -13675,7 +13676,7 @@ open();
         }
     }
 
-    public int getFwdPgIdonBackBtnClick(String StoreID, String PgId, String ChainId)
+    public static int getFwdPgIdonBackBtnClick(String StoreID, String PgId, String ChainId)
     {
         int ScodecolumnIndex = 0;
 
@@ -13705,7 +13706,7 @@ open();
         }
     }
 
-    public String getCustomPGid(int pgID) {
+    public static String getCustomPGid(int pgID) {
 
         int ScodecolumnIndex = 0;
 
@@ -13728,7 +13729,7 @@ open();
         }
     }
 
-    public String[] checkStoreCloseOrNextMethod(String StoreID)
+    public static String[] checkStoreCloseOrNextMethod(String StoreID)
     {
 
         int columnIndex1 = 0;
@@ -13763,7 +13764,7 @@ open();
 
     }
 
-    public int getChainIDBasedOnStoreID(String StoreID)
+    public static int getChainIDBasedOnStoreID(String StoreID)
     {
         int ScodecolumnIndex = 0;
 
@@ -13793,7 +13794,7 @@ open();
         }
     }
 
-    public String[] FetchStoreStoreNextDayStatus()
+    public static String[] FetchStoreStoreNextDayStatus()
     {
 
         int ScodecolumnIndex = 0;
@@ -13818,7 +13819,7 @@ open();
         }
     }
 
-    public void updateCloseflg(String sID, int StoreClose)
+    public static void updateCloseflg(String sID, int StoreClose)
     {
         try
         {
@@ -13836,7 +13837,7 @@ open();
 
     }
 
-    public void updateNextDayflg(String sID,int StoreNextDay)
+    public static void updateNextDayflg(String sID,int StoreNextDay)
     {
         try
         {
@@ -13857,7 +13858,7 @@ open();
 
     }
 
-    public String[] FetchStoreStoreCloseStatus(String rID)
+    public static String[] FetchStoreStoreCloseStatus(String rID)
     {
         int ScodecolumnIndex = 0;
 
@@ -13883,7 +13884,7 @@ open();
         }
     }
 
-    public int getRouteId()
+    public static int getRouteId()
     {
         int LoncolumnIndex = 0;
 
@@ -13907,13 +13908,13 @@ open();
         }
     }
 
-	/*public void deleteCategroyProductINformation(String CategoryId, String storeID) {
+	/*public static void deleteCategroyProductINformation(String CategoryId, String storeID) {
 		// int entryCount;
 		db.execSQL("DELETE FROM tblCategoryQuestionInformation WHERE CategoryID ='" + CategoryId + "' and StoreID='"+ storeID +"'");
 
 	}*/
 
-    public String[] fnarrUniqueProductsSaleSummry()
+    public static String[] fnarrUniqueProductsSaleSummry()
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -13948,7 +13949,7 @@ open();
         }
     }
 
-    public String fnCalculateLinesSkuWise(String PSName)
+    public static String fnCalculateLinesSkuWise(String PSName)
     {
         String LineValue="0";
         int LoncolumnIndex = 0;
@@ -13983,7 +13984,7 @@ open();
         return LineValue;
     }
 
-    public String[] fnCalculateProductsSaleSummry()
+    public static String[] fnCalculateProductsSaleSummry()
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -14289,7 +14290,7 @@ open();
 
     }
 
-    public String[] fnGettblSyncProductWiseDetailsKGLitersDetails() {
+    public static String[] fnGettblSyncProductWiseDetailsKGLitersDetails() {
 
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -14338,7 +14339,7 @@ open();
 
     }
 
-    public String ConvertGramToKilo(String strGrams)
+    public static String ConvertGramToKilo(String strGrams)
     {
         //1 gram = 0.001 kilogram;
         String kilogram="";
@@ -14348,7 +14349,7 @@ open();
         return kilogram;
     }
 
-    public String ConvertMLToLiters(String strML)
+    public static String ConvertMLToLiters(String strML)
     {
         //1 gram = 0.001 kilogram;
         String Lt="";
@@ -14358,7 +14359,7 @@ open();
         return Lt;
     }
 
-    public String fnGetFullSummryDetailsForSale()
+    public static String fnGetFullSummryDetailsForSale()
     {
 
         String FullSummryDetailsForSale;
@@ -14401,7 +14402,7 @@ open();
         return FullSummryDetailsForSale;
     }
 
-    public int fnGetActualCall()
+    public static int fnGetActualCall()
     {
 
         int LoncolumnIndex = 0;
@@ -14429,7 +14430,7 @@ open();
         }
     }
 
-    public int fnGetProductiveCall()
+    public static int fnGetProductiveCall()
     {
         int LoncolumnIndex = 0;
         int TotProductiveCall = 0;
@@ -14458,7 +14459,7 @@ open();
         }
     }
 
-    public String fnGetTotalSales()
+    public static String fnGetTotalSales()
     {
         int LoncolumnIndex = 0;
         String TotSalesValue = "0.0";
@@ -14488,7 +14489,7 @@ open();
         }
     }
 
-    public String fnGetTotalDiscount()
+    public static String fnGetTotalDiscount()
     {
         int LoncolumnIndex = 0;
         String TotDiscountValue = "0.0";
@@ -14517,7 +14518,7 @@ open();
         }
     }
 
-    public String fnGettblSyncSummuryDetailsCallDetails() {
+    public static String fnGettblSyncSummuryDetailsCallDetails() {
 
         Cursor cursor = db.rawQuery("SELECT ActualCalls, ProductiveCalls, TotSalesValue, TotDiscountKGSales from tblSyncSummuryDetails", null);
 
@@ -14548,7 +14549,7 @@ open();
 
     }
 
-    public String fnCalculateKGLiters()
+    public static String fnCalculateKGLiters()
     {
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -14802,7 +14803,7 @@ open();
 
     }
 
-    public String[] fnarrUniqueKgLiters()
+    public static String[] fnarrUniqueKgLiters()
     {
         int LoncolumnIndex = 0;
 
@@ -14832,7 +14833,7 @@ open();
         }
     }
 
-    public String fnGettblSyncSummuryDetailsKGLitersDetails() {
+    public static String fnGettblSyncSummuryDetailsKGLitersDetails() {
 
 
 
@@ -14873,9 +14874,9 @@ open();
 
     }
 
-    public void deleteAllSubmitDataToServer(int Sstat)
+    public static void deleteAllSubmitDataToServer(int Sstat)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblTransac WHERE Sstat ="+ Sstat);
         db.execSQL("DELETE FROM tblTmpInvoiceHeader WHERE Sstat ="+ Sstat);
         db.execSQL("DELETE FROM tblStoreList WHERE Sstat ="+ Sstat);
@@ -14897,10 +14898,10 @@ open();
 
 
 
-        close();
+       // close();
     }
 
-    public void updateRecordsSyncStoreProductReturn() {
+    public static void updateRecordsSyncStoreProductReturn() {
         try {
             final ContentValues values = new ContentValues();
             values.put("Sstat", "4");
@@ -14914,7 +14915,7 @@ open();
         }
     }
 
-    public void updateRecordsSyncd(int Sstat) {
+    public static void updateRecordsSyncd(int Sstat) {
 
         try {
             // ////// System.out.println("No. of non-synced records: " +
@@ -15001,7 +15002,7 @@ open();
 
     }
 
-    public void AddNewStore(String strNewAddedStoreIDFlg, String RetailerName,
+    public static void AddNewStore(String strNewAddedStoreIDFlg, String RetailerName,
                             String OwnerName, String Address, String StoreType,String fDate,String phoneSendValue,String ActualLatitude, String ActualLongitude, String Accuracy,
                             String LocProvider,String BateryLevel)
     {/*
@@ -15073,7 +15074,7 @@ open();
 			}
 		*/}
 
-    public int fnGetMaxAutoStoreIncrementForNewStore() {
+    public static int fnGetMaxAutoStoreIncrementForNewStore() {
 
         int LoncolumnIndex = 0;
         int strAutoIdStore = 0;
@@ -15098,7 +15099,7 @@ open();
 
     }
 
-    public int fnGetCountForNewStore() {
+    public static int fnGetCountForNewStore() {
 
         int LoncolumnIndex = 0;
         int strStore = 0;
@@ -15123,7 +15124,7 @@ open();
 
     }
 
-    public String fnGetMaxIdWithIncrementForNewStore(int MaxAutoStore) {
+    public static String fnGetMaxIdWithIncrementForNewStore(int MaxAutoStore) {
 
         int LoncolumnIndex = 0;
         int LoncolumnIndex1 = 1;
@@ -15172,12 +15173,12 @@ open();
 
     }
 
-    public long saveSOAPdataStoreListNewStore(String sCode, String sType, String sName,
+    public static long saveSOAPdataStoreListNewStore(String sCode, String sType, String sName,
                                               Double sLat, Double sLon, String LVdate, String LTdate,
                                               String sForDate, int AutoIdStore, int newStat, String Accuracy, String LocProvider,
                                               String activeRid,String BateryLevel,int IsNewStoreDataCompleteSaved,String fetchAddress,
                                               String PaymentStage,int flgHasQuote,int flgAllowQuotation,int flgSubmitFromQuotation
-            ,String flgGSTCapture,String flgGSTCompliance,String GSTNumber,int flgGSTRecordFromServer, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, int flgRestart, int flgStoreOrder, String StoreCity,String StorePinCode, String StoreState,String DBR,String OwnerName,String StoreContactNo,String StoreCatType,int flgRuleTaxVal,int flgTransType,String SalesPersonName,String  SalesPersonContactNo) {
+            ,String flgGSTCapture,String flgGSTCompliance,String GSTNumber,int flgGSTRecordFromServer, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, int flgRestart, int flgStoreOrder, String StoreCity,String StorePinCode, String StoreState,String DBR,String OwnerName,String StoreContactNo,String StoreCatType,int flgRuleTaxVal,int flgTransType,String SalesPersonName,String  SalesPersonContactNo,int IsComposite) {
 
 
         int flgIfStoreHasRecords=0;
@@ -15273,6 +15274,7 @@ open();
 
        // initialValues.put("flgRetailerCreditBalnce", 1);
         initialValues.put("DBR", DBR);
+        initialValues.put("IsComposite", IsComposite);
 
 
 
@@ -15287,12 +15289,12 @@ open();
 
 //	saveSOAPdataStoreList
 
-    public int CheckTotalStoreCount() throws IOException
+    public static int CheckTotalStoreCount() throws IOException
     {
 
         int chkI = 0;
         Cursor cursorE2=null;
-        //open();
+        ////open();
         try
         {
             cursorE2 = db.rawQuery("SELECT flgStoreOrder from tblStoreList order by flgStoreOrder descr limit 1", null);
@@ -15317,7 +15319,7 @@ open();
         return chkI;
     }
 
-    public void fnUpdateFlgForNewSoreInMainStoreTable(
+    public static void fnUpdateFlgForNewSoreInMainStoreTable(
             String strGetMaxIDForNewStore) {
         final ContentValues values = new ContentValues();
         values.put("ISNewStore", "1");
@@ -15330,7 +15332,7 @@ open();
 
     }
 
-    public long saveSOAPdataStoreListDetailsInNewTable(String StoreID, String StoreCity,
+    public static long saveSOAPdataStoreListDetailsInNewTable(String StoreID, String StoreCity,
                                                        String StorePinCode, String StoreState,int Sstat)
     {
 
@@ -15347,14 +15349,14 @@ open();
         return db.insert(DATABASE_TABLE_MAIN16, null, initialValues);
     }
 
-    public String fnGetOptionDescrFromtblOptionMstr(String QuestID,String AnsValue)
+    public static String fnGetOptionDescrFromtblOptionMstr(String QuestID,String AnsValue)
     {
 
         Cursor cursor =null;
         String DDlStringCity="";
         try
         {
-            open();
+            //open();
             cursor= db.rawQuery("SELECT OptionDescr FROM tblOptionMstr WHERE  QuestID ='"+ QuestID.trim() + "' and OptID='"+AnsValue.trim()+"'", null);
             if (cursor.getCount() > 0)
             {
@@ -15376,16 +15378,16 @@ open();
         }
         finally {
             //cursor.close();
-            close();
+            //close();
 
         }
         return DDlStringCity;
     }
 
-    public LinkedHashMap isMstrQuestToHide()
+    public static LinkedHashMap isMstrQuestToHide()
     {
         LinkedHashMap<String,String> hmapMstrQstOptId=new LinkedHashMap<String,String>();
-        open();
+        //open();
 
         String channelOptId=getChannelGroupIdOptId();
         String channelkey =getChannelGroupIdKey();
@@ -15397,11 +15399,11 @@ open();
         {
             hmapMstrQstOptId.put(channelkey,"0");
         }
-        close();
+        //close();
         return hmapMstrQstOptId;
     }
 
-    public String GetPrevDate() {
+    public static String GetPrevDate() {
 
         Cursor cursorDateE = db.rawQuery( "SELECT DISTINCT ForDate FROM tblStoreList", null);
         String returnDate = "";
@@ -15431,7 +15433,7 @@ open();
         return returnDate;
     }
 
-    public void AddNewStore(String strNewAddedStoreIDFlg, String RetailerName,
+    public static void AddNewStore(String strNewAddedStoreIDFlg, String RetailerName,
                             String OwnerName, String Address, String StoreType,String fDate,String phoneSendValue,String ActualLatitude, String ActualLongitude, String Accuracy,
                             String LocProvider)
     {/*
@@ -15495,7 +15497,7 @@ open();
 			}
 		*/}
 
-    public String[] FetcDistinctProductWhichHaveAnySchemesOrderEntry()
+    public static String[] FetcDistinctProductWhichHaveAnySchemesOrderEntry()
     {
         int ScodecolumnIndex = 0;
         int ScodecolumnIndex1 = 1;
@@ -15521,7 +15523,7 @@ open();
             cursor.close();
         }
     }
-	/*	public long saveSOAPdataStoreListNewStore(String sCode, String sType, String sName,
+	/*	public static long saveSOAPdataStoreListNewStore(String sCode, String sType, String sName,
 				Double sLat, Double sLon, String LVdate, String LTdate,
 				String sForDate, int AutoIdStore, int newStat, String Accuracy, String LocProvider,String activeRid) {
 			ContentValues initialValues = new ContentValues();
@@ -15565,7 +15567,7 @@ open();
 			return db.insert(DATABASE_TABLE_MAIN2, null, initialValues);
 		}*/
 
-    public String[] fnSchemeIDFreePRodQtyDetails()
+    public static String[] fnSchemeIDFreePRodQtyDetails()
     {
 
         Cursor cursor = db.rawQuery("SELECT tblSchemeList.SchemeID,tblSchemeList.SchemeType, " +
@@ -15592,7 +15594,7 @@ open();
         }
     }
 
-    public int fnCheckIfStoreExistInStoreSchemeFreeProQtyOtherDetails(String StoreID)
+    public static int fnCheckIfStoreExistInStoreSchemeFreeProQtyOtherDetails(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblStoreSchemeFreeProQtyOtherDetails WHERE StoreID ='" + StoreID + "'", null);
         int chkI = 0;
@@ -15612,7 +15614,7 @@ open();
         return chkI;
     }
 
-    public void fnChkandInsertIfNotPresentInStoreSchemeFreeProQtyOtherDetails(String StoreID)
+    public static void fnChkandInsertIfNotPresentInStoreSchemeFreeProQtyOtherDetails(String StoreID)
     {
         int chkI=fnCheckIfStoreExistInStoreSchemeFreeProQtyOtherDetails(StoreID);
         int GetStoreType=fnGetStoreTypeOnStoreID(StoreID);
@@ -15625,7 +15627,7 @@ open();
 
     }
 
-    public void fnInsertStoreRecordsInStoreSchemeFreeProQtyOtherDetailsIfNotPresent(String SchemeIDFreePRodQtyDetails[],String StoreID,String StoreType) {
+    public static void fnInsertStoreRecordsInStoreSchemeFreeProQtyOtherDetailsIfNotPresent(String SchemeIDFreePRodQtyDetails[],String StoreID,String StoreType) {
 
         for(int cnt=0;cnt<SchemeIDFreePRodQtyDetails.length;cnt++)
         {
@@ -15647,12 +15649,12 @@ open();
 
     }
 
-    public void deleteStoreRecordFromtblStoreSchemeFreeProQtyOtherDetailsOnceSubmitted(String storeID)
+    public static void deleteStoreRecordFromtblStoreSchemeFreeProQtyOtherDetailsOnceSubmitted(String storeID)
     {
         db.execSQL("DELETE FROM tblStoreSchemeFreeProQtyOtherDetails WHERE StoreID='"+ storeID +"'");
     }
 
-    public String fnGetFreeQtyFromStoreSchemeFreeProQtyOtherDetails(String storeID,String SchID,String SchemeType,String CombTypeID,String FreeProductID)
+    public static String fnGetFreeQtyFromStoreSchemeFreeProQtyOtherDetails(String storeID,String SchID,String SchemeType,String CombTypeID,String FreeProductID)
     {
 
         int LoncolumnIndex = 0;
@@ -15692,7 +15694,7 @@ open();
         }
     }
 
-    public void UpdateInvoiceButtonStoreFlag(String storeID,String SchID,String SchemeType,String CombTypeID,String FreeProductID,String FreeProductQty,String Discount)
+    public static void UpdateInvoiceButtonStoreFlag(String storeID,String SchID,String SchemeType,String CombTypeID,String FreeProductID,String FreeProductQty,String Discount)
     {
         if(SchemeType.equals("1") || SchemeType.equals("2"))
         {
@@ -15722,7 +15724,7 @@ open();
         }
     }
 
-    public int fnGetStoreTypeOnStoreID(String StoreID) {
+    public static int fnGetStoreTypeOnStoreID(String StoreID) {
 
         int LoncolumnIndex = 0;
         int strStoreType = 0;
@@ -15747,9 +15749,9 @@ open();
 
     }
 
-    public ArrayList<HashMap<String, String>> fetch_catgry_prdctsData(String storeID,int BusinessSegmentId) {
+    public static ArrayList<HashMap<String, String>> fetch_catgry_prdctsData(String storeID,int BusinessSegmentId) {
 
-        open();
+        //open();
         ArrayList<HashMap<String, String>> totalProductDetail=new ArrayList<HashMap<String, String>>();
         //hmapCtgryPrdctDetail= key=prdctId,val=CategoryID
         LinkedHashMap<String, String> hmapCtgryPrdctDetail=new LinkedHashMap<String, String>();
@@ -15831,9 +15833,9 @@ open();
 //hmapProductStock= key =ProductID         value=LineValAftrTxAftrDscnt
         HashMap<String, String> hmapProductExtraOrder=new HashMap<String, String>();
 
+        Cursor cursor = db.rawQuery("SELECT tblProductList.ProductID,tblProductList.CategoryID,tblProductList.ProductShortName,tblProductList.KGLiter ||'^'||tblProductSegementMap.ProductRLP||'^'||tblProductSegementMap.ProductTaxAmount AS ProductVolumeRateTax,'NA/0' As LODQty,0 AS SampleQty,0 AS ProductFreeQty,0 AS ProductOrderQty,0.00 As PrdctDiscount,tblProductSegementMap.RetMarginPer,tblProductSegementMap.VatTax,tblProductSegementMap.ProductMRP,0.00 AS DiscountPercentageGivenOnProduct,0 AS Per,0.00 AS TaxValue,0.00 AS OrderValue,tblProductSegementMap.StandardRate,tblProductSegementMap.StandardRateBeforeTax,tblProductSegementMap.StandardTax,0 As Stock,tblProductSegementMap.flgPriceAva,tblProductSegementMap.flgWholeSellApplicable,tblProductSegementMap.PriceRangeWholeSellApplicable,tblProductSegementMap.StandardRateWholeSale,tblProductSegementMap.StandardRateBeforeTaxWholeSell,tblProductSegementMap.StandardTaxWholeSale,'0' AS UOMID,'0.00' AS LineValBfrTxAftrDscnt,'0.00' AS LineValAftrTxAftrDscnt,0 AS ProductExtraOrder  FROM tblProductList inner join tblProductSegementMap on tblProductList.ProductID=tblProductSegementMap.ProductID inner join tblDistributorStock on tblProductList.ProductID=tblDistributorStock.PrdctId  order by tblProductList.CategoryID,tblProductList.PrdOrdr",null);//Where tblProductSegementMap.BusinessSegmentId="+BusinessSegmentId+"
 
-        //Cursor cursor = db.rawQuery("SELECT ProductID,CategoryID,ProductShortName,KGLiter ||'^'||ProductRLP||'^'||ProductTaxAmount AS ProductVolumeRateTax,'NA/0' As LODQty,0 AS SampleQty,0 AS ProductFreeQty,0 AS ProductOrderQty,0.00 As PrdctDiscount,RetMarginPer,VatTax,ProductMRP,0.00 AS DiscountPercentageGivenOnProduct,0 AS Per,0.00 AS TaxValue,0.00 AS OrderValue,StandardRate,StandardRateBeforeTax,StandardTax,0 As Stock  FROM tblProductList order by CategoryID,ProductID",null);
-        Cursor cursor = db.rawQuery("SELECT tblProductList.ProductID,tblProductList.CategoryID,tblProductList.ProductShortName,tblProductList.KGLiter ||'^'||tblProductSegementMap.ProductRLP||'^'||tblProductSegementMap.ProductTaxAmount AS ProductVolumeRateTax,'NA/0' As LODQty,0 AS SampleQty,0 AS ProductFreeQty,0 AS ProductOrderQty,0.00 As PrdctDiscount,tblProductSegementMap.RetMarginPer,tblProductSegementMap.VatTax,tblProductSegementMap.ProductMRP,0.00 AS DiscountPercentageGivenOnProduct,0 AS Per,0.00 AS TaxValue,0.00 AS OrderValue,tblProductSegementMap.StandardRate,tblProductSegementMap.StandardRateBeforeTax,tblProductSegementMap.StandardTax,0 As Stock,tblProductSegementMap.flgPriceAva,tblProductSegementMap.flgWholeSellApplicable,tblProductSegementMap.PriceRangeWholeSellApplicable,tblProductSegementMap.StandardRateWholeSale,tblProductSegementMap.StandardRateBeforeTaxWholeSell,tblProductSegementMap.StandardTaxWholeSale,'0' AS UOMID,'0.00' AS LineValBfrTxAftrDscnt,'0.00' AS LineValAftrTxAftrDscnt,0 AS ProductExtraOrder  FROM tblProductList inner join tblProductSegementMap on tblProductList.ProductID=tblProductSegementMap.ProductID  order by tblProductList.CategoryID,tblProductList.PrdOrdr",null);//Where tblProductSegementMap.BusinessSegmentId="+BusinessSegmentId+"
+       // Cursor cursor = db.rawQuery("SELECT tblProductList.ProductID,tblProductList.CategoryID,tblProductList.ProductShortName,tblProductList.KGLiter ||'^'||tblProductSegementMap.ProductRLP||'^'||tblProductSegementMap.ProductTaxAmount AS ProductVolumeRateTax,'NA/0' As LODQty,0 AS SampleQty,0 AS ProductFreeQty,0 AS ProductOrderQty,0.00 As PrdctDiscount,tblProductSegementMap.RetMarginPer,tblProductSegementMap.VatTax,tblProductSegementMap.ProductMRP,0.00 AS DiscountPercentageGivenOnProduct,0 AS Per,0.00 AS TaxValue,0.00 AS OrderValue,tblProductSegementMap.StandardRate,tblProductSegementMap.StandardRateBeforeTax,tblProductSegementMap.StandardTax,0 As Stock,tblProductSegementMap.flgPriceAva,tblProductSegementMap.flgWholeSellApplicable,tblProductSegementMap.PriceRangeWholeSellApplicable,tblProductSegementMap.StandardRateWholeSale,tblProductSegementMap.StandardRateBeforeTaxWholeSell,tblProductSegementMap.StandardTaxWholeSale,'0' AS UOMID,'0.00' AS LineValBfrTxAftrDscnt,'0.00' AS LineValAftrTxAftrDscnt,0 AS ProductExtraOrder  FROM tblProductList inner join tblProductSegementMap on tblProductList.ProductID=tblProductSegementMap.ProductID  order by tblProductList.CategoryID,tblProductList.PrdOrdr",null);//Where tblProductSegementMap.BusinessSegmentId="+BusinessSegmentId+"
 
         //tblProductList.ProductID------------->0
         //tblProductList.CategoryID------------>1
@@ -15941,15 +15943,15 @@ open();
         } finally {
             cursor.close();
 
-            close();
+           // close();
         }
 
 
     }
 
-	/*	public ArrayList<HashMap<String, String>> fetch_catgry_prdctsData(String storeID,int BusinessSegmentId) {
+	/*	public static ArrayList<HashMap<String, String>> fetch_catgry_prdctsData(String storeID,int BusinessSegmentId) {
 
-			open();
+			//open();
 			ArrayList<HashMap<String, String>> totalProductDetail=new ArrayList<HashMap<String, String>>();
 			//hmapCtgryPrdctDetail= key=prdctId,val=CategoryID
 			LinkedHashMap<String, String> hmapCtgryPrdctDetail=new LinkedHashMap<String, String>();
@@ -16092,14 +16094,14 @@ open();
 			} finally {
 				cursor.close();
 
-				close();
+				//close();
 			}
 
 
 		}
 	*/
 
-    public long savetblPriceApplyType(int DiscountLevelType,double cutoffvalue)
+    public static long savetblPriceApplyType(int DiscountLevelType,double cutoffvalue)
     {
         ContentValues initialValues = new ContentValues();
         initialValues.put("DiscountLevelType", DiscountLevelType);
@@ -16107,7 +16109,7 @@ open();
         return db.insert(DATABASE_TABLE_tblPriceApplyType, null, initialValues);
     }
 
-    public long savetblLastOutstanding(String StoreID,double Outstanding,double AmtOverdue)
+    public static long savetblLastOutstanding(String StoreID,double Outstanding,double AmtOverdue)
     {
         ContentValues initialValues = new ContentValues();
         initialValues.put("StoreID", StoreID);
@@ -16116,7 +16118,7 @@ open();
         return db.insert(DATABASE_TABLE_tblLastOutstanding, null, initialValues);
     }
 
-    public long savetblInvoiceLastVisitDetails(String StoreID,String InvCode,String InvDate,String OutstandingAmt,String AmtOverdue)
+    public static long savetblInvoiceLastVisitDetails(String StoreID,String InvCode,String InvDate,String OutstandingAmt,String AmtOverdue)
     {
         ContentValues initialValues = new ContentValues();
         initialValues.put("StoreID", StoreID);
@@ -16127,9 +16129,9 @@ open();
         return db.insert(DATABASE_TABLE_tblInvoiceLastVisitDetails, null, initialValues);
     }
 
-    public int fnGettblPriceApplyDiscountLevelType(String storeID)
+    public static int fnGettblPriceApplyDiscountLevelType(String storeID)
     {
-        open();
+        //open();
         int PriceApplyDiscountLevelType=0;
         Cursor cursor=db.rawQuery("Select DiscountLevelType from tblPriceApplyType",null);
 
@@ -16143,13 +16145,13 @@ open();
         if(cursor!=null) {
             cursor.close();
         }
-        close();
+       // close();
         return PriceApplyDiscountLevelType;
     }
 
-    public LinkedHashMap<String, String> fetch_Category_List_Return(String StoreID)
+    public static LinkedHashMap<String, String> fetch_Category_List_Return(String StoreID)
     {
-        open();
+        //open();
         // System.out.println("Abhinav Raj is 1");
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         Cursor cursor = db.rawQuery("SELECT CategoryID,CategoryDescr FROM tblCatagoryMstr inner join tblTmpInvoiceDetails on tblCatagoryMstr.CategoryID=tblTmpInvoiceDetails.CatID Where Stock>0 and tblTmpInvoiceDetails.StoreID='"+StoreID+"'",null);
@@ -16183,13 +16185,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> fetch_Category_List()
+    public static LinkedHashMap<String, String> fetch_Category_List()
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         Cursor cursor = db.rawQuery("SELECT CategoryID,CategoryDescr FROM tblCatagoryMstr Order by CatOrdr",null);
         try
@@ -16217,13 +16219,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> fetch_MaterialMstr_List(String storeID)
+    public static LinkedHashMap<String, String> fetch_MaterialMstr_List(String storeID)
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapMaterial = new LinkedHashMap<String, String>();
         Cursor cursor = db.rawQuery("SELECT POSMaterialID,POSMaterialDescr FROM tblPOSMaterialMstr Order by POSMaterialID",null);
         try
@@ -16252,15 +16254,15 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
     //tblSchemeSlabBucketProductMapping
-    public HashMap<String, HashMap<String, HashMap<String, String>>> fnProductWiseAppliedScehmeSlabDetails(String StorID)
+    public static HashMap<String, HashMap<String, HashMap<String, String>>> fnProductWiseAppliedScehmeSlabDetails(String StorID)
     {
         String StorIDnew="1";//StorID;
-        open();
+        //open();
         String[] uniqueProdSchemeList=fnUniqueProdSchemeList();
 
         String productId;
@@ -16336,11 +16338,11 @@ open();
             //// System.out.println("Betu HashMapProduct = "+hmapPrdctIdScheme);
         }
 
-        close();
+        //close();
         return hmapPrdctIdScheme;
     }
 
-    public String[] fnUniqueProdSchemeList()
+    public static String[] fnUniqueProdSchemeList()
     {
 
         Cursor cursor = db.rawQuery("SELECT Distinct ProductID from tblSchemeSlabBucketProductMapping Order by ProductID", null);
@@ -16365,9 +16367,9 @@ open();
         }
     }
 
-    public HashMap<String, String> fnGetSchemeIdSchemeDescptn(String schemeId)
+    public static HashMap<String, String> fnGetSchemeIdSchemeDescptn(String schemeId)
     {
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("Select SchemeID , SchemeName from tblSchemeMstr where SchemeID'"+schemeId+"'", null);
         try
@@ -16388,13 +16390,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public String[] fectProductIDMappedInSchSlbSubBukRowId(int schSlbSubRowID)
+    public static String[] fectProductIDMappedInSchSlbSubBukRowId(int schSlbSubRowID)
     {
-        //open();
+        ////open();
         Cursor cursor = db.rawQuery("SELECT ProductID FROM tblSchemeSlabBucketProductMapping WHERE RowID ="+ schSlbSubRowID , null);
         try {
             String CompleteResult[] = new String[cursor.getCount()];
@@ -16415,9 +16417,9 @@ open();
 
     }
 
-    public HashMap<String, String> fnProductRelatedSchemesList()
+    public static HashMap<String, String> fnProductRelatedSchemesList()
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT Distinct ProductID,PrdString from tblProductRelatedScheme", null);
         try
         {
@@ -16438,13 +16440,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public String[] fectProductIDBenifitsListOnPurchase(int schId,int schSlabId,int schSlbBuckId)
+    public static String[] fectProductIDBenifitsListOnPurchase(int schId,int schSlabId,int schSlbBuckId)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT RowID AS BenifitRowID,BenSubBucketType,BenDiscApplied,CouponCode,BenSubBucketValue,Per, UOM,ProRata FROM tblSchemeSlabBenefitsBucketDetails WHERE SchemeID ="+ schId +" and SchemeSlabID="+schSlabId +" and BucketID="+schSlbBuckId , null);
         try {
             String PerBen;
@@ -16476,13 +16478,13 @@ open();
             return CompleteResult;
         }finally {
             cursor.close();
-            close();
+            //close();
         }
 
     }
 
-    public HashMap<String, String> fectProductIDMappedInSchSlbSubBukBenifits(int BenifitRowID)
-    {	 open();
+    public static HashMap<String, String> fectProductIDMappedInSchSlbSubBukBenifits(int BenifitRowID)
+    {	 //open();
         Cursor cursor = db.rawQuery("SELECT tblSchemeSlabBenefitsProductMappingDetail.ProductID,tblProductList.ProductShortName FROM tblSchemeSlabBenefitsProductMappingDetail inner join tblProductList on tblSchemeSlabBenefitsProductMappingDetail.ProductID=tblProductList.ProductID  WHERE RowID ="+ BenifitRowID , null);
         try {
             HashMap<String, String> CompleteResult = new HashMap<String, String>();
@@ -16498,14 +16500,14 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public String[] fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsValueDetail(int BenifitRowID,int toMultiply,Double defaultValue,int BenSubBucketType)
+    public static String[] fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsValueDetail(int BenifitRowID,int toMultiply,Double defaultValue,int BenSubBucketType)
     {
 
-        open();
+        //open();
         Cursor cursor2 = db.rawQuery("SELECT BenValue FROM tblSchemeSlabBenefitsValueDetail where RowID="+BenifitRowID, null);
         if(BenSubBucketType==2 || BenSubBucketType==6 || BenSubBucketType==8)
         {
@@ -16541,13 +16543,13 @@ open();
 
         } finally {
             cursor2.close();
-            close();
+            //close();
         }
         //////////// System.out.println("fnCheckflgToShowStrachRowOrNot : " +chkI);
         return chkI;
     }
 
-    public String[] fnGetEarlierFreeProductIDandQtyonSchemeSlabBuckIDTypeBasis(String StoreID,int productID,int schId,int schSlabId,int schSlbBuckId,int BenifitRowID)
+    public static String[] fnGetEarlierFreeProductIDandQtyonSchemeSlabBuckIDTypeBasis(String StoreID,int productID,int schId,int schSlabId,int schSlbBuckId,int BenifitRowID)
     {
         Cursor cursor = db.rawQuery("SELECT FreeProductID,BenifitAssignedValue From tblFreeProductIDandQtyonSchemeSlabBuckIDTypeBasis where StoreID='"+StoreID+"' and ProductID="+productID+" and schId="+schId+" and schSlabId="+schSlabId+" and schSlbBuckId="+schSlbBuckId+" and BenifitRowID="+BenifitRowID , null);
         try {
@@ -16567,7 +16569,7 @@ open();
         }
     }
 
-    public String fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsPercentageDetail(int BenifitRowID)
+    public static String fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsPercentageDetail(int BenifitRowID)
     {
 
         Cursor cursor2 = db.rawQuery("SELECT RowID,BenValue,Type FROM tblSchemeSlabBenefitsValueDetail where RowID="+BenifitRowID, null);
@@ -16596,7 +16598,7 @@ open();
         return chkI;
     }
 
-    public String fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsFlatAmtDetail(int BenifitRowID)
+    public static String fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsFlatAmtDetail(int BenifitRowID)
     {
 
         Cursor cursor2 = db.rawQuery("SELECT RowID,BenValue,Type FROM tblSchemeSlabBenefitsValueDetail where RowID="+BenifitRowID, null);
@@ -16626,9 +16628,9 @@ open();
         return chkI;
     }
 
-    public HashMap<String, String> fnSchemeIDandDescr()
+    public static HashMap<String, String> fnSchemeIDandDescr()
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT SchemeID,SchemeName from tblSchemeMstr", null);
         try
         {
@@ -16649,13 +16651,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public String[] fnGetProductPurchaseList(String StoreID,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String[] fnGetProductPurchaseList(String StoreID,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT ProdID,0 AS Stock,OrderQty,LineValAftrTxAftrDscnt AS OrderVal,FreeQty,DisVal,SampleQuantity,ProductPrice,UOMId,LineValBfrTxAftrDscnt,LineValAftrTxAftrDscnt,ProductExtraOrder From tblTmpInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
         try {
             String CompleteResult[] = new String[cursor.getCount()];
@@ -16671,14 +16673,14 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public String fngetOrderIDAganistStore(String StoreID,String TmpInvoiceCodePDA)
+    public static String fngetOrderIDAganistStore(String StoreID,String TmpInvoiceCodePDA)
     {
         // System.out.println("Abhinav Nitish Ankit New While Fetching Records Store Id:"+StoreID);
-        open();
+        //open();
         // Cursor cursorE2 = db.rawQuery("SELECT Distinct OrderIDPDA FROM tblTmpInvoiceHeader WHERE StoreID ='" + StoreID + "' and (Sstat=1 or Sstat=2)", null);
         Cursor cursorE2 = db.rawQuery("SELECT Distinct TmpInvoiceCodePDA FROM tblTmpInvoiceHeader WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and (Sstat=1 or Sstat=2)", null);
         String chkI = "0";
@@ -16694,15 +16696,15 @@ open();
             }
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public int fnCheckIfStoreExistInStoreProdcutPurchaseDetails(String StoreID,String TmpInvoiceCodePDA)
+    public static int fnCheckIfStoreExistInStoreProdcutPurchaseDetails(String StoreID,String TmpInvoiceCodePDA)
     {
         // System.out.println("Abhinav Nitish Ankit New While Fetching Records Store Id:"+StoreID);
-        open();
+        //open();
         //Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' and (Sstat=1 or Sstat=2)", null);
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
         int chkI = 0;
@@ -16720,14 +16722,14 @@ open();
             }
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public int fnCheckIfStoreExistInStoreProdcutInvoiceDetails(String StoreID,String TmpInvoiceCodePDA)
+    public static int fnCheckIfStoreExistInStoreProdcutInvoiceDetails(String StoreID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         // Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceHeader WHERE StoreID ='" + StoreID + "' and (Sstat=1 or Sstat=2)", null);
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceHeader WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
         int chkI = 0;
@@ -16745,14 +16747,14 @@ open();
             }
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public String[] fnGetOnProductQtyChangeApplyApplicableDiscounts(String StoreID,String ProductIdOnClicked)
+    public static String[] fnGetOnProductQtyChangeApplyApplicableDiscounts(String StoreID,String ProductIdOnClicked)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT BenSubBucketType,BenifitAssignedValue,BenifitDiscountApplied FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE StoreID ='"+ StoreID + "' and ProductID="+ Integer.parseInt(ProductIdOnClicked) +" and BenSubBucketType in(6,7)", null);
         String[] chkI = new String[cursorE2.getCount()];
         try {
@@ -16767,14 +16769,14 @@ open();
 
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
         return chkI;
     }
 
-    public int fnCheckIfPrdRelatedDataExisitIntblStoreProductAppliedSchemesBenifitsRecords(String StoreID,String ProductIdOnClicked)
+    public static int fnCheckIfPrdRelatedDataExisitIntblStoreProductAppliedSchemesBenifitsRecords(String StoreID,String ProductIdOnClicked)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE StoreID ='"+ StoreID + "' and ProductID="+ Integer.parseInt(ProductIdOnClicked), null);
         int chkI = 0;
         try {
@@ -16789,14 +16791,14 @@ open();
 
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    /*public String[] fnGetDistinctSchIdsAgainstStoreProduct(String StoreID,String ProductIdOnClicked,int schId)
+    /*public static String[] fnGetDistinctSchIdsAgainstStoreProduct(String StoreID,String ProductIdOnClicked,int schId)
 		   {
-		    open();
+		    //open();
 		    Cursor cursor = db.rawQuery("SELECT BenSubBucketType,FreeProductID,BenifitAssignedValue,BenifitDiscountApplied,IFNULL(BenifitCouponCode,0),schId,schSlbRowId,SchTypeId,ProductID FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE StoreID ='"+ StoreID + "' and  schId="+schId+" and BenSubBucketType in(1,5,2,6,3,7,10)", null);
 		    String[] chkI = new String[cursor.getCount()];
 		    try {
@@ -16821,9 +16823,9 @@ open();
 		     close();
 		    }
 		    return chkI;*/
-    public String fnGetDistinctSchIdsAgainstStoreProduct(String StoreID,String ProductIdOnClicked,int schId)
+    public static String fnGetDistinctSchIdsAgainstStoreProduct(String StoreID,String ProductIdOnClicked,int schId)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT schSlbRowId,SchTypeId FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE StoreID ='"+ StoreID + "' and  schId="+schId+" and BenSubBucketType in(1,5,2,6,3,7,10) and ProductID="+Integer.parseInt(ProductIdOnClicked), null);
         String chkI = "";
         try {
@@ -16845,22 +16847,22 @@ open();
 
         } finally {
             cursor.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public void fnDeleteRecordsAllRecordsForClickedProdoductId(String StoreID,String ProductIdOnClicked,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void fnDeleteRecordsAllRecordsForClickedProdoductId(String StoreID,String ProductIdOnClicked,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE StoreID ='"+ StoreID + "'  and ProductID="+ Integer.parseInt(ProductIdOnClicked)+" AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
-        close();
+        //close();
     }
 
-    public void fnDeleteProductDetailsFromReturnTables(String StoreID,String ProductIdOnClicked,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void fnDeleteProductDetailsFromReturnTables(String StoreID,String ProductIdOnClicked,String pdaOrderID,String TmpInvoiceCodePDA)
     {
 
-        open();
+        //open();
         try
         {
             db.execSQL("DELETE FROM tblStoreProductPhotoDetail WHERE StoreID ='"+ StoreID + "'  and ProductID="+ Integer.parseInt(ProductIdOnClicked)+" and TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
@@ -16872,12 +16874,12 @@ open();
 
         }
         finally {
-            close();
+          //  close();
         }
 
     }
 
-    public long fnsaveStoreProdcutPurchaseDetails(String IMEIno,String StoreID,String CatID,String ProdID, String TransDate,
+    public static long fnsaveStoreProdcutPurchaseDetails(String IMEIno,String StoreID,String CatID,String ProdID, String TransDate,
                                                   int Stock, int OrderQty,
                                                   Double OrderVal, int FreeQty, Double DisVal,
                                                   int selProdIDForSampleQty, String ProductShortName, Double ProductRate,int Outstat,Double TaxRate,Double TaxValue, int StoreCatNodeId,String OrderIDPDA,int flgIsQuoteRateApplied,String distibutorID,int flgWholeSellApplicable,String TmpInvoiceCodePDA,String strFinalAllotedInvoiceIds) {//String DisplayUnit
@@ -16926,7 +16928,7 @@ open();
         return db.insert(DATABASE_TABLE_MAIN210, null, initialValues);
     }
 
-		/* public long fnsaveStoreProdcutPurchaseDetails(String IMEIno,String StoreID,String CatID,String ProdID, String TransDate,
+		/* public static long fnsaveStoreProdcutPurchaseDetails(String IMEIno,String StoreID,String CatID,String ProdID, String TransDate,
 			      int Stock, int OrderQty,
 			    Double OrderVal, int FreeQty, Double DisVal,
 			    int selProdIDForSampleQty, String ProductShortName, Double ProductRate,int Outstat,Double TaxRate,Double TaxValue, int StoreCatNodeId,String OrderIDPDA,int flgIsQuoteRateApplied,String distibutorID) {//String DisplayUnit
@@ -16972,21 +16974,21 @@ open();
 			   return db.insert(DATABASE_TABLE_MAIN210, null, initialValues);
 			  }*/
 
-    public void deleteStoreRecordFromtblStorePurchaseDetailsFromProductTrsaction(String storeID,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void deleteStoreRecordFromtblStorePurchaseDetailsFromProductTrsaction(String storeID,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblTmpInvoiceDetails WHERE StoreID='"+ storeID +"'  and TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
-        close();
+       // close();
     }
 
-    public void deleteStoreRecordFromtblStorePurchaseDetailsFromProductTrsactionSingleProduct(String storeID,String pdaOrderID,String getPIdToremove,String TmpInvoiceCodePDA)
+    public static void deleteStoreRecordFromtblStorePurchaseDetailsFromProductTrsactionSingleProduct(String storeID,String pdaOrderID,String getPIdToremove,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblTmpInvoiceDetails WHERE StoreID='"+ storeID +"'  and ProdID='"+getPIdToremove+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
-        close();
+       // close();
     }
 
-    public long fnsavetblStoreProductAppliedSchemesBenifitsRecords(String StoreID,int ProdID,int schId, int schSlabId,int schSlbBuckId, double schSlabSubBucketValue,int schSubBucketValType,
+    public static long fnsavetblStoreProductAppliedSchemesBenifitsRecords(String StoreID,int ProdID,int schId, int schSlabId,int schSlbBuckId, double schSlabSubBucketValue,int schSubBucketValType,
                                                                    int schSlabSubBucketType, int BenifitRowID, int BenSubBucketType,
                                                                    int FreeProductID, double BenifitSubBucketValue, double BenifitMaxValue, double BenifitAssignedValue, double BenifitAssignedValueType, int BenifitDiscountApplied, String BenifitCouponCode,double per,double UOM,int WhatFinallyApplied,int schSlbRowId, int SchTypeId,String pdaOrderID,String TmpInvoiceCodePDA){
         //StoreID text not null,ProductID int not null,schId int not null,schSlabId integer not null,schSlbBuckId integer not null,schSlabSubBucketValue real not null,
@@ -17032,16 +17034,16 @@ open();
         initialValues.put("TmpInvoiceCodePDA", TmpInvoiceCodePDA);
 
         // System.out.println("Save Data Save in Table 211");
-        open();
+        //open();
         long xyx= db.insert(DATABASE_TABLE_Main211, null, initialValues);
-        close();
+        //close();
         return xyx;
     }
 
-    public String fnctnGetMaxAssignedBen8DscntApld1(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String fnctnGetMaxAssignedBen8DscntApld1(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
         String discountValOnBen8apld1="";
-        open();
+        //open();
         try
         {
             Cursor cursor=db.rawQuery("Select Max(BenifitAssignedValue),BenifitRowID  from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"' and  BenSubBucketType='"+8+"' and BenifitDiscountApplied ='"+1+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' Limit 1", null);
@@ -17062,21 +17064,21 @@ open();
                 }
             }
 
-            close();
+            //close();
         }
         catch(Exception e)
         {
-            close();
+            //close();
         }
         return discountValOnBen8apld1;
     }
 
-    public String fnctnGetMaxAssignedBen8DscntApld2(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String fnctnGetMaxAssignedBen8DscntApld2(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
         String discountValOnBen8apld1="";
         try
         {
-            open();
+            //open();
 
             Cursor cursor=db.rawQuery("Select Max(BenifitAssignedValue),BenifitRowID  from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"'  and BenSubBucketType='"+8+"' and BenifitDiscountApplied='"+2+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+" Limit 1", null);
 
@@ -17097,19 +17099,19 @@ open();
                 }
             }
 
-            close();
+           // close();
         }
         catch(Exception e)
         {
-            close();
+           // close();
         }
         return discountValOnBen8apld1;
     }
 
-    public String fnctnGetMaxAssignedBen9DscntApld1(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String fnctnGetMaxAssignedBen9DscntApld1(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
         String discountValOnBen8apld1="";
-        open();
+        //open();
         try
         {
             Cursor cursor=db.rawQuery("Select Max(BenifitAssignedValue),BenifitRowID  from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"'  and BenSubBucketType='"+9+"' and BenifitDiscountApplied ='"+1+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' Limit 1", null);
@@ -17130,21 +17132,21 @@ open();
                 }
             }
 
-            close();
+           // close();
         }
         catch(Exception e)
         {
-            close();
+           // close();
         }
         return discountValOnBen8apld1;
     }
 
-    public String fnctnGetMaxAssignedBen9DscntApld2(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String fnctnGetMaxAssignedBen9DscntApld2(String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
         String discountValOnBen8apld1="";
         try
         {
-            open();
+            //open();
 
             Cursor cursor=db.rawQuery("Select Max(BenifitAssignedValue),BenifitRowID  from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"'  and BenSubBucketType='"+9+"' and BenifitDiscountApplied ='"+2+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' Limit 1", null);
 
@@ -17165,21 +17167,21 @@ open();
             }
 
 
-            close();
+            //close();
         }
         catch(Exception e)
         {
-            close();
+            //close();
         }
         return discountValOnBen8apld1;
     }
 
-    public String fnctnGetHighestDiscount(String freeProductId,String storeId,String benSubBucketType)
+    public static String fnctnGetHighestDiscount(String freeProductId,String storeId,String benSubBucketType)
     {
         String highestDiscount="";
         try
         {
-            open();
+            //open();
 
             Cursor cursor=db.rawQuery("Select Distinct FreeProductID,Max(BenifitAssignedValue),BenSubBucketType from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"' and FreeProductID='"+freeProductId+"' and BenSubBucketType ='"+benSubBucketType+"' Limit 1", null);
             if(cursor.getCount()>0)
@@ -17190,18 +17192,18 @@ open();
                 }
             }
 
-            close();
+            //close();
         }
         catch(Exception e)
         {
-            close();
+           // close();
         }
         return highestDiscount;
     }
 
-    public HashMap<String, String> fnctnSchemeStoreID(String storeID)
+    public static HashMap<String, String> fnctnSchemeStoreID(String storeID)
     {
-        open();
+        //open();
         //hmapSchemeStoreID= key = SchemeId  value=StoreId
         HashMap<String, String> hmapSchemeStoreID=new HashMap<String, String>();
         //tblSchemeStoreMapping=StoreID text null,SchemeID text null
@@ -17219,13 +17221,13 @@ open();
                 }
             }
         }
-        close();
+       // close();
         return hmapSchemeStoreID;
     }
 
-    public ArrayList<HashMap<String, String>> fnctnSchemeSlabIdSchmVal()
+    public static ArrayList<HashMap<String, String>> fnctnSchemeSlabIdSchmVal()
     {
-        open();
+        //open();
         // tblSchemeSlabDetail (SchemeID text null,SchemeSlabID text null,SchemeSlabDesc text null,BenifitDescr text null);";
 
         ArrayList<HashMap<String, String>> arrayListSchemeSlabDteail=new ArrayList<HashMap<String,String>>();
@@ -17256,13 +17258,13 @@ open();
 
             }
         }
-        close();
+       // close();
         return arrayListSchemeSlabDteail;
     }
 
-    public String fnctnGetHighestDiscountPercentge(String freeProductId,String storeId,String TmpInvoiceCodePDA)
+    public static String fnctnGetHighestDiscountPercentge(String freeProductId,String storeId,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         String highestDiscount="";
         Cursor cursor=db.rawQuery("Select  Max(BenifitAssignedValue),BenifitRowID from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"' and FreeProductID='"+freeProductId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and BenSubBucketType in (2,6) Limit 1", null);
         try {
@@ -17281,9 +17283,9 @@ open();
                     }
                 }
             }
-            close();
+           // close();
         } catch (Exception ex) {
-            close();
+            //close();
             Log.e(TAG, ex.toString());
         }
 
@@ -17291,9 +17293,9 @@ open();
         return highestDiscount;
     }
 
-    public String[] fnGetAllSchSlabbasedOnSchemeID(String SchemeID)
+    public static String[] fnGetAllSchSlabbasedOnSchemeID(String SchemeID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT DISTINCT SchemeSlabID FROM tblSchemeSlabDetail WHERE SchemeID ='"
                 + SchemeID + "'", null);
         String AllSchemeSlabID[] = new String[cursorE2.getCount()];
@@ -17315,14 +17317,14 @@ open();
             return AllSchemeSlabID;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String fnctnGetHighestDiscountAmount(String freeProductId,String storeId,String TmpInvoiceCodePDA)
+    public static String fnctnGetHighestDiscountAmount(String freeProductId,String storeId,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         String highestDiscount="";
         Cursor cursor=db.rawQuery("Select  Max(BenifitAssignedValue),BenifitRowID from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and ProductID='"+freeProductId+"' and BenSubBucketType in (3,7,10) Limit 1", null);
         try {
@@ -17341,9 +17343,9 @@ open();
                     }
                 }
             }
-            close();
+           // close();
         } catch (Exception ex) {
-            close();
+            //close();
             Log.e(TAG, ex.toString());
         }
 
@@ -17352,17 +17354,17 @@ open();
         return highestDiscount;
     }
 
-    public void updatewhatAppliedFlag(int flag,String storeId,int benifitrRowId,String pdaOrderID,String TmpInvoiceCodePDA) {
+    public static void updatewhatAppliedFlag(int flag,String storeId,int benifitrRowId,String pdaOrderID,String TmpInvoiceCodePDA) {
 
         try {
-            open();
+            //open();
 
 
             final ContentValues values = new ContentValues();
             values.put("WhatFinallyApplied", flag);
             int affected = db.update(DATABASE_TABLE_Main211, values, "StoreID=? AND BenifitRowID=? AND  TmpInvoiceCodePDA=? ",new String[] { storeId,""+benifitrRowId,TmpInvoiceCodePDA });
 
-            close();
+            //close();
 
 
         } catch (Exception ex) {
@@ -17371,9 +17373,9 @@ open();
 
     }
 
-    public String fnctnGetfreePerUnitVol(String freeProductId,String storeId,String TmpInvoiceCodePDA)
+    public static String fnctnGetfreePerUnitVol(String freeProductId,String storeId,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         String perUnit="";
         Cursor cursor=db.rawQuery("Select  Per,UOM from tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and ProductID='"+freeProductId+"' and BenSubBucketType = '"+10+"' ", null);
         if(cursor.getCount()>0)
@@ -17392,13 +17394,13 @@ open();
             }
         }
 
-        close();
+        //close();
         return perUnit;
     }
 
-    public String[] fnGetProductsAgainstBenifitTable(String StoreID,String ProdId)
+    public static String[] fnGetProductsAgainstBenifitTable(String StoreID,String ProdId)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT FreeProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+StoreID+"' and ProductID='"+ProdId+"'", null);
         String AllSchemeSlabID[] = new String[cursorE2.getCount()];
 
@@ -17419,14 +17421,14 @@ open();
             return AllSchemeSlabID;
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
 
     }
 
-    public int fnGetSlabIdBasedOnPrdIDSchmId(String StoreID,String ProdId,int SchID)
+    public static int fnGetSlabIdBasedOnPrdIDSchmId(String StoreID,String ProdId,int SchID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT schSlabId FROM  tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+StoreID+"' and ProductID='"+ProdId+"' and schId="+SchID, null);
         int AllSchemeSlabID = 0;
 
@@ -17445,16 +17447,16 @@ open();
             return AllSchemeSlabID;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public int fnGetStoreCatNodeId(String StoreID)
+    public static int fnGetStoreCatNodeId(String StoreID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT StoreType FROM  tblStoreList where StoreID='"+StoreID+"'", null);
         int StoreCatNodeId = 0;
-        //open();
+        ////open();
         try {
             if(cursorE2.getCount()>0)
             {
@@ -17476,12 +17478,12 @@ open();
 
     }
 
-    public int fnGetRowIDBasedOnSchIDAndSlabID(int SchID,int slabSchmId)
+    public static int fnGetRowIDBasedOnSchIDAndSlabID(int SchID,int slabSchmId)
     {
         //tblSchemeSlabBenefitsBucketDetails
         // [11:23:51 PM] Abhinav Raj: RowID
         //[11:23:58 PM] Abhinav Raj: SchemeID text null,SchemeSlabID
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT BenifitRowID FROM  tblSchemeSlabBenefitsBucketDetails where  SchemeID='"+SchID+"' and SchemeSlabID="+slabSchmId, null);
         int AllSchemeSlabID = 0;
 
@@ -17500,14 +17502,14 @@ open();
             return AllSchemeSlabID;
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
 
     }
 
-    public String[] fnGetProductsSchIdSlabRow(String StoreID,int RowID,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String[] fnGetProductsSchIdSlabRow(String StoreID,int RowID,String pdaOrderID,String TmpInvoiceCodePDA)
     {//tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
-        open();//schId
+        //open();//schId
         // Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID, null);
         Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID +" AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'  and StoreID='"+StoreID+"'", null);
         String AllProductInSlab[] = new String[cursorE2.getCount()];
@@ -17529,14 +17531,14 @@ open();
             return AllProductInSlab;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String[] fnGetProductsSchIds(String StoreID,int schID,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String[] fnGetProductsSchIds(String StoreID,int schID,String pdaOrderID,String TmpInvoiceCodePDA)
     {//tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
-        open();//schIdsd
+        //open();//schIdsd
         //  ssd
         // Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID, null);
         Cursor cursorE2 = db.rawQuery("SELECT ProductID,schSlbRowId,BenifitAssignedValue,FreeProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schId="+schID +" AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'  and StoreID='"+StoreID+"' ", null);
@@ -17559,28 +17561,28 @@ open();
             return AllProductInSlab;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public void fnDeleteOldSchemeRowIdRecords(String StoreID,int RowID,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void fnDeleteOldSchemeRowIdRecords(String StoreID,int RowID,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblStoreProductAppliedSchemesBenifitsRecords where  StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and schSlbRowId="+RowID);
-        close();
+       // close();
     }
 
-    public void fnDeleteOldStoreProductAppliedSchemesBenifitsRecordsWhileSubmit(String StoreID,String pdaOrderID)
+    public static void fnDeleteOldStoreProductAppliedSchemesBenifitsRecordsWhileSubmit(String StoreID,String pdaOrderID)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblStoreProductAppliedSchemesBenifitsRecords where OrderIDPDA='"+pdaOrderID+"'  and StoreID='"+StoreID+"'");
-        close();
+       // close();
     }
 
-    public String[] fnGetRowsIDsAgainstProdIs(String StoreID,int schId)
+    public static String[] fnGetRowsIDsAgainstProdIs(String StoreID,int schId)
     {//tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
-        open();//schId
+        //open();//schId
         // Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID, null);
         Cursor cursorE2 = db.rawQuery("SELECT BenifitRowID,BenSubBucketType,schSlbRowId,BenifitAssignedValue,FreeProductID,SchTypeId,ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where  StoreID='"+StoreID+"' and schId="+schId, null);
         String AllProductInSlab[] = new String[cursorE2.getCount()];
@@ -17602,14 +17604,14 @@ open();
             return AllProductInSlab;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String dbfunctiongetProdMapedWithBenifitRowID(int benifitRowID,int ClickedProID)
+    public static String dbfunctiongetProdMapedWithBenifitRowID(int benifitRowID,int ClickedProID)
     {//tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
-        open();//schId
+        //open();//schId
         //tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
         // Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID, null);
         Cursor cursorE2 = db.rawQuery("SELECT tblStoreProductAppliedSchemesBenifitsRecords.ProductID,tblStoreProductAppliedSchemesBenifitsRecords.FreeProductID FROM  tblSchemeSlabBenefitsProductMappingDetail inner join tblStoreProductAppliedSchemesBenifitsRecords on tblSchemeSlabBenefitsProductMappingDetail.RowID=tblStoreProductAppliedSchemesBenifitsRecords.BenifitRowID  where  tblSchemeSlabBenefitsProductMappingDetail.RowID='"+benifitRowID+"'", null);
@@ -17631,14 +17633,14 @@ open();
             return AllProductInSlab;
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String dbfunctiongetProdMapedWithBenifitRowID2(int benifitRowID,int ClickedProID)
+    public static String dbfunctiongetProdMapedWithBenifitRowID2(int benifitRowID,int ClickedProID)
     {//tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
-        open();//schId
+        //open();//schId
         //tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
         // Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID, null);
         Cursor cursorE2 = db.rawQuery("SELECT ProductID,FreeProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where BenifitRowID='"+benifitRowID+"'", null);
@@ -17660,14 +17662,14 @@ open();
             return AllProductInSlab;
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
 
     }
 
-    public String[] fnGetDistinctProductIdAgainstStoreProduct(String StoreID,String schmIdForProductsavdInRecord,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String[] fnGetDistinctProductIdAgainstStoreProduct(String StoreID,String schmIdForProductsavdInRecord,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT BenSubBucketType,ProductID,BenifitAssignedValue,BenifitDiscountApplied,IFNULL(BenifitCouponCode,0),schId,schSlbRowId,SchTypeId FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE StoreID ='"+ StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'  and  schId="+ schmIdForProductsavdInRecord +" and BenSubBucketType in(10)", null);
         String[] chkI = new String[cursor.getCount()];
         try {
@@ -17689,14 +17691,14 @@ open();
 
         } finally {
             cursor.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public String[] fnctnGetBensubBucket10Column(String schmId,String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String[] fnctnGetBensubBucket10Column(String schmId,String storeId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cursor=db.rawQuery("Select ProductID,FreeProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where StoreID='"+storeId+"' and schId='"+schmId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and BenSubBucketType in(1,10)", null);
         try{
             String[] productIdBen10=new String[cursor.getCount()];
@@ -17721,11 +17723,11 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public void updateBensubBucket10Col(String storeId,String schemeId,String productId,String benSubBucketType)
+    public static void updateBensubBucket10Col(String storeId,String schemeId,String productId,String benSubBucketType)
     {
         final ContentValues values = new ContentValues();
         values.put("BenifitAssignedValue", 0.0);
@@ -17735,16 +17737,16 @@ open();
         int affected = db.update(DATABASE_TABLE_Main211, values, "StoreID=? AND schId=? AND ProductID=? AND BenSubBucketType=?",new String[] {storeId,schemeId,productId,benSubBucketType});
     }
 
-    public void deleteUnRequiredRecordsFromTablesAfterCase() {
-        open();
+    public static void deleteUnRequiredRecordsFromTablesAfterCase() {
+        //open();
         db.execSQL("DELETE FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE Sstat ="+ 4);
 
-        close();
+       // close();
     }
 
-    public int fectRowIdBasedOnSchIDSlabID(int SchID,int SchemeSlabID)
+    public static int fectRowIdBasedOnSchIDSlabID(int SchID,int SchemeSlabID)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT RowID FROM tblSchemeSlabBucketDetails WHERE SchemeID="+SchID+" and SchemeSlabID ="+ SchemeSlabID +" and SlabSubBucketType=5" , null);
         try {
             int CompleteResult = 0;
@@ -17760,14 +17762,14 @@ open();
 
         } finally {
             cursor.close();
-            close();
+          //  close();
         }
 
     }
 
-    public String[] fectProdIDBasedOnRowIDOfProductsPurchased(int sclSlabRowID)
+    public static String[] fectProdIDBasedOnRowIDOfProductsPurchased(int sclSlabRowID)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT ProductID FROM tblSchemeSlabBucketProductMapping WHERE RowID="+sclSlabRowID , null);
         try {
             String CompleteResult[] = new String[cursor.getCount()];
@@ -17783,14 +17785,14 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           //close();
         }
 
     }
 
-    public int fnGetStatValueagainstStore(String StoreID)
+    public static int fnGetStatValueagainstStore(String StoreID)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT Sstat FROM tblStoreList WHERE StoreID='"+StoreID+"'" , null);
         try {
             int Sstat =0;
@@ -17807,14 +17809,14 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+           // close();
         }
 
     }
 
-    public void updateReturnData(HashMap<String, String> hmapReturnData,String OrderPDAID,HashMap<String, String> hmapRemark,String TmpInvoiceCodePDA)
+    public static void updateReturnData(HashMap<String, String> hmapReturnData,String OrderPDAID,HashMap<String, String> hmapRemark,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         String routeID;
         String storeID;
         String returnProductID;
@@ -17876,10 +17878,10 @@ open();
             }
 
         }
-        close();
+       // close();
     }
 
-    public HashMap<String, String> getRtrnOrderQtyReason(String storeID,String OrderPDAID,String TmpInvoiceCodePDA)
+    public static HashMap<String, String> getRtrnOrderQtyReason(String storeID,String OrderPDAID,String TmpInvoiceCodePDA)
     {
         HashMap<String, String> hmapPrdctIdPrdctRtrnQtyReason=new HashMap<String, String>();
         //ReturnProductID text null, ProdReturnQty text null, ProdReturnReason
@@ -17919,7 +17921,7 @@ open();
         }
     }
 
-    public HashMap<String, String> getProductStockList(String StoreID,String OrderPDAID,String TmpInvoiceCodePDA)
+    public static HashMap<String, String> getProductStockList(String StoreID,String OrderPDAID,String TmpInvoiceCodePDA)
     {
 
         //hmapCtgryPrdctDetail= key=prdctId,val=Stock
@@ -17943,9 +17945,9 @@ open();
         }
     }
 
-    public ArrayList<HashMap<String, String>> fetch_catgry_prdctReturnData(String storeId,String OrderPDAID,String TmpInvoiceCodePDA) {
+    public static ArrayList<HashMap<String, String>> fetch_catgry_prdctReturnData(String storeId,String OrderPDAID,String TmpInvoiceCodePDA) {
         // System.out.println("Abhinav Raj is 2");
-        open();
+        //open();
         ArrayList<HashMap<String, String>> totalProductDetail=new ArrayList<HashMap<String, String>>(4);
         //hmapCtgryPrdctDetail= key=prdctId,val=CategoryID
         HashMap<String, String> hmapCtgryPrdctDetail=new HashMap<String, String>();
@@ -17990,15 +17992,15 @@ open();
         } finally {
             cursor.close();
 
-            close();
+            //close();
         }
 
 
     }
 
-    public void UpdateCancelStoreFlag(HashMap<String, String> hmapConfirmCancel,int isCancelConfirm)
+    public static void UpdateCancelStoreFlag(HashMap<String, String> hmapConfirmCancel,int isCancelConfirm)
     {
-        open();
+        //open();
 
         {
             for(Map.Entry<String, String> dataEntry : hmapConfirmCancel.entrySet()){
@@ -18029,16 +18031,16 @@ open();
 
             //  9,1
 
-            close();
+           // close();
 
         }
 
 
     }
 
-    public void UpdateProductCancelStoreFlag(String orderId,int isCancelConfirm)
+    public static void UpdateProductCancelStoreFlag(String orderId,int isCancelConfirm)
     {
-        open();
+        //open();
 
         {
 
@@ -18063,21 +18065,21 @@ open();
 
             //  9,1
 
-            close();
+            //close();
 
         }
 
 
     }
 
-    public int fnCountToDisplayDailySummaryDetailsSKUWise(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static int fnCountToDisplayDailySummaryDetailsSKUWise(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         int CountToDisplayDailySummaryDetailsSKUWise=0;
         //ArrayList<HashMap<String, String>> totalProductDetail=new ArrayList<HashMap<String, String>>(4);
 
         //Getting Category Details Starts Here
         Cursor cursor=null;
-        open();
+        //open();
         if(flgReportFromTmpOrPermanent==0) {
             cursor = db.rawQuery("Select Count(tblCatagoryMstr.CategoryID) from tblCatagoryMstr inner join tblTmpInvoiceDetails on tblCatagoryMstr.CategoryID=tblTmpInvoiceDetails.CatID Where (tblTmpInvoiceDetails.OrderQty>0 or tblTmpInvoiceDetails.FreeQty>0) and tblTmpInvoiceDetails.Sstat=" + DraftorNonSubmitted, null);
         }
@@ -18093,7 +18095,7 @@ open();
             return CountToDisplayDailySummaryDetailsSKUWise;
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
     }
@@ -18105,7 +18107,7 @@ open();
     // change by Abhnav Sir
 
     @SuppressWarnings("unchecked")
-    public LinkedHashMap<String, String> fnGetDailySummaryDetailsSKUWiseCategoryLevel(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static LinkedHashMap<String, String> fnGetDailySummaryDetailsSKUWiseCategoryLevel(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         ArrayList<Object> totalCategoryWiseResult=new ArrayList<Object>(11);
 
@@ -18122,7 +18124,7 @@ open();
         String strGrandTotalTaxValue="";
         String strGrandTotalOrderValue="";
         //tblTmpInvoiceDetails (IMEIno text not null,RouteID int null,StoreID text not null,CatID text  null,ProdID text not null,TransDate string not null,Stock integer not null,OrderQty integer not null,OrderVal real not null,FreeQty integer not null,DisVal real not null,Sstat integer not null,SampleQuantity int null,ProductShortName text null,ProductPrice real null, TaxRate real null,TaxValue real null,StoreCatNodeId int null,OrderIDPDA text null,flgIsQuoteRateApplied int null);";
-        open();
+        //open();
         //  Cursor cursor = db.rawQuery("Select tblCatagoryMstr.CategoryID,tblCatagoryMstr.CategoryDescr,Count(Distinct tblTmpInvoiceDetails.StoreID) As StoreCount,1 AS FlgRowType  from tblCatagoryMstr inner join tblTmpInvoiceDetails on tblCatagoryMstr.CategoryID=tblTmpInvoiceDetails.CatID Where (tblTmpInvoiceDetails.OrderQty>0 or tblTmpInvoiceDetails.FreeQty>0) and tblTmpInvoiceDetails.Sstat="+DraftorNonSubmitted+" Group By tblCatagoryMstr.CategoryID,tblCatagoryMstr.CategoryDescr" , null);
         //or tblTmpInvoiceDetails.Stock>0
         if(flgReportFromTmpOrPermanent==1) {
@@ -18219,17 +18221,17 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
         //Getting Category Details Ends Here
 
     }
 
-    public LinkedHashMap<String, String> fnGetTabelEntry()//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static LinkedHashMap<String, String> fnGetTabelEntry()//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         LinkedHashMap<String, String> hmapPrdRowDetails=new LinkedHashMap<String, String>();
         //ArrayList<Object> totalProductCategoryWiseResult=new ArrayList<Object>(8);
-        open();
+        //open();
         Cursor cursorSKUPrd = db.rawQuery("Select * from tblTmpInvoiceDetails", null);
         try {
             if (cursorSKUPrd.getCount() > 0) {
@@ -18259,17 +18261,17 @@ open();
         } finally {
             cursorSKUPrd.close();
             //LinkedHashMap<String,String> hmapProductList=fnGetTabelEntryProduct();
-            close();
+           // close();
             // close();
         }
 
     }
 
-    public LinkedHashMap<String, String> fnGetTabelEntryProduct()//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static LinkedHashMap<String, String> fnGetTabelEntryProduct()//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         LinkedHashMap<String, String> hmapPrdRowDetails=new LinkedHashMap<String, String>();
         //ArrayList<Object> totalProductCategoryWiseResult=new ArrayList<Object>(8);
-        //open();
+        ////open();
         Cursor cursorSKUPrd = db.rawQuery("Select * from tblProductList", null);
         try {
             if (cursorSKUPrd.getCount() > 0) {
@@ -18304,7 +18306,7 @@ open();
 
     }
 
-    public ArrayList<Object> fnGetDailySummaryDetailsSKUWiseProductLevel(int CategoryId,int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static ArrayList<Object> fnGetDailySummaryDetailsSKUWiseProductLevel(int CategoryId,int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         ArrayList<Object> totalProductCategoryWiseResult=new ArrayList<Object>(8);
 
@@ -18446,9 +18448,9 @@ open();
 
     }
 
-    public int fnGetCountDailySummaryDetailsSKUWiseGrandTotal(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static int fnGetCountDailySummaryDetailsSKUWiseGrandTotal(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
-        //open();
+        ////open();
         Cursor cursorGTota=null;
         if(flgReportFromTmpOrPermanent==1) {
             cursorGTota = db.rawQuery("Select Count(*) from tblInvoiceDetails where (OrderQty>0 or FreeQty>0) and Sstat=" + DraftorNonSubmitted + "", null);
@@ -18475,9 +18477,9 @@ open();
 
     }
 
-    public void insertProductMappedWithSchemApplied(String storeId,String productId,String _schSlabId,String _schmId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void insertProductMappedWithSchemApplied(String storeId,String productId,String _schSlabId,String _schmId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
 
 
         ContentValues initialValues = new ContentValues();
@@ -18496,7 +18498,7 @@ open();
 
 
 
-        close();
+        //close();
 
     }
 
@@ -18504,9 +18506,9 @@ open();
     //	 DATABASE_CREATE_TABLE_215 =tblProductMappedWithSchemeSlabApplied (StoreId,ProductID,schSlabId,schmIdMapped
     // changes by nitish
 
-    public void insertSchemeAlrtVal(String storeId,String productId,String spinnerVal,String product,String SpinnerPosition,String _schSlabId,String _schmAlrtId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static void insertSchemeAlrtVal(String storeId,String productId,String spinnerVal,String product,String SpinnerPosition,String _schSlabId,String _schmAlrtId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         //StoreId text null,ProductID text null,SpinnerVal text null,SpinnerPosition text null,Product text null,schSlabId text null,schmAlrtId text null);";
         Cursor cur=db.rawQuery("Select Product,SpinnerVal from tblAlrtVal where StoreId ='"+storeId+"' and ProductID = '"+productId+"' and schSlabId = '"+_schSlabId+"' and schmAlrtId = '"+_schmAlrtId+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
         ContentValues initialValues = new ContentValues();
@@ -18537,15 +18539,15 @@ open();
 
         }
 
-        close();
+       // close();
         cur.close();
     }
 
-    public String[] getValOfSchemeAlrt(String storeId,String productId,String _schmSlabID,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String[] getValOfSchemeAlrt(String storeId,String productId,String _schmSlabID,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         String[] alrtValues=new String[2];
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select Product,SpinnerPosition from tblAlrtVal where StoreId ='"+storeId+"' and ProductID = '"+productId+"' and schSlabId = '"+_schmSlabID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
 
         if(cur.getCount()>0)
@@ -18563,17 +18565,17 @@ open();
             alrtValues[0]="No Data";
             alrtValues[1]="";
         }
-        close();
+        //close();
         cur.close();
         return alrtValues;
 
     }
 
-    public String getValOfSchemeAlrtSelected(String storeId,String _schmAlrtId,String _schSlabId,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static String getValOfSchemeAlrtSelected(String storeId,String _schmAlrtId,String _schSlabId,String pdaOrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         String alrtValues=null;
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select SpinnerVal from tblAlrtVal where StoreId ='"+storeId+"' and schmAlrtId = '"+_schmAlrtId+"' and schSlabId = '"+_schSlabId+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'",null );
 
         if(cur.getCount()>0)
@@ -18591,13 +18593,13 @@ open();
             alrtValues="0";
 
         }
-        close();
+        //close();
         cur.close();
         return alrtValues;
 
     }
 
-    public  LinkedHashMap<String, String> fnGetDailySummaryDetailsStoreWise(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static  LinkedHashMap<String, String> fnGetDailySummaryDetailsStoreWise(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         ArrayList<Object> totalCategoryWiseResult=new ArrayList<Object>(11);
 
@@ -18615,7 +18617,7 @@ open();
         String StoreTaxValue="";
         String StoreOrderValueAfterTax="";
 
-        open();
+        //open();
         //or tblTmpInvoiceDetails.Stock>0
         Cursor cursor=null;
         if(flgReportFromTmpOrPermanent==0) {
@@ -18687,7 +18689,7 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
         //Getting Category Details Ends Here
 
@@ -18696,14 +18698,14 @@ open();
 
     // StoreWise Summary Function given by Abhinav Sir
 
-    public int fnCountToDisplayDailySummaryDetailsStoreWiseLines(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static int fnCountToDisplayDailySummaryDetailsStoreWiseLines(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         int CountToDisplayDailySummaryDetailsSKUWise=0;
         //ArrayList<HashMap<String, String>> totalProductDetail=new ArrayList<HashMap<String, String>>(4);
 
         //Getting Category Details Starts Here
         Cursor cursor=null;
-        //open();
+        ////open();
         if(flgReportFromTmpOrPermanent==0) {
             cursor = db.rawQuery("Select Count(tblTmpInvoiceDetails.ProdID) from tblTmpInvoiceDetails Where  (tblTmpInvoiceDetails.OrderQty>0 or tblTmpInvoiceDetails.FreeQty>0) and tblTmpInvoiceDetails.Sstat=" + DraftorNonSubmitted, null);
         }
@@ -18726,14 +18728,14 @@ open();
 
     }
 
-    public int fnCountToDisplayDailySummaryDetailsStoreSKUWise(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static int fnCountToDisplayDailySummaryDetailsStoreSKUWise(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         int CountToDisplayDailySummaryDetailsSKUWise=0;
         //ArrayList<HashMap<String, String>> totalProductDetail=new ArrayList<HashMap<String, String>>(4);
 
         //Getting Category Details Starts Here
         Cursor cursor=null;
-        open();
+        //open();
         if(flgReportFromTmpOrPermanent==0) {
             cursor = db.rawQuery("Select Count(tblTmpInvoiceDetails.StoreID) from tblTmpInvoiceDetails Where  (tblTmpInvoiceDetails.OrderQty>0 or tblTmpInvoiceDetails.FreeQty>0) and tblTmpInvoiceDetails.Sstat=" + DraftorNonSubmitted, null);
         }
@@ -18751,14 +18753,14 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+           // close();
         }
 
     }
 
     @SuppressWarnings("unchecked")
 
-    public LinkedHashMap<String, String> fnGetDailySummaryDetailsStoreSKUWiseLevel(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static LinkedHashMap<String, String> fnGetDailySummaryDetailsStoreSKUWiseLevel(int DraftorNonSubmitted,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
 
         //Getting Category Details Starts Here
@@ -18774,7 +18776,7 @@ open();
         String strGrandTotalTaxValue="";
         String strGrandTotalOrderValue="";
         Cursor cursor =null;
-        open();
+        //open();
         // or tblTmpInvoiceDetails.Stock>0
         if(flgReportFromTmpOrPermanent==0) {
             cursor = db.rawQuery("Select tblTmpInvoiceDetails.StoreID,tblStoreList.StoreName,1 AS FlgRowType from  tblTmpInvoiceDetails inner join tblStoreList on  tblTmpInvoiceDetails.StoreID=tblStoreList.StoreID Where  (tblTmpInvoiceDetails.OrderQty>0 or tblTmpInvoiceDetails.FreeQty>0) and tblTmpInvoiceDetails.Sstat=" + DraftorNonSubmitted + " Group By tblTmpInvoiceDetails.StoreID,tblStoreList.StoreName", null);
@@ -18858,14 +18860,14 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
         //Getting Category Details Ends Here
     }
 
     @SuppressWarnings("unchecked")
 
-    public ArrayList<Object> fnGetDailySummaryDetailsStoreSKUWiseProductLevel(String StoreID,int DraftorNonSubmitted,int StoreCatNodeId,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
+    public static ArrayList<Object> fnGetDailySummaryDetailsStoreSKUWiseProductLevel(String StoreID,int DraftorNonSubmitted,int StoreCatNodeId,int flgReportFromTmpOrPermanent)//DraftorNonSubmitted=3:-Submited But Not Synced,DraftorNonSubmitted=1:-Saved as Draft
     {
         ArrayList<Object> totalProductCategoryWiseResult=new ArrayList<Object>(4);
         Cursor cursorSKUPrd=null;
@@ -18946,10 +18948,10 @@ open();
 
     }
 
-    public String[] getOrderedproductsOfBenSubBckt10(String storeId)
+    public static String[] getOrderedproductsOfBenSubBckt10(String storeId)
     {
         String[] productOrderedVal;
-        open();
+        //open();
         Cursor cursor=db.rawQuery("Select ProductID  from tblStoreProductAppliedSchemesBenifitsRecords where StoreID = '"+storeId+"' and BenSubBucketType ="+10, null);
 
         if(cursor.getCount()>0)
@@ -18970,19 +18972,19 @@ open();
             productOrderedVal=new String[1];
             productOrderedVal[0]="No Product";
         }
-        close();
+       // close();
 
         return productOrderedVal;
     }
 
-    public int CheckUserDoneGetStoreOrNot()
+    public static int CheckUserDoneGetStoreOrNot()
     {
         Cursor cursorE2 = null;
         int chkI = 0;
 
         try
         {
-            open();
+            //open();
             cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblStoreList", null);
 
             if (cursorE2.moveToFirst())
@@ -19004,12 +19006,12 @@ open();
             {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public void droptblUserAuthenticationMstrTBL()
+    public static void droptblUserAuthenticationMstrTBL()
     {
         db.execSQL("DROP TABLE IF EXISTS tblUserAuthenticationMstr");
         db.execSQL("DROP TABLE IF EXISTS tblBloodGroup");
@@ -19017,7 +19019,7 @@ open();
 
     }
 
-    public void createtblUserAuthenticationMstrTBL()
+    public static void createtblUserAuthenticationMstrTBL()
     {
         try
         {
@@ -19032,7 +19034,7 @@ open();
 
     }
 
-    public long savetblUserAuthenticationMstr(String flgUserAuthenticated,String PersonName,
+    public static long savetblUserAuthenticationMstr(String flgUserAuthenticated,String PersonName,
                                               String FlgRegistered,String flgAppStatus,
                                               String DisplayMessage,String flgValidApplication,
                                               String MessageForInvalid,String flgPersonTodaysAtt,
@@ -19067,7 +19069,7 @@ open();
         return db.insert(TABLE_tblUserAuthenticationMstr_Define, null, initialValues);
     }
 
-   /* public long savetblUserAuthenticationMstr(String flgUserAuthenticated,String PersonName,
+   /* public static long savetblUserAuthenticationMstr(String flgUserAuthenticated,String PersonName,
                                               String FlgRegistered,String PersonNodeID,String PersonNodeType,
                                               String flgPersonTodaysAtt)
     {
@@ -19088,7 +19090,7 @@ open();
         return db.insert(TABLE_tblUserAuthenticationMstr_Define, null, initialValues);
     }*/
 
-    public long savetblBloodGroup(String BloddGroups)
+    public static long savetblBloodGroup(String BloddGroups)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19100,7 +19102,7 @@ open();
         return db.insert(TABLE_tblBloodGroup_Define, null, initialValues);
     }
 
-    public long savetblUserRegistarationStatus(String Flag,String MsgToDisplay)
+    public static long savetblUserRegistarationStatus(String Flag,String MsgToDisplay)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19113,10 +19115,10 @@ open();
         return db.insert(TABLE_tblUserRegistarationStatus, null, initialValues);
     }
 
-    public LinkedHashMap<String, String> fnGettblBloodGroup()
+    public static LinkedHashMap<String, String> fnGettblBloodGroup()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT BloddGroups from tblBloodGroup   ", null);// Where PNodeID='"+TSIID+"'
@@ -19139,15 +19141,15 @@ open();
         finally
         {
 
-            close();
+            //close();
             return hmapQuestionMstr;
         }
     }
 
-   /* public String fnGetPersonNameAndFlgRegistered()
+   /* public static String fnGetPersonNameAndFlgRegistered()
     {
         String PersonNameAndFlgRegistered="0";
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT  PersonName,  FlgRegistered from tblUserAuthenticationMstr   ", null);// Where PNodeID='"+TSIID+"'
@@ -19177,10 +19179,10 @@ open();
         }
     }*/
 
-    public String fnGetPersonNameAndFlgRegistered()
+    public static String fnGetPersonNameAndFlgRegistered()
     {
         String PersonNameAndFlgRegistered="0";
-        open();
+        //open();
 
         try {
 
@@ -19206,15 +19208,15 @@ open();
         finally
         {
 
-            close();
+           // close();
             return PersonNameAndFlgRegistered;
         }
     }
 
-    public String fnGettblUserRegistarationStatus()
+    public static String fnGettblUserRegistarationStatus()
     {
         String PersonNameAndFlgRegistered="0";
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT  Flag,  MsgToDisplay from tblUserRegistarationStatus   ", null);// Where PNodeID='"+TSIID+"'
@@ -19243,12 +19245,12 @@ open();
         finally
         {
 
-            close();
+           // close();
             return PersonNameAndFlgRegistered;
         }
     }
 
-    public long savetblEducationQuali(String Qualification)
+    public static long savetblEducationQuali(String Qualification)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19257,7 +19259,7 @@ open();
         return db.insert(TABLE_tblEducationQuali, null, initialValues);
     }
 
-    public long savetblDsrRegDetails(String IMEI,String ClickedDateTime,String FirstName,String LastName,String ContactNo,String DOB,String Sex,String MaritalStatus,String MarriedDate,String Qualification,String SelfieName,String SelfiePath,String EmailID,String BloodGroup,String SignName,String SignPath,int Sstat,String PhotoName,String PersonNodeId,String PersonNodeType)
+    public static long savetblDsrRegDetails(String IMEI,String ClickedDateTime,String FirstName,String LastName,String ContactNo,String DOB,String Sex,String MaritalStatus,String MarriedDate,String Qualification,String SelfieName,String SelfiePath,String EmailID,String BloodGroup,String SignName,String SignPath,int Sstat,String PhotoName,String PersonNodeId,String PersonNodeType)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19285,10 +19287,10 @@ open();
         return db.insert(TABLE_tblDsrRegDetails, null, initialValues);
     }
 
-    public int fngetcounttblDsrRegDetails()
+    public static int fngetcounttblDsrRegDetails()
     {
         int flgCheck=0;
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT Count(*) from tblDsrRegDetails  ", null);
@@ -19311,15 +19313,15 @@ open();
         finally
         {
 
-            close();
+           // close();
             return flgCheck;
         }
     }
 
-    public LinkedHashMap<String, String> fnGettblDsrRegDetails()
+    public static LinkedHashMap<String, String> fnGettblDsrRegDetails()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         try {                                   //0             1                         2                      3                         4           5             6              7                         8                9                           10                    11                12                   13                 14                 15                        16           17                      18
             Cursor cursor = db.rawQuery("SELECT IFNULL(IMEI,0),IFNULL(ClickedDateTime,0),IFNULL(FirstName,0),IFNULL(LastName,0),IFNULL(ContactNo,0),IFNULL(DOB,0),IFNULL(Sex,0),IFNULL(MaritalStatus,0),IFNULL(MarriedDate,0),IFNULL(Qualification,0),IFNULL(SelfieName,0),IFNULL(SelfiePath,0),IFNULL(EmailID,0),IFNULL(BloodGroup,0),IFNULL(SignName,0),IFNULL(SignPath,0),IFNULL(PhotoName,0),IFNULL(PersonNodeId,0),IFNULL(PersonNodeType,0) from tblDsrRegDetails   ", null);// Where PNodeID='"+TSIID+"'
@@ -19342,15 +19344,15 @@ open();
         finally
         {
 
-            close();
+           // close();
             return hmapQuestionMstr;
         }
     }
 
-    public LinkedHashMap<String, String> fnGettblEducationQuali()
+    public static LinkedHashMap<String, String> fnGettblEducationQuali()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT Qualification from tblEducationQuali   ", null);// Where PNodeID='"+TSIID+"'
@@ -19373,12 +19375,12 @@ open();
         finally
         {
 
-            close();
+          //  close();
             return hmapQuestionMstr;
         }
     }
 
-    public int FetchflgUserAuthenticated()
+    public static int FetchflgUserAuthenticated()
     {
         int SnamecolumnIndex1 = 0;
         int CatId=0;
@@ -19405,11 +19407,11 @@ open();
 
     }
 
-    public boolean isFreeProductIdExist(int freeProductId)
+    public static boolean isFreeProductIdExist(int freeProductId)
     {
 
 
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblStoreProductAppliedSchemesBenifitsRecords where freeProductId ="+freeProductId, null);
         try
         {
@@ -19427,7 +19429,7 @@ open();
         finally
         {
             cur.close();
-            close();
+           // close();
 
         }
 
@@ -19435,11 +19437,11 @@ open();
 
     }
 
-    public String getFreeProductIdAgainstFreeProductId(int freeProductId)
+    public static String getFreeProductIdAgainstFreeProductId(int freeProductId)
     {
 
         String productIdAgainstFreeProductId=null;
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblStoreProductAppliedSchemesBenifitsRecords where freeProductId ="+freeProductId, null);
         try
         {
@@ -19462,7 +19464,7 @@ open();
         finally
         {
             cur.close();
-            close();
+           // close();
 
         }
 
@@ -19470,10 +19472,10 @@ open();
 
     }
 
-    public String[] fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsValueDetailWithoutMultiply(int BenifitRowID,int toMultiply,Double defaultValue,int BenSubBucketType)
+    public static String[] fectStatusIfBeniftRowIdExistsInSchemeSlabBenefitsValueDetailWithoutMultiply(int BenifitRowID,int toMultiply,Double defaultValue,int BenSubBucketType)
     {
 
-        open();
+        //open();
         Cursor cursor2 = db.rawQuery("SELECT BenValue FROM tblSchemeSlabBenefitsValueDetail where RowID="+BenifitRowID, null);
         if(BenSubBucketType==2 || BenSubBucketType==6 || BenSubBucketType==8)
         {
@@ -19509,25 +19511,25 @@ open();
 
         } finally {
             cursor2.close();
-            close();
+           // close();
         }
         //////////// System.out.println("fnCheckflgToShowStrachRowOrNot : " +chkI);
         return chkI;
     }
 
-    public void deleteAlrtProduct(String storeId,String _productID)
+    public static void deleteAlrtProduct(String storeId,String _productID)
     {
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select ProductID from tblAlrtVal where StoreId ='"+storeId+"' and ProductID = '"+_productID+"'",null );
         if(cur.getCount()>0)
         {
             db.delete(DATABASE_TABLE_Main214, "StoreID=? AND ProductID=? ",new String[] {storeId,_productID});
         }
 
-        close();
+       // close();
     }
 
-    public int checkStoreListTableCount()
+    public static int checkStoreListTableCount()
     {
 
         Cursor cursor = db.rawQuery("SELECT Count(*) FROM tblStoreList ", null);
@@ -19558,7 +19560,7 @@ open();
 
     }
 
-    public void deleteAlreadyStoreIdExist(String CustomStoreID)
+    public static void deleteAlreadyStoreIdExist(String CustomStoreID)
     {
 
         db.execSQL("DELETE FROM tblStoreList WHERE StoreID ='"+CustomStoreID+"' ");
@@ -19567,27 +19569,27 @@ open();
 
     }
 
-    public void deletetblStoreTypeMstr()
+    public static void deletetblStoreTypeMstr()
     {
         db.execSQL("DELETE FROM tblStoreTypeMstr");
     }
 
-    public void deletetblTradeChannelMstr()
+    public static void deletetblTradeChannelMstr()
     {
         db.execSQL("DELETE FROM tblTradeChannelMstr");
     }
 
-    public void deletetblNoVisitReasonMaster()
+    public static void deletetblNoVisitReasonMaster()
     {
         db.execSQL("DELETE FROM tblNoVisitReasonMaster");
     }
 
-    public void deletetblStoreProductClassificationTypeListMstr()
+    public static void deletetblStoreProductClassificationTypeListMstr()
     {
         db.execSQL("DELETE FROM tblStoreProductClassificationTypeListMstr");
     }
 
-    public void updatetblAvailableVersionMstr(String ServerDate)
+    public static void updatetblAvailableVersionMstr(String ServerDate)
     {
 
 
@@ -19595,7 +19597,7 @@ open();
 
     }
 
-    public int checkRouteIDExistInStoreListTable()
+    public static int checkRouteIDExistInStoreListTable()
     {
         int check=0;
         Cursor cursor = db.rawQuery("SELECT Count(*) FROM tblInvoiceButtonTransac WHERE Sstat=9", null);
@@ -19617,7 +19619,7 @@ open();
 
     }
 
-    public long savetblQuestionMstr(String QuestID,String QuestCode,String QuestDesc,String QuestType,String AnsControlType,String AnsControlInputTypeID,String AnsControlInputTypeMaxLength,String AnsMustRequiredFlg,String QuestBundleFlg,String ApplicationTypeID,String Sequence,String AnsControlInputTypeMinLength,String answerHint,int flgQuestIDForOutChannel,String QuestDescHindi)
+    public static long savetblQuestionMstr(String QuestID,String QuestCode,String QuestDesc,String QuestType,String AnsControlType,String AnsControlInputTypeID,String AnsControlInputTypeMaxLength,String AnsMustRequiredFlg,String QuestBundleFlg,String ApplicationTypeID,String Sequence,String AnsControlInputTypeMinLength,String answerHint,int flgQuestIDForOutChannel,String QuestDescHindi)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19643,7 +19645,7 @@ open();
         return db.insert(TABLE_QuestionMstr, null, initialValues);
     }
 
-    public long savetblOutletChannelBusinessSegmentMaster(int OutChannelID,String ChannelName,int BusinessSegmentID,String BusinessSegment)
+    public static long savetblOutletChannelBusinessSegmentMaster(int OutChannelID,String ChannelName,int BusinessSegmentID,String BusinessSegment)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19657,7 +19659,7 @@ open();
         return db.insert(TABLE_OutletChannelBusinessSegmentMaster, null, initialValues);
     }
 
-    public long savetblQuestionDependentMstr(String QuestionID,String OptionID,String DependentQuestionID)
+    public static long savetblQuestionDependentMstr(String QuestionID,String OptionID,String DependentQuestionID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19670,7 +19672,7 @@ open();
         return db.insert(TABLE_QuestionDependentMstr, null, initialValues);
     }
 
-    public long savetblOptionMstr(String OptID,String QuestID,String OptionNo,String OptionDescr,String Sequence)
+    public static long savetblOptionMstr(String OptID,String QuestID,String OptionNo,String OptionDescr,String Sequence)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -19688,11 +19690,11 @@ open();
         return db.insert(TABLE_OptionMstr, null, initialValues);
     }
 
-    public StringBuilder fnQuestionIdOnBasisOfDependentQuestionIDdpndntId(String dpndntQuesId,String optionId)
+    public static StringBuilder fnQuestionIdOnBasisOfDependentQuestionIDdpndntId(String dpndntQuesId,String optionId)
     {
 
         String value;
-        open();
+        //open();
         //tblQuestionDependentMstr(QuestionID int null,OptionID int null,DependentQuestionID int null,GrpID int null,GrpDepQuestID int null);";
         Cursor cursor = db.rawQuery("SELECT GrpID from tblQuestionDependentMstr where GrpDepQuestID = '"+dpndntQuesId +"' And OptionID = '"+optionId+"'", null);// Where PNodeID='"+TSIID+"'
         StringBuilder arrbhi=new StringBuilder();
@@ -19722,15 +19724,15 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public String[] fnQuestionIdDpndnt()
+    public static String[] fnQuestionIdDpndnt()
     {
 
         String value;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT QuestionID from tblQuestionDependentMstr", null);// Where PNodeID='"+TSIID+"'
         String[] arrbhi=new String[cursor.getCount()];
@@ -19755,13 +19757,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public int fnGetAnsValFromOptionID(int optionID)
+    public static int fnGetAnsValFromOptionID(int optionID)
     {
-        open();
+        //open();
         int AnsVal=0;
         Cursor cursor = db.rawQuery("SELECT tblOptionMstr.OptionNo from tblOptionMstr Where tblOptionMstr.OptID='"+optionID+"'", null);
         try {
@@ -19777,14 +19779,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public void saveOutletQuestAnsMstr(ArrayList<ArrayList<String>> outletQuestAnsVal)
+    public static void saveOutletQuestAnsMstr(ArrayList<ArrayList<String>> outletQuestAnsVal)
     {
 
-        open();
+        //open();
 
         String OutletID,QuestID,AnswerType,AnswerValue;
         for(int i=0;i<outletQuestAnsVal.size();i++)
@@ -19825,12 +19827,12 @@ open();
 
         }
 
-        close();
+       // close();
 
     }
 
 
-		  	/*public long savetblQuestionMstr(String QuestID,String QuestCode,String QuestDesc,String QuestType,String AnsControlType,String AnsControlInputTypeID,String AnsControlInputTypeMaxLength,String AnsMustRequiredFlg,String QuestBundleFlg,String ApplicationTypeID,String Sequence,String AnsControlInputTypeMinLength,int flgQuestIDForOutChannel)
+		  	/*public static long savetblQuestionMstr(String QuestID,String QuestCode,String QuestDesc,String QuestType,String AnsControlType,String AnsControlInputTypeID,String AnsControlInputTypeMaxLength,String AnsMustRequiredFlg,String QuestBundleFlg,String ApplicationTypeID,String Sequence,String AnsControlInputTypeMinLength,int flgQuestIDForOutChannel)
 		    {
 
 		         ContentValues initialValues = new ContentValues();
@@ -19854,10 +19856,10 @@ open();
 		      return db.insert(TABLE_QuestionMstr, null, initialValues);
 		    }*/
 
-    public void saveViewOutletQuestAnsMstr(ArrayList<ArrayList<String>> outletQuestAnsVal)
+    public static void saveViewOutletQuestAnsMstr(ArrayList<ArrayList<String>> outletQuestAnsVal)
     {
 
-        open();
+        //open();
 
         String OutletID,QuestID,AnswerType,AnswerValue;
         for(int i=0;i<outletQuestAnsVal.size();i++)
@@ -19895,14 +19897,14 @@ open();
 
         }
 
-        close();
+       // close();
 
     }
 
-    public void saveViewOutletNameAndId(String outletId,String outletName)
+    public static void saveViewOutletNameAndId(String outletId,String outletName)
     {
 
-        open();
+        //open();
 
 
         Cursor cursor = db.rawQuery("SELECT OutletID FROM tblViewOutletNameAndId where OutletID='"+outletId +"'" , null);
@@ -19928,15 +19930,15 @@ open();
 
 
 
-        close();
+      //  close();
 
     }
 
-    public LinkedHashMap<String, String> getAllNewAddedStoreName()
+    public static LinkedHashMap<String, String> getAllNewAddedStoreName()
     {
         LinkedHashMap<String, String> lnkdHmapAllNewAddedStore=new LinkedHashMap<String, String>();
 
-        open();
+        //open();
 
         Cursor cur=db.rawQuery("Select * from tblViewOutletNameAndId", null);
         if(cur.getCount()>0)
@@ -19950,15 +19952,15 @@ open();
                 }
             }
         }
-        close();
+       // close();
         return lnkdHmapAllNewAddedStore;
     }
 
-    public LinkedHashMap<String, String> getAllQuesSavedForOutlet(String outletId)
+    public static LinkedHashMap<String, String> getAllQuesSavedForOutlet(String outletId)
     {
         LinkedHashMap<String, String> lnkdHmapAllQuesSavedForOutlet=new LinkedHashMap<String, String>();
 
-        open();
+        //open();
 
         Cursor cur=db.rawQuery("Select * from tblViewOutletQuestAnsMstr where OutletID = '"+outletId+"'", null);
         if(cur.getCount()>0)
@@ -19973,11 +19975,11 @@ open();
                 }
             }
         }
-        close();
+      //  close();
         return lnkdHmapAllQuesSavedForOutlet;
     }
 
-    public long savedataStoreList(String StoreID,String VisitDateTime,String ActualLatitude,String ActualLongitude,String LocProvider,String Accuracy,String BateryLeftStatus,String StoreName,int ISNewStore,
+    public static long savedataStoreList(String StoreID,String VisitDateTime,String ActualLatitude,String ActualLongitude,String LocProvider,String Accuracy,String BateryLeftStatus,String StoreName,int ISNewStore,
                                   int Sstat)
     {
 
@@ -20003,7 +20005,7 @@ open();
 
     //
 
-    public String[] getStoreIDTblSelectedStoreIDinChangeRouteCaseStoreMapping() {
+    public static String[] getStoreIDTblSelectedStoreIDinChangeRouteCaseStoreMapping() {
 
         int SnamecolumnIndex1 = 0;
 
@@ -20029,7 +20031,7 @@ open();
 
     }
 
-    public int getExistingPicNosStoreMapping(String OutId) {
+    public static int getExistingPicNosStoreMapping(String OutId) {
 
         int ScodecolumnIndex = 0;
 
@@ -20052,7 +20054,7 @@ open();
         }
     }
 
-    public String[] getImgsPath(String StoreID)
+    public static String[] getImgsPath(String StoreID)
     {
 
         int SnamecolumnIndex1 = 0;
@@ -20079,7 +20081,7 @@ open();
 
     }
 
-    public void updatexmlSyncdData()
+    public static void updatexmlSyncdData()
     {
         try
         {
@@ -20100,7 +20102,7 @@ open();
     }
 
 
-			/* public void updateRecordsSyncd()
+			/* public static void updateRecordsSyncd()
 				{
 				 try
 					{
@@ -20122,7 +20124,7 @@ open();
 
 				}*/
 
-    public void updatePhotoSyncdData()
+    public static void updatePhotoSyncdData()
     {
         try
         {
@@ -20140,19 +20142,19 @@ open();
 
     }
 
-    public void deletetblOutletPhotoDetailBasedOutletID(String OutletID)
+    public static void deletetblOutletPhotoDetailBasedOutletID(String OutletID)
     {
-        open();
+        //open();
 
 
         db.execSQL("DELETE FROM tblOutletPhotoDetail WHERE OutletID ='"+ OutletID + "'");
 
 
 
-        close();
+       // close();
     }
 
-    public long savetblOutletMstr(String OutletID,String VisitDateTime,String ActualLatitude,
+    public static long savetblOutletMstr(String OutletID,String VisitDateTime,String ActualLatitude,
                                   String ActualLongitude,String LocProvider,String Accuracy,String BateryLeftStatus,String StoreName,
                                   int ISNewStore,int Sstat)
     {
@@ -20183,11 +20185,11 @@ open();
 			 		" BateryLeftStatus text null,String StoreName);";
 			 */
 
-    public long insertPhotoDetail(String OutletID,String ClickedDateTime,String PhotoName,
+    public static long insertPhotoDetail(String OutletID,String ClickedDateTime,String PhotoName,
                                   String PhotoComment,String PDAPhotoPath,int Sstat)
     {
 
-        open();
+        //open();
         ContentValues initialValues = new ContentValues();
 
         initialValues.put("OutletID", OutletID.trim());
@@ -20199,7 +20201,7 @@ open();
         initialValues.put("Sstat", Sstat);
 
         long inserted=db.insert(TABLE_StoreProductPhotoDetail, null, initialValues);
-        close();
+     //   close();
         return inserted;
     }
 
@@ -20208,10 +20210,10 @@ open();
 						"(OutletID text null,ClickedDateTime text null,PhotoName text null,PhotoComment text null," +
 						"PDAPhotoPath text null,Sstat integer null);";*/
 
-    public String[] deletFromSDcCardPhotoValidationBasedSstat(String Sstat) {
+    public static String[] deletFromSDcCardPhotoValidationBasedSstat(String Sstat) {
 
         String[] imageNameToBeDeleted = null;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  PhotoName from tblStoreProductPhotoDetail where Sstat='"+Sstat+"'", null);
         try{
@@ -20235,7 +20237,7 @@ open();
         }finally
         {
             cursor.close();
-            close();
+          //  close();
         }
 
 
@@ -20243,10 +20245,10 @@ open();
         return imageNameToBeDeleted;
     }
 
-    public String[] deletFromtableImageBasedSstat(String Sstat) {
+    public static String[] deletFromtableImageBasedSstat(String Sstat) {
 
         String[] imageNameToBeDeleted = null;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  imageName from tableImage where Sstat='"+Sstat+"'", null);
         try{
@@ -20270,7 +20272,7 @@ open();
         }finally
         {
             cursor.close();
-            close();
+           // close();
         }
 
 
@@ -20278,10 +20280,10 @@ open();
         return imageNameToBeDeleted;
     }
 
-    public String[] deletFromSDcCardPhotoValidationNewStore(String OutletID) {
+    public static String[] deletFromSDcCardPhotoValidationNewStore(String OutletID) {
 
         String[] imageNameToBeDeleted = null;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  PhotoName from tblOutletPhotoDetail where OutletID='"+OutletID+"'", null);
         try{
@@ -20305,7 +20307,7 @@ open();
         }finally
         {
             cursor.close();
-            close();
+           // close();
         }
 
 
@@ -20313,12 +20315,12 @@ open();
         return imageNameToBeDeleted;
     }
 
-    public long inserttblOutletMstr(String OutletID,String VisitStartTS,String ActualLatitude,
+    public static long inserttblOutletMstr(String OutletID,String VisitStartTS,String ActualLatitude,
                                     String ActualLongitude,String Accuracy,String LocProvider,String BateryLeftStatus,String StoreName,
                                     String imei,int ISNewStore,int Sstat,int AppVersion)
     {
 
-        open();
+        //open();
         ContentValues initialValues = new ContentValues();
 
         initialValues.put("OutletID", OutletID.trim());
@@ -20341,7 +20343,7 @@ open();
         System.out.println("Data insert in OutletMstr");
 
         long inserted=db.insert(TABLE_OutletMstr, null, initialValues);
-        close();
+       // close();
         return inserted;
     }
 
@@ -20351,19 +20353,19 @@ open();
 				 		"ActualLongitude text null, ISNewStore int null, LocProvider text null, Accuracy text null," +
 				 		" BateryLeftStatus text null,String StoreName);";*/
 
-    public void UpdateStoreEndVisitNewStore(String OutletID, String VisitEndTS)
-    { open();
+    public static void UpdateStoreEndVisitNewStore(String OutletID, String VisitEndTS)
+    { //open();
         final ContentValues values = new ContentValues();
 
         values.put("VisitEndTS", VisitEndTS);
 
         int affected = db.update("tblOutletMstr", values,"OutletID=? and VisitStartTS is not null",
                 new String[] { OutletID });
-        close();
+       // close();
 
     }
 
-    public int counttblContainNotSyncData(int Sstat)
+    public static int counttblContainNotSyncData(int Sstat)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblOutletMstr WHERE Sstat ="+ Sstat, null);
         int chkI = 0;
@@ -20387,10 +20389,10 @@ open();
 
     // static final String DATABASE_CREATE_TABLE_tblOutletMstr = "create table tblOutletMstr (OutletID text not null,VisitDateTime text not null,ActualLatitude text null, ActualLongitude text null, LocProvider text null, Accuracy text null, BateryLeftStatus text null,StoreName text null,imei text null, ISNewStore int null,Sstat integer not null);";
 
-    public int fetch_Store_invoiceCount()
+    public static int fetch_Store_invoiceCount()
     {
 
-        open();
+        //open();
         int  invoiceCount= 0;
 
 
@@ -20415,15 +20417,15 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+           // close();
         }
     }
 
-    public LinkedHashMap<String, String> fetch_StoreInvoiceWiseData_List()
+    public static LinkedHashMap<String, String> fetch_StoreInvoiceWiseData_List()
     {
         int incoiceCount=fetch_Store_invoiceCount();
 
-        open();
+        //open();
         LinkedHashMap<String,String>hmapInvoiceCaptionPrefixAndSuffix=fetch_InvoiceCaptionPrefixAndSuffix();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
 
@@ -20455,11 +20457,11 @@ open();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
     }
 
-    public long savetblMessageTextFileContainer(String FileName,int FileFlag)
+    public static long savetblMessageTextFileContainer(String FileName,int FileFlag)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -20471,9 +20473,9 @@ open();
         return db.insert(DATABASE_TABLE_MAIN251, null, initialValues);
     }
 
-    public long savetblNoVisitStoreDetails(String IMEI,String CurDate,String ReasonId,String ReasonDescr,int flgHasVisit,int Sstat)
+    public static long savetblNoVisitStoreDetails(String IMEI,String CurDate,String ReasonId,String ReasonDescr,int flgHasVisit,int Sstat)
     {
-        open();
+        //open();
 
         ContentValues initialValues = new ContentValues();
 
@@ -20486,7 +20488,7 @@ open();
 
 
         long inserted=db.insert(TABLE_tblNoVisitStoreDetails_Define, null, initialValues);
-        close();
+        //close();
         return inserted;
     }
 
@@ -20500,14 +20502,14 @@ open();
 					/* private static final String DATABASE_CREATE_TABLE_253 = "create table tblNoVisitStoreDetails(IMEI text null,CurDate text null," +
 					 		"ReasonId text null,ReasonDescr text null,flgHasVisit integer null,Sstat integer null);";*/
 
-    public void deletetblNoVisitStoreDetails()
+    public static void deletetblNoVisitStoreDetails()
     {
         db.execSQL("DELETE FROM tblNoVisitStoreDetails");
     }
 
-    public void updateCurDatetblNoVisitStoreDetails(String CurDate)
+    public static void updateCurDatetblNoVisitStoreDetails(String CurDate)
     {
-        open();
+        //open();
         try
         {
 
@@ -20522,12 +20524,12 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
     }
 
-    public void updateReason(String storeId,String productId,String reason)
+    public static void updateReason(String storeId,String productId,String reason)
     {
         //"create table tblStoreProductPhotoDetail (StoreID text null,ProductID text null,ClickedDateTime text null,PhotoName text null,ReasonForReturn text null,PhotoValidation text null,PDAPhotoPath text null,Sstat integer null,OrderIDPDA text null);";
         Cursor cur=db.rawQuery("Select ReasonForReturn from tblStoreProductPhotoDetail where StoreID='"+storeId+"' AND ProductID='"+productId+"'", null);
@@ -20540,9 +20542,9 @@ open();
 
     }
 
-    public void updateReasonIdAndDescrtblNoVisitStoreDetails(String ReasonId,String ReasonDescr)
+    public static void updateReasonIdAndDescrtblNoVisitStoreDetails(String ReasonId,String ReasonDescr)
     {
-        open();
+        //open();
         try
         {
 
@@ -20559,14 +20561,14 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
     }
 
-    public void updateSstattblNoVisitStoreDetails(int Sstat)
+    public static void updateSstattblNoVisitStoreDetails(int Sstat)
     {
-        open();
+        //open();
         try
         {
 
@@ -20582,14 +20584,14 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
     }
 
-    public void updateSstattblNoVisitStoreDetailsAfterSync(int Sstat)
+    public static void updateSstattblNoVisitStoreDetailsAfterSync(int Sstat)
     {
-        open();
+        //open();
         try
         {
 
@@ -20605,15 +20607,15 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
     }
 
-    public int fetchflgHasVisitFromtblNoVisitStoreDetails(String Sstat) {
+    public static int fetchflgHasVisitFromtblNoVisitStoreDetails(String Sstat) {
 
         int flag=0;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  flgHasVisit from tblNoVisitStoreDetails where Sstat='"+Sstat+"' or Sstat='"+3+"'", null);
         try{
@@ -20632,15 +20634,15 @@ open();
         }finally
         {
             cursor.close();
-            close();
+           // close();
         }
         return flag;
     }
 
-    public int countDataIntblNoVisitStoreDetails()  throws IOException
+    public static int countDataIntblNoVisitStoreDetails()  throws IOException
     {
         int chkI = 0;
-        open();
+        //open();
 
         Cursor cursorE2 = db.rawQuery("SELECT Count(*) from tblNoVisitStoreDetails where Sstat=3", null);
 
@@ -20656,14 +20658,14 @@ open();
 
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public String[] fnGetALLDataInfo()
+    public static String[] fnGetALLDataInfo()
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT * FROM  tblNoVisitStoreDetails", null);
         String AllProductInSlab[] = new String[cursorE2.getCount()];
 
@@ -20684,15 +20686,15 @@ open();
             return AllProductInSlab;
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
 
     }
 
-    public int countDataIntblNoVisitReasonMaster()  throws IOException
+    public static int countDataIntblNoVisitReasonMaster()  throws IOException
     {
         int chkI = 0;
-        open();
+        //open();
 
         Cursor cursorE2 = db.rawQuery("SELECT Count(*) from tblNoVisitReasonMaster", null);
 
@@ -20708,12 +20710,12 @@ open();
 
         } finally {
             cursorE2.close();
-            close();
+          //  close();
         }
         return chkI;
     }
 
-  /*  public long savetblNoVisitReasonMaster(int AutoIdStore,String ReasonId,String ReasonDescr,int FlgToShowTextBox)
+  /*  public static long savetblNoVisitReasonMaster(int AutoIdStore,String ReasonId,String ReasonDescr,int FlgToShowTextBox)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -20726,7 +20728,7 @@ open();
         return db.insert(TABLE_tblNoVisitReasonMaster_Define, null, initialValues);
     }*/
 
-  public long savetblNoVisitReasonMaster(int AutoIdStore,String ReasonId,String ReasonDescr,
+  public static long savetblNoVisitReasonMaster(int AutoIdStore,String ReasonId,String ReasonDescr,
                                          int FlgToShowTextBox,int flgSOApplicable,int flgDSRApplicable,
                                          int flgNoVisitOption,int SeqNo)
   {
@@ -20753,9 +20755,9 @@ open();
 					/* private static final String DATABASE_CREATE_TABLE_252 = "create table tblNoVisitReasonMaster " +
 					 		"(ReasonId text null,ReasonDescr text null,FlgToShowTextBox integer null);";*/
 
-    public LinkedHashMap<String, String> fetch_Reason_List()
+    public static LinkedHashMap<String, String> fetch_Reason_List()
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         Cursor cursor = db.rawQuery("SELECT ReasonId,ReasonDescr FROM tblNoVisitReasonMaster",null);
         try
@@ -20783,7 +20785,7 @@ open();
         finally
         {
             cursor.close();
-            close();
+          //  close();
         }
     }
 
@@ -20795,10 +20797,10 @@ open();
 						 private static final String DATABASE_CREATE_TABLE_252 = "create table tblNoVisitReasonMaster (ReasonId text null,ReasonDescr text null,FlgToShowTextBox integer null);";
 					*/
 
-    public int fetchFlgToShowTextBox(String ReasonDescr) {
+    public static int fetchFlgToShowTextBox(String ReasonDescr) {
 
         int FlgToShowTextBox=0;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  FlgToShowTextBox from tblNoVisitReasonMaster where ReasonDescr='"+ReasonDescr+"'", null);
         try{
@@ -20818,16 +20820,16 @@ open();
         }finally
         {
             cursor.close();
-            close();
+         //   close();
         }
 
         return FlgToShowTextBox;
     }
 
-    public String fetchReasonIdBasedOnReasonDescr(String ReasonDescr) {
+    public static String fetchReasonIdBasedOnReasonDescr(String ReasonDescr) {
 
         String ReasonId="0";
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  ReasonId from tblNoVisitReasonMaster where ReasonDescr='"+ReasonDescr+"'", null);
         try{
@@ -20847,16 +20849,16 @@ open();
         }finally
         {
             cursor.close();
-            close();
+            //close();
         }
 
         return ReasonId;
     }
 
-    public String fetchReasonDescr() {
+    public static String fetchReasonDescr() {
 
         String ReasonId="0";
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  ReasonDescr from tblNoVisitReasonMaster", null);
         try{
@@ -20876,15 +20878,15 @@ open();
         }finally
         {
             cursor.close();
-            close();
+           // close();
         }
 
         return ReasonId;
     }
 
-    public String[] fetchDateFromtblStorePOSLastVisitDateDetail(String StoreID)
+    public static String[] fetchDateFromtblStorePOSLastVisitDateDetail(String StoreID)
     {
-        open();
+        //open();
         Cursor cursor = db
                 .rawQuery("SELECT LastVisitDate FROM tblStorePOSLastVisitDateDetail WHERE StoreID ='"+ StoreID + "'", null);
 
@@ -20908,12 +20910,12 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
     }
 
-    public long savetblStorePOSLastVisitDateDetail(String StoreID, String LastVisitDate)
+    public static long savetblStorePOSLastVisitDateDetail(String StoreID, String LastVisitDate)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -20928,7 +20930,7 @@ open();
     //  private static final String DATABASE_CREATE_TABLE_165 = "create table
     //tblStorePOSLastVisitDateDetail (StoreID text null,LastVisitDate text null);";
 
-    public long savetblStorePOSLastVisitALLMaterialDetails(String StoreID, String POSMaterialID,String POSMaterialDescr
+    public static long savetblStorePOSLastVisitALLMaterialDetails(String StoreID, String POSMaterialID,String POSMaterialDescr
             ,String CurrentStockQty,String NewOrderQty,String ReturnQty,String DamageQty)
     {
 
@@ -20952,7 +20954,7 @@ open();
 					 		"POSMaterialDescr text null,CurrentStockQty text null,NewOrderQty text null," +
 					 		"ReturnQty text null,DamageQty text null);";*/
 
-    public void Delete_tblLastVisitDetailsForPOS()
+    public static void Delete_tblLastVisitDetailsForPOS()
     {
         db.execSQL("DELETE FROM tblStorePOSLastVisitDateDetail");
 
@@ -20961,9 +20963,9 @@ open();
 
     }
 
-    public int counttblStorePOSLastVisitDateDetail(String StoreID)
+    public static int counttblStorePOSLastVisitDateDetail(String StoreID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblStorePOSLastVisitDateDetail WHERE StoreID ='"+ StoreID + "'", null);
         int chkI = 0;
         try {
@@ -20978,14 +20980,14 @@ open();
 
         } finally {
             cursorE2.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public int counttblStorePOSLastVisitALLMaterialDetails(String StoreID)
+    public static int counttblStorePOSLastVisitALLMaterialDetails(String StoreID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblStorePOSLastVisitALLMaterialDetails WHERE StoreID ='"+ StoreID + "'", null);
         int chkI = 0;
         try {
@@ -21000,13 +21002,13 @@ open();
 
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
         return chkI;
     }
 
-    public ArrayList<LinkedHashMap<String, String>> fetch_tblStorePOSLastVisitALLMaterialDetails(String StoreID) {
-        open();
+    public static ArrayList<LinkedHashMap<String, String>> fetch_tblStorePOSLastVisitALLMaterialDetails(String StoreID) {
+        //open();
         ArrayList<LinkedHashMap<String, String>> totalProductDetail=new ArrayList<LinkedHashMap<String, String>>();
 
         LinkedHashMap<String, String> hmapStoreIDPOSMaterialID=new LinkedHashMap<String, String>();
@@ -21055,7 +21057,7 @@ open();
         } finally {
             cursor.close();
 
-            close();
+            //close();
         }
 
 
@@ -21069,9 +21071,9 @@ open();
 					 		"ReturnQty text null" +
 					 		",DamageQty text null);";*/
 
-    public int checkAnyDataSubmitORNot(int Sstat)
+    public static int checkAnyDataSubmitORNot(int Sstat)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT Count(*) FROM tblStoreList WHERE Sstat ="+Sstat, null);
 
         try {
@@ -21096,7 +21098,7 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
     }
@@ -21111,9 +21113,9 @@ open();
 								",StoreNextDay integer null,chainID integer null,ISNewStore int null,StoreRouteID int null);";
 						*/
 
-    public void deleteOldtblStoreMaterialDetail(String StoreID)
+    public static void deleteOldtblStoreMaterialDetail(String StoreID)
     {
-        open();
+        //open();
         try
         {
             db.execSQL("DELETE FROM tblStoreMaterialDetail WHERE StoreID ='" + StoreID + "'");
@@ -21124,7 +21126,7 @@ open();
         }
         finally
         {
-            close();
+            //close();
         }
 
     }
@@ -21135,7 +21137,7 @@ open();
 						 		"ReturntoDistributor integer null,FreshOrder integer null,DiscardDamage integer null," +
 						 		"Sstat integer null);"; */
 
-    public String[] getAllStoreIDIntblStoreReturnPhotoDetail()
+    public static String[] getAllStoreIDIntblStoreReturnPhotoDetail()
     {
 
         int SnamecolumnIndex1 = 0;
@@ -21168,7 +21170,7 @@ open();
 
     // New Sync way
 
-    public int getExistingPicNosForReturn(String StoreID)
+    public static int getExistingPicNosForReturn(String StoreID)
     {
 
         int ScodecolumnIndex = 0;
@@ -21192,7 +21194,7 @@ open();
         }
     }
 
-    public String[] getImgsPathForReturn(String StoreID)
+    public static String[] getImgsPathForReturn(String StoreID)
     {
 
         int SnamecolumnIndex1 = 0;
@@ -21220,12 +21222,12 @@ open();
 
     }
 
-    public void updateImageRecordsSyncdForReturn(String PhotoName)
+    public static void updateImageRecordsSyncdForReturn(String PhotoName)
     {
 
         try
         {
-            open();
+            //open();
             System.out.println("Sunil Doing Testing Response after sending Image inside BD" + PhotoName);
             final ContentValues values = new ContentValues();
             values.put("Sstat", 4);
@@ -21238,13 +21240,13 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
 
     }
 
-    public void updateImageRecordsSyncd()
+    public static void updateImageRecordsSyncd()
     {
 
         try
@@ -21275,24 +21277,24 @@ open();
 
     }
 
-    public void deleteAllXmlDataTable(String Sstat)
+    public static void deleteAllXmlDataTable(String Sstat)
     {
 
-        open();
+        //open();
         db.execSQL("DELETE FROM tblOutletQuestAnsMstr WHERE Sstat ="+ Sstat);
         db.execSQL("DELETE FROM tblOutletQuestAnsTempMapping WHERE Sstat ="+ Sstat);
         db.execSQL("DELETE FROM tblPDARetailerProductSaving WHERE Sstat ="+ Sstat);
         db.execSQL("DELETE FROM tableImage WHERE Sstat ="+ Sstat);
 
-        close();
+       // close();
 
 
 
     }
 
-    public void savetbl_XMLfiles(String XmlFileName,String Sstat,String filetype)
+    public static void savetbl_XMLfiles(String XmlFileName,String Sstat,String filetype)
     {
-        open();
+        //open();
         ContentValues initialValues = new ContentValues();
 
 
@@ -21302,10 +21304,10 @@ open();
 
 
         db.insert(TABLE_XMLFILES, null, initialValues);
-        close();
+        //close();
     }
 
-    public void UpdateStoreMaterialphotoFlag(String sID, int flag2set)
+    public static void UpdateStoreMaterialphotoFlag(String sID, int flag2set)
     {
         try
         {
@@ -21320,7 +21322,7 @@ open();
 
     }
 
-    public void UpdateStoreCheckinFlg(String sID, int flag2set)
+    public static void UpdateStoreCheckinFlg(String sID, int flag2set)
     {
         try
         {
@@ -21335,7 +21337,7 @@ open();
 
     }
 
-    public String[] getAllStoreIDIntblStoreMaterialPhotoDetail()
+    public static String[] getAllStoreIDIntblStoreMaterialPhotoDetail()
     {
 
         int SnamecolumnIndex1 = 0;
@@ -21365,12 +21367,12 @@ open();
 
     }
 
-    public void updateImageRecordsSyncdforPOSMaterial(String PhotoName)
+    public static void updateImageRecordsSyncdforPOSMaterial(String PhotoName)
     {
 
         try
         {
-            open();
+            //open();
             System.out.println("Sunil Doing Testing Response after sending Image inside BD" + PhotoName);
             final ContentValues values = new ContentValues();
             values.put("Sstat", 4);
@@ -21383,16 +21385,16 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
 
     }
 
-    public String fnGetXMLFile(String Sstat)
+    public static String fnGetXMLFile(String Sstat)
     {
         String optionList="";
-        open();
+        //open();
         // Cursor cursor = db.rawQuery("SELECT SST_NameId,SST_Name_des from tbl_SST_NameMstr Order By Sequence ASC  ", null);// Where PNodeID='"+TSIID+"'
         Cursor cursor = db.rawQuery("SELECT XmlFileName from tbl_XMLfiles Where Sstat='"+Sstat+"'", null);// Where PNodeID='"+TSIID+"'
         // (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
@@ -21419,30 +21421,30 @@ open();
         }
         finally
         {
-            close();
+           // close();
             cursor.close();
 
         }
     }
 
-    public void upDateTblXmlFile(String XmlFileName) {
-        open();
+    public static void upDateTblXmlFile(String XmlFileName) {
+        //open();
         db.execSQL("UPDATE tbl_XMLfiles SET Sstat='4' WHERE XmlFileName='"+XmlFileName+"'");
-        close();
+     //   close();
 
     }
 
-    public void deleteXmlTable(String Sstat)
+    public static void deleteXmlTable(String Sstat)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tbl_XMLfiles WHERE Sstat ="+ Sstat);
-        close();
+       // close();
     }
 
-    public LinkedHashMap<String, String> getFileredProductListMap(String _searchString,int BusinessSegmentId,String ctgryId)
+    public static LinkedHashMap<String, String> getFileredProductListMap(String _searchString,int BusinessSegmentId,String ctgryId)
     {
         //tblProductList (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
-        open();
+        //open();
         String searchString="";
         LinkedHashMap<String, String> hmapFilterProductList=new LinkedHashMap<String, String>();
         try {
@@ -21521,15 +21523,15 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return hmapFilterProductList;
         }
     }
 
-    public LinkedHashMap<String, String> getFileredOrderReviewProductListMap(String StoreId,String TmpInvoiceCodePDA)
+    public static LinkedHashMap<String, String> getFileredOrderReviewProductListMap(String StoreId,String TmpInvoiceCodePDA)
     {
         //tblProductList (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
-        open();
+        //open();
         String searchString="";
         LinkedHashMap<String, String> hmapFilterProductList=new LinkedHashMap<String, String>();
         try {
@@ -21557,15 +21559,15 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return hmapFilterProductList;
         }
     }
 
-    public LinkedHashMap<String, String> getUOMMstr()
+    public static LinkedHashMap<String, String> getUOMMstr()
     {
         //tblProductList (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
-        open();
+        //open();
         LinkedHashMap<String, String> hmapUOMMstr=new LinkedHashMap<String, String>();
         try {
             Cursor cur=db.rawQuery("Select UOMID,UOM from tblUOMMstr", null);
@@ -21589,15 +21591,15 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return hmapUOMMstr;
         }
     }
 
-    public LinkedHashMap<String, String> getSalesQuotePrcsMstr()
+    public static LinkedHashMap<String, String> getSalesQuotePrcsMstr()
     {
         //tblProductList (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
-        open();
+        //open();
         LinkedHashMap<String, String> hmapSalesQuoteMstr=new LinkedHashMap<String, String>();
         try {
             Cursor cur=db.rawQuery("Select SalesQuotePrcsId,SalesQuotePrcs from tblSalesQuotePrcsMstr", null);
@@ -21621,15 +21623,15 @@ open();
         }
         finally
         {
-            close();
+          //  close();
             return hmapSalesQuoteMstr;
         }
     }
 
-    public LinkedHashMap<String, String> fngetDistinctSalesQuotePersonMeetMstr(String StoreId)
+    public static LinkedHashMap<String, String> fngetDistinctSalesQuotePersonMeetMstr(String StoreId)
     {
         //tblProductList (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
-        open();
+        //open();
         LinkedHashMap<String, String> hmapDistinctSalesQuotePersonMeetMstr=new LinkedHashMap<String, String>();
         try {
             Cursor cur=db.rawQuery("Select SalesQuoteId,SalesQuoteCode,SalesQuotePrcsId,SalesQuotePrcs,SalesQuoteDate from tblSalesQuotePersonMeetMstr WHERE StoreId='"+StoreId+"'", null);
@@ -21653,15 +21655,15 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return hmapDistinctSalesQuotePersonMeetMstr;
         }
     }
 
-    public LinkedHashMap<String, String> fngetDistinctSalesQuotePersonMeetMstrForSstatUpdate(String StoreId)
+    public static LinkedHashMap<String, String> fngetDistinctSalesQuotePersonMeetMstrForSstatUpdate(String StoreId)
     {
         //tblProductList (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
-        //	open();
+        //	//open();
         LinkedHashMap<String, String> hmapDistinctSalesQuotePersonMeetMstr=new LinkedHashMap<String, String>();
         try {
             Cursor cur=db.rawQuery("Select SalesQuoteId,SalesQuoteCode,SalesQuotePrcsId,SalesQuotePrcs,SalesQuoteDate from tblSalesQuotePersonMeetMstr WHERE StoreId='"+StoreId+"'", null);
@@ -21690,9 +21692,9 @@ open();
         }
     }
 
-    public int fncheckIfSalesQuotePersonMeetMstrExistsinTable(String SalesQuoteId)
+    public static int fncheckIfSalesQuotePersonMeetMstrExistsinTable(String SalesQuoteId)
     {
-        open();
+        //open();
         int strReturnPDADateExistOrNot = 0;
 
         Cursor cursor2 = db.rawQuery("SELECT SalesQuoteId FROM  tblSalesQuotePersonMeetMstr where tblSalesQuotePersonMeetMstr.SalesQuoteId='"+SalesQuoteId+"'", null);
@@ -21710,13 +21712,13 @@ open();
             return strReturnPDADateExistOrNot;
         } finally {
             cursor2.close();
-            close();
+          //  close();
         }
     }
 
-    public String[] fngetQutePersonMeetTabOneData(String SalesQuoteId)
+    public static String[] fngetQutePersonMeetTabOneData(String SalesQuoteId)
     {
-        open();
+        //open();
         String qry="select SalesQuoteType,SalesQuoteValidFrom,SalesQuoteValidTo,SalesQuoteDate from tblSalesQuotePersonMeetMstr where SalesQuoteId='"+SalesQuoteId+"'";
         Cursor cur = db.rawQuery(qry,null);
         String BasicData[]= new String[4];
@@ -21739,11 +21741,11 @@ open();
             return BasicData;
         } finally {
             //cur.close();
-            close();
+           // close();
         }
     }
 
-    public LinkedHashMap<String, String> getFileredProductListQuotationMap(String _searchString,String SalesQuoteId,int BusinessSegmentId,String ManufacturerID)
+    public static LinkedHashMap<String, String> getFileredProductListQuotationMap(String _searchString,String SalesQuoteId,int BusinessSegmentId,String ManufacturerID)
     {
         int chkIfSalesQuotePersonMeetMstrExistsinTable=fncheckIfSalesQuotePersonMeetMstrExistsinTable(SalesQuoteId);
         String SalesQuoteValidFrom="0";
@@ -21759,7 +21761,7 @@ open();
             SalesQuoteValidTo=arrValues[2];
             SalesQuoteType=arrValues[3];
         }
-        open();
+        //open();
         //int intcheckIfgetFileredProductListQuotationMapExistsinTable=fncheckIfgetFileredProductListQuotationMapExistsinTable(SalesQuoteId);
         String searchString="";
         LinkedHashMap<String, String> hmapFilterProductQuotationList=new LinkedHashMap<String, String>();
@@ -21814,7 +21816,7 @@ open();
         }
         finally
         {
-            close();
+           // close();
             int intcheckIfgetFileredProductListQuotationMapExistsinTable=fncheckIfgetFileredProductListQuotationMapExistsinTable(SalesQuoteId);
             if(intcheckIfgetFileredProductListQuotationMapExistsinTable==1)
             {
@@ -21824,9 +21826,9 @@ open();
         }
     }
 
-    public void getFileredProductListPreFiledListQuotationMap( LinkedHashMap<String, String> hmapFilterProductQuotationList,String SalesQuoteId,int BusinessSegmentId)
+    public static void getFileredProductListPreFiledListQuotationMap( LinkedHashMap<String, String> hmapFilterProductQuotationList,String SalesQuoteId,int BusinessSegmentId)
     {
-        open();
+        //open();
         try {
             Cursor cur=null;
             //cur=db.rawQuery("Select ProductID,ProductShortName,tblSalesQuoteProductsMstr.StandardRate ,tblSalesQuoteProductsMstr.StandardRateBeforeTax,tblSalesQuoteProductsMstr.RateOffer,tblSalesQuoteProductsMstr.InclusiveTax,tblSalesQuoteProductsMstr.ValidFrom AS ValidFrom,tblSalesQuoteProductsMstr.ValidTo As ValidTo,tblSalesQuoteProductsMstr.MinDlvryQty,tblSalesQuoteProductsMstr.UOMID,tblSalesQuoteProductsMstr.Remarks,tblSalesQuoteProductsMstr.LastTranscRate,tblProductList.VatTax from tblProductList inner join tblSalesQuoteProductsMstr on tblProductList.ProductID=tblSalesQuoteProductsMstr.PrdId where tblSalesQuoteProductsMstr.SalesQuoteId='"+SalesQuoteId+"' order by tblProductList.PrdOrdr Asc", null);
@@ -21850,14 +21852,14 @@ open();
         finally
         {
 
-            close();
+            //close();
 
         }
     }
 
-    public int fncheckIfgetFileredProductListQuotationMapExistsinTable(String SalesQuoteId)
+    public static int fncheckIfgetFileredProductListQuotationMapExistsinTable(String SalesQuoteId)
     {
-        open();
+        //open();
         int strReturnPDADateExistOrNot = 0;
         //tblSalesQuoteProductsMstr.SalesQuoteId='"+SalesQuoteId+"'
         Cursor cursor2 = db.rawQuery("SELECT * FROM  tblSalesQuoteProductsMstr where tblSalesQuoteProductsMstr.SalesQuoteId='"+SalesQuoteId+"'", null);
@@ -21875,16 +21877,16 @@ open();
             return strReturnPDADateExistOrNot;
         } finally {
             //cursor2.close();
-            close();
+           // close();
         }
     }
 
-    public LinkedHashMap<String, String> getDefaultProductListQuotationMap(String SalesQuoteId,int BusinessSegmentId)
+    public static LinkedHashMap<String, String> getDefaultProductListQuotationMap(String SalesQuoteId,int BusinessSegmentId)
     {
         String searchString="";
         LinkedHashMap<String, String> hmapDefaultProductQuotationList=new LinkedHashMap<String, String>();
         try {
-            open();
+            //open();
             //Cursor cur=db.rawQuery("Select ProductID,ProductShortName,IFNULL(tblSalesQuoteProductsMstr.StandardRate,0),IFNULL(tblSalesQuoteProductsMstr.StandardRateBeforeTax,0),IFNULL(tblSalesQuoteProductsMstr.RateOffer,0),IFNULL(tblSalesQuoteProductsMstr.InclusiveTax,0),IFNULL(tblSalesQuoteProductsMstr.ValidFrom,0),IFNULL(tblSalesQuoteProductsMstr.ValidTo,0),IFNULL(tblSalesQuoteProductsMstr.MinDlvryQty,0),IFNULL(tblSalesQuoteProductsMstr.UOMID,0),IFNULL(tblSalesQuoteProductsMstr.Remarks,''),IFNULL(tblSalesQuoteProductsMstr.LastTranscRate,'0.00'),VatTax from tblProductList Inner Join tblSalesQuoteProductsMstr On tblProductList.ProductID=tblSalesQuoteProductsMstr.PrdId Where tblSalesQuoteProductsMstr.SalesQuoteId='"+SalesQuoteId+"' order by PrdOrdr Asc", null);
             Cursor cur=db.rawQuery("Select tblProductList.ProductID,ProductShortName,IFNULL(tblSalesQuoteProductsMstr.StandardRate,0),IFNULL(tblSalesQuoteProductsMstr.StandardRateBeforeTax,0),IFNULL(tblSalesQuoteProductsMstr.RateOffer,0),IFNULL(tblSalesQuoteProductsMstr.InclusiveTax,0),IFNULL(tblSalesQuoteProductsMstr.ValidFrom,0),IFNULL(tblSalesQuoteProductsMstr.ValidTo,0),IFNULL(tblSalesQuoteProductsMstr.MinDlvryQty,0),IFNULL(tblSalesQuoteProductsMstr.UOMID,0),IFNULL(tblSalesQuoteProductsMstr.Remarks,''),IFNULL(tblSalesQuoteProductsMstr.LastTranscRate,'0.00'),tblProductSegementMap.VatTax from tblProductList Inner Join tblSalesQuoteProductsMstr On tblProductList.ProductID=tblSalesQuoteProductsMstr.PrdId inner join tblProductSegementMap on tblProductList.ProductID=tblProductSegementMap.ProductID Where tblSalesQuoteProductsMstr.SalesQuoteId='"+SalesQuoteId+"' and tblProductSegementMap.BusinessSegmentId="+BusinessSegmentId+" order by PrdOrdr Asc", null);
             if(cur.getCount()>0)
@@ -21923,7 +21925,7 @@ open();
 
         {
 
-            close();
+           // close();
 
             return hmapDefaultProductQuotationList;
 
@@ -21931,9 +21933,9 @@ open();
 
     }
 
-    public String fnGettPrcIDBasedOnQuotationId(String SalesQuoteId)
+    public static String fnGettPrcIDBasedOnQuotationId(String SalesQuoteId)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT SalesQuotePrcsId from tblSalesQuotePersonMeetMstr where SalesQuoteId='"+SalesQuoteId +"'", null);
         String flag="0";
         try {
@@ -21949,11 +21951,11 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> getQuotationPersionMeetDetails(String SalesQuoteId)
+    public static LinkedHashMap<String, String> getQuotationPersionMeetDetails(String SalesQuoteId)
 
     {
 
@@ -21966,7 +21968,7 @@ open();
         LinkedHashMap<String, String> hmapQuotationPersionMeetDetails=new LinkedHashMap<String, String>();
 
         try {
-            open();
+            //open();
 
 
 
@@ -22012,7 +22014,7 @@ open();
 
         {
 
-            close();
+           // close();
 
             return hmapQuotationPersionMeetDetails;
 
@@ -22020,7 +22022,7 @@ open();
 
     }
 
-    public void UpdateQuotePrcsAgainstQuotationId(String SalesQuoteId,String SalesQuotePrcsId,String SalesQuotePrcs)
+    public static void UpdateQuotePrcsAgainstQuotationId(String SalesQuoteId,String SalesQuotePrcsId,String SalesQuotePrcs)
     {
 
         try
@@ -22040,7 +22042,7 @@ open();
         }
     }
 
-    public long savetblPDAQuestGrpMappingMstr(String GrpQuestID,String QuestID,String GrpID,String GrpNodeID,String GrpDesc,String SectionNo,String GrpCopyID,String QuestCopyID,String sequence)
+    public static long savetblPDAQuestGrpMappingMstr(String GrpQuestID,String QuestID,String GrpID,String GrpNodeID,String GrpDesc,String SectionNo,String GrpCopyID,String QuestCopyID,String sequence)
     {
         ContentValues initialValues = new ContentValues();
         initialValues.put("GrpQuestID", Integer.parseInt(GrpQuestID));
@@ -22057,12 +22059,12 @@ open();
         return inserted;
     }
 
-    public LinkedHashMap<String, String> fnGetDistinctSenction()
+    public static LinkedHashMap<String, String> fnGetDistinctSenction()
     {
         String searchString="";
         LinkedHashMap<String, String> hmapDistinctDiffrentSection=new LinkedHashMap<String, String>();
         try {
-            open();
+            //open();
             Cursor cur=db.rawQuery("Select Distinct SectionNo from tblPDAQuestGrpMappingMstr", null);
             if(cur.getCount()>0)
             {
@@ -22082,17 +22084,17 @@ open();
         }
         finally
         {
-            close();
+          //  close();
             return hmapDistinctDiffrentSection;
         }
     }
 
-    public LinkedHashMap<String, String> fnGetDistinctGroupsinSection(int SectionNo)
+    public static LinkedHashMap<String, String> fnGetDistinctGroupsinSection(int SectionNo)
     {
         String searchString="";
         LinkedHashMap<String, String> hmapDistinctGroupsinSection=new LinkedHashMap<String, String>();
         try {
-            open();
+            //open();
             Cursor cur=db.rawQuery("Select GrpID,GrpNodeID,GrpDesc from tblPDAQuestGrpMappingMstr Where SectionNo='"+SectionNo+"'", null);
             if(cur.getCount()>0)
             {
@@ -22112,13 +22114,13 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return hmapDistinctGroupsinSection;
         }
     }
 
     //Add New Store Section wise Code starts Here
-    public long savetblQuestionDependentMstr(String QuestionID,String OptionID,String DependentQuestionID,String GrpID,String GrpDepQuestID)
+    public static long savetblQuestionDependentMstr(String QuestionID,String OptionID,String DependentQuestionID,String GrpID,String GrpDepQuestID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -22133,11 +22135,11 @@ open();
         return db.insert(TABLE_QuestionDependentMstr, null, initialValues);
     }
 
-    public LinkedHashMap<String, ArrayList<String>> fnGetGroupIDMapWithQuestionID()
+    public static LinkedHashMap<String, ArrayList<String>> fnGetGroupIDMapWithQuestionID()
     {
         LinkedHashMap<String, ArrayList<String>> hmapQuestionMstr=new LinkedHashMap<String, ArrayList<String>>();
         ArrayList<String> listKeyQuesVal=new ArrayList<String>();
-        open();
+        //open();
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
         //tblQuestionMstr(QuestID int null,QuestCode int null,QuestDesc text null,QuestType int null,AnsControlType int null,AnsControlInputTypeID int null,AnsControlInputTypeMinLength int null,AnsControlInputTypeMaxLength int null,AnsMustRequiredFlg int null,QuestBundleFlg int null,ApplicationTypeID int null,Sequence int null,AnsHint text null);";
         Cursor cursor = db.rawQuery("SELECT tblQuestionMstr.QuestID,tblQuestionMstr.AnsControlType,tblPDAQuestGrpMappingMstr.GrpQuestID,tblPDAQuestGrpMappingMstr.GrpID from tblQuestionMstr inner join tblPDAQuestGrpMappingMstr where tblQuestionMstr.QuestID=tblPDAQuestGrpMappingMstr.QuestID  Order By tblPDAQuestGrpMappingMstr.GrpID ASC  ", null);// Where PNodeID='"+TSIID+"'
@@ -22183,14 +22185,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGetGroupIDWithGroupDescr()
+    public static LinkedHashMap<String, String> fnGetGroupIDWithGroupDescr()
     {
         {
-            open();
+            //open();
             LinkedHashMap<String, String> hmapGroupIDWithGroupDescr=new LinkedHashMap<String, String>();
             //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
 
@@ -22207,12 +22209,12 @@ open();
 
                 }
             }
-            close();
+            //close();
             return hmapGroupIDWithGroupDescr;
         }
     }
 
-    public int getsectionCount()
+    public static int getsectionCount()
     {
         int sectionCount=0;
 
@@ -22239,12 +22241,12 @@ open();
         }
     }
 
-    public LinkedHashMap<String,ArrayList<String>> fnGetSectionIDMapWithGroupID()
+    public static LinkedHashMap<String,ArrayList<String>> fnGetSectionIDMapWithGroupID()
     {
         LinkedHashMap<String, ArrayList<String>> hmapQuestionMstr=new LinkedHashMap<String, ArrayList<String>>();
         ArrayList<String> listKeyQuesVal=new ArrayList<String>();
 
-        open();
+        //open();
         int sectionCount=getsectionCount();
         //    int sectionCount=0;
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
@@ -22302,14 +22304,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGetOptionId_OptionValue()
+    public static LinkedHashMap<String, String> fnGetOptionId_OptionValue()
     {
         LinkedHashMap<String, String> hmapOptionId_OptionValue=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT QuestID,OptID,OptionNo from tblOptionMstr Order By Sequence ASC ", null);// Where PNodeID='"+TSIID+"'
 
@@ -22331,11 +22333,11 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public int getSectionCount()
+    public static int getSectionCount()
     {
         int sectionNo=0;
 
@@ -22366,7 +22368,7 @@ open();
 
     }
 
-    public LinkedHashMap<String, String> fnGetQuestionMstr(SharedPreferences sPref)
+    public static LinkedHashMap<String, String> fnGetQuestionMstr(SharedPreferences sPref)
     {
 
         if(sPref.getString("Language", "").equals("en"))
@@ -22382,7 +22384,7 @@ open();
 
         }
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         int sectionCount=getsectionCount();
 
 
@@ -22460,16 +22462,16 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public void fnDeletesaveOutletQuestAnsMstrSctionWise(String OutletID,int sectionID)
+    public static void fnDeletesaveOutletQuestAnsMstrSctionWise(String OutletID,int sectionID)
     {
         db.execSQL("DELETE FROM tblOutletQuestAnsMstr WHERE OutletID ='"+ OutletID + "'");// and sectionID="+sectionID
     }
 
-    public void fnInsertTBLReturnRsn(String stockStatusId,String stockStatus)
+    public static void fnInsertTBLReturnRsn(String stockStatusId,String stockStatus)
     {
         //tblReturnReason(StockStatusId text not null,StockStatus text not null);";
         ContentValues content=new ContentValues();
@@ -22481,11 +22483,11 @@ open();
 
     //Add New Store Section wise Code Ends Here
 
-    public LinkedHashMap<String, String> getReasonReturn()
+    public static LinkedHashMap<String, String> getReasonReturn()
     {
         ////tblReturnReason(StockStatusId text not null,StockStatus text not null);";
         LinkedHashMap<String, String> hmapRtrnRsn=new LinkedHashMap<String, String>();
-        open();
+        //open();
         try {
 
 
@@ -22506,16 +22508,16 @@ open();
         }
         finally
         {
-            close();
+          //  close();
             return hmapRtrnRsn;
         }
     }
 
-    public LinkedHashMap<String, String> getSavedRemark(String StoreID,String OrderPDAID,String TmpInvoiceCodePDA)
+    public static LinkedHashMap<String, String> getSavedRemark(String StoreID,String OrderPDAID,String TmpInvoiceCodePDA)
     {
 //			              /  //tblStoreReturnDetail (RouteID text null,StoreID text null,ReturnProductID text null, ProdReturnQty text null, ProdReturnReason text null, ProdReturnReasonIndex text null,ReturnDate text null,Sstat integer null,OrderIDPDA text null);";
         LinkedHashMap<String, String> hmapRtrnRsn=new LinkedHashMap<String, String>();
-        open();
+        //open();
         try {
 
 
@@ -22536,12 +22538,12 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return hmapRtrnRsn;
         }
     }
 
-    public void updateflgFromWhereSubmitStatusAgainstStore(String sID, int flag2set,String StoreVisitCode)
+    public static void updateflgFromWhereSubmitStatusAgainstStore(String sID, int flag2set,String StoreVisitCode)
     {
         try
         {
@@ -22556,9 +22558,9 @@ open();
         }
     }
 
-    public int checkCountIntblNewStoreSalesQuotePaymentDetails(String  StoreId)
+    public static int checkCountIntblNewStoreSalesQuotePaymentDetails(String  StoreId)
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -22584,12 +22586,12 @@ open();
         }
         finally {
             cursor.close();
-            close();
+           // close();
         }
         return check;
     }
 
-    public long saveSOAPdataStoreListAddressMap(String StoreID,int OutAddTypeID,String Address,String AddressDet,int OutAddID)
+    public static long saveSOAPdataStoreListAddressMap(String StoreID,int OutAddTypeID,String Address,String AddressDet,int OutAddID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -22614,14 +22616,14 @@ open();
 
     //Code For Order Payment and Bill Starts Here
 
-    public ArrayList<LinkedHashMap<String, String>> fngetStoreBillToAddressAndDiliverToAddress(String StoreID)
+    public static ArrayList<LinkedHashMap<String, String>> fngetStoreBillToAddressAndDiliverToAddress(String StoreID)
     {
 
         ArrayList<LinkedHashMap<String, String>> totalProductDetail=new ArrayList<LinkedHashMap<String, String>>(3);
         LinkedHashMap<String, String> hmapStoreBillTogAddresse=new LinkedHashMap<String, String>();
         LinkedHashMap<String, String> hmapStoreShippToAddress=new LinkedHashMap<String, String>();
         LinkedHashMap<String, String> hmapStoreAddress=new LinkedHashMap<String, String>();
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select OutAddTypeID,Address,AddressDet,OutAddID from tblStoreAddressMapDetailsMstr where StoreID='"+StoreID+"'",null);
         if(cur.getCount()>0)
         {
@@ -22643,7 +22645,7 @@ open();
                 }
             }
         }
-        close();
+       // close();
 
         totalProductDetail.add(0,hmapStoreBillTogAddresse);
         totalProductDetail.add(1,hmapStoreShippToAddress);
@@ -22652,7 +22654,7 @@ open();
         return totalProductDetail;
     }
 
-    public long fnsaveStoreSalesOrderPaymentDetails(String StoreId,String OrderID,String PaymentStageId,String Sstat,String TmpInvoiceCodePDA)
+    public static long fnsaveStoreSalesOrderPaymentDetails(String StoreId,String OrderID,String PaymentStageId,String Sstat,String TmpInvoiceCodePDA)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -22667,21 +22669,21 @@ open();
         return db.insert(DATABASE_TABLE_StoreSalesOrderPaymentDetails, null, initialValues);
     }
 
-    public void fndeleteStoreSalesOrderPaymentDetails(String StoreID,String OrderID,String TmpInvoiceCodePDA)
+    public static void fndeleteStoreSalesOrderPaymentDetails(String StoreID,String OrderID,String TmpInvoiceCodePDA)
     {
 
         db.execSQL("DELETE FROM tblStoreSalesOrderPaymentDetails WHERE StoreId ='" + StoreID +"' and OrderID='"+OrderID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
     }
 
-    public void fndeleteStoreAddressMapDetailsMstr()
+    public static void fndeleteStoreAddressMapDetailsMstr()
     {
 
         db.execSQL("DELETE FROM tblStoreAddressMapDetailsMstr");
     }
 
-    public int checkCountIntblStoreSalesOrderPaymentDetails(String  StoreId,String OrderID,String TmpInvoiceCodePDA)
+    public static int checkCountIntblStoreSalesOrderPaymentDetails(String  StoreId,String OrderID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -22707,13 +22709,13 @@ open();
         }
         finally {
             cursor.close();
-            close();
+         //   close();
         }
         return check;
     }
 //tblStoreAddressMapDetailsMstr
 
-    public String fngettblStoreSalesOrderPaymentDetails(String StoreID,String OrderID,String TmpInvoiceCodePDA)
+    public static String fngettblStoreSalesOrderPaymentDetails(String StoreID,String OrderID,String TmpInvoiceCodePDA)
 
     {
 
@@ -22724,7 +22726,7 @@ open();
 
 
         try {
-            open();
+            //open();
 
             Cursor cur=db.rawQuery("Select IFNULL(PymtStageId,0) from tblStoreSalesOrderPaymentDetails Where StoreId ='"+ StoreID + "' and OrderID='"+OrderID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
 
@@ -22749,14 +22751,14 @@ open();
         }
         finally
         {
-            close();
+         //   close();
             return searchString;
         }
     }
 
-    public int checkPaymentStageintStoreMstrTabel(String  StoreId)
+    public static int checkPaymentStageintStoreMstrTabel(String  StoreId)
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -22781,14 +22783,14 @@ open();
         }
         finally {
             cursor.close();
-            close();
+           // close();
         }
         return check;
     }
 
-    public int checkStoreOrderBillAddressDetails(String  StoreId,String OrderID)
+    public static int checkStoreOrderBillAddressDetails(String  StoreId,String OrderID)
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -22813,19 +22815,19 @@ open();
         }
         finally {
             cursor.close();
-            close();
+            //close();
         }
         return check;
     }
 
-    public void fndeleteStoreOrderBillAddressDetails(String StoreID,String OrderID)
+    public static void fndeleteStoreOrderBillAddressDetails(String StoreID,String OrderID)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblStoreOrderBillAddressDetails WHERE StoreId ='" + StoreID +"' and OrderID='"+OrderID+"'");
-        close();
+       // close();
     }
 
-    public long fnsaveStoreOrderBillAddressDetails(String StoreId,String OrderID,String BillToAddress,String ShipToAddress,String Sstat)
+    public static long fnsaveStoreOrderBillAddressDetails(String StoreId,String OrderID,String BillToAddress,String ShipToAddress,String Sstat)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -22845,12 +22847,12 @@ open();
         return db.insert("tblStoreOrderBillAddressDetails", null, initialValues);
     }
 
-    public int checkIfCurrentStoreIsNewInOrderBill(String StoreID)
+    public static int checkIfCurrentStoreIsNewInOrderBill(String StoreID)
     {
 
         int ScodecolumnIndex = 0;
         int ISNewStore=0;
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT ISNewStore FROM tblStoreList where StoreID='"+StoreID+"'", null);
         try
         {
@@ -22870,13 +22872,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+         //   close();
         }
     }
 
-    public String fetchBillAddress(String OutletID)
+    public static String fetchBillAddress(String OutletID)
     {
-        open();
+        //open();
         Cursor cursor =null;
         String CompleteBillAddress="";
         try {
@@ -22928,12 +22930,12 @@ open();
         }
         finally {
             cursor.close();
-            close();
+           // close();
         }
         return CompleteBillAddress;
     }
 
-    public String fnGetCityName(String QuestID,String AnsValue)
+    public static String fnGetCityName(String QuestID,String AnsValue)
     {
 
         Cursor cursor =null;
@@ -22966,9 +22968,9 @@ open();
         return DDlStringCity;
     }
 
-    public String fetchDeliverAddress(String OutletID)
+    public static String fetchDeliverAddress(String OutletID)
     {
-        open();
+        //open();
         Cursor cursor =null;
         String CompleteDileveryAddress="";
         try {
@@ -23020,16 +23022,16 @@ open();
         }
         finally {
             cursor.close();
-            close();
+           // close();
         }
         return CompleteDileveryAddress;
     }
 
-    public String fnGetPreFilledStoreOrderBillAddressDetails(String StoreId,String OrderID)
+    public static String fnGetPreFilledStoreOrderBillAddressDetails(String StoreId,String OrderID)
     {
         ////tblReturnReason(StockStatusId text not null,StockStatus text not null);";
         String strPreFilledStoreOrderBillAddressDetails="";
-        open();
+        //open();
         try {
             Cursor cur=db.rawQuery("Select BillToAddress,ShipToAddress from tblStoreOrderBillAddressDetails Where StoreID='"+StoreId+"' and OrderID='"+OrderID+"'", null);
             if(cur.getCount()>0)
@@ -23048,28 +23050,28 @@ open();
         }
         finally
         {
-            close();
+          //  close();
             return strPreFilledStoreOrderBillAddressDetails;
         }
     }
 
-    public void fndeleteStoreSalesOrderPaymentDetailsOnStoreIDBasis(String StoreID)
+    public static void fndeleteStoreSalesOrderPaymentDetailsOnStoreIDBasis(String StoreID)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblStoreSalesOrderPaymentDetails WHERE StoreId ='" + StoreID +"'");
-        close();
+        //close();
     }
 
-    public void fndeleteStoreOrderBillAddressDetailsOnStoreIDBasis(String StoreID)
+    public static void fndeleteStoreOrderBillAddressDetailsOnStoreIDBasis(String StoreID)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblStoreOrderBillAddressDetails WHERE StoreId ='" + StoreID +"'");
-        close();
+       // close();
     }
 
-    public String fnGetDefaultStoreOrderPAymentDetails(String  StoreId)
+    public static String fnGetDefaultStoreOrderPAymentDetails(String  StoreId)
     {
-        open();
+        //open();
         Cursor cursor =null;
         String PaymentStageFROM="";
         try {
@@ -23094,16 +23096,16 @@ open();
         }
         finally {
             cursor.close();
-            close();
+           // close();
         }
         return PaymentStageFROM;
     }
 
     // "create table tblMinDeliverQntty (PrdId text null,StoreID text null,QPBT text null,QPTaxAmount text null,MinDlvrQty int null,UOMID text null,Sstat text null);";
-    public LinkedHashMap<String, Integer> getMinDlvryQntty(String storeId)
+    public static LinkedHashMap<String, Integer> getMinDlvryQntty(String storeId)
     {
         LinkedHashMap<String, Integer> hmapMinDlvrQty=new LinkedHashMap<String, Integer>();
-        open();
+        //open();
         try {
 
 
@@ -23124,16 +23126,16 @@ open();
 
         }finally
         {
-            close();
+          //  close();
             return hmapMinDlvrQty;
         }
     }
 
     // "create table tblMinDeliverQntty (PrdId text null,StoreID text null,QPBT text null,QPTaxAmount text null,MinDlvrQty int null,UOMID text null,Sstat text null);";
-    public LinkedHashMap<String, String> getMinDlvryQnttyQPBT(String storeId)
+    public static LinkedHashMap<String, String> getMinDlvryQnttyQPBT(String storeId)
     {
         LinkedHashMap<String, String> hmapMinDlvrQtyQPBT=new LinkedHashMap<String, String>();
-        open();
+        //open();
         try {
 
 
@@ -23154,15 +23156,15 @@ open();
 
         }finally
         {
-            close();
+          //  close();
             return hmapMinDlvrQtyQPBT;
         }
     }
 
-    public LinkedHashMap<String, String> getMinDlvryQnttyQPAT(String storeId)
+    public static LinkedHashMap<String, String> getMinDlvryQnttyQPAT(String storeId)
     {
         LinkedHashMap<String, String> hmapMinDlvrQtyQPAT=new LinkedHashMap<String, String>();
-        open();
+        //open();
         try {
 
 
@@ -23183,16 +23185,16 @@ open();
 
         }finally
         {
-            close();
+           // close();
             return hmapMinDlvrQtyQPAT;
         }
     }
 
     // "create table tblMinDeliverQntty (PrdId text null,StoreID text null,QPBT text null,QPTaxAmount text null,MinDlvrQty int null,UOMID text null,Sstat text null);";
-    public LinkedHashMap<String, String> getMinDlvryQnttyQPTaxAmount(String storeId)
+    public static LinkedHashMap<String, String> getMinDlvryQnttyQPTaxAmount(String storeId)
     {
         LinkedHashMap<String, String> hmapMinDlvrQtyQPTaxAmount=new LinkedHashMap<String, String>();
-        open();
+        //open();
         try {
 
 
@@ -23213,14 +23215,14 @@ open();
 
         }finally
         {
-            close();
+           // close();
             return hmapMinDlvrQtyQPTaxAmount;
         }
     }
 
-    public int fnchkIfStoreFasQuote(String  StoreId)
+    public static int fnchkIfStoreFasQuote(String  StoreId)
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -23244,21 +23246,21 @@ open();
         }
         finally {
             cursor.close();
-            close();
+          //  close();
         }
         return check;
     }
 
-    public void fnDeletefromtblSchemeStoreMappingAgainstStore(String StoreID)
+    public static void fnDeletefromtblSchemeStoreMappingAgainstStore(String StoreID)
     {
-        open();
+        //open();
         db.execSQL("DELETE  FROM tblSchemeStoreMapping WHERE  StoreID='"+ StoreID + "'");
-        close();
+      //  close();
     }
 
-    public int fnchkIfStoreAllowQuotation(String  StoreId)
+    public static int fnchkIfStoreAllowQuotation(String  StoreId)
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -23282,12 +23284,12 @@ open();
         }
         finally {
             cursor.close();
-            close();
+          //  close();
         }
         return check;
     }
 
-    public void UpdateStoreFlagQoutation(String sID, int flag2set)
+    public static void UpdateStoreFlagQoutation(String sID, int flag2set)
     {
 
         try
@@ -23333,19 +23335,19 @@ open();
 
     }
 
-    public void updateStoreQuoteSubmitFlgInStoreMstr(String StoreID,int flgSubmitFromQuotation,String StoreVisitCode)
+    public static void updateStoreQuoteSubmitFlgInStoreMstr(String StoreID,int flgSubmitFromQuotation,String StoreVisitCode)
     {
-        open();
+        //open();
 
         final ContentValues values = new ContentValues();
         values.put("flgSubmitFromQuotation", flgSubmitFromQuotation);
         int affected = db.update("tblStoreVisitMstr", values, "StoreID=? AND StoreVisitCode=?",
                 new String[] { StoreID,StoreVisitCode });
 
-        close();
+       // close();
     }
 
-    public int fnchkIfStoreHasInvoiceEntry(String  StoreId)
+    public static int fnchkIfStoreHasInvoiceEntry(String  StoreId)
     {
 
         Cursor cursor =null;
@@ -23376,14 +23378,14 @@ open();
         return check;
     }
 
-    public void updateStoreQuoteSubmitFlgInStoreMstrInChangeRouteCase(String StoreID,int flgSubmitFromQuotation)
+    public static void updateStoreQuoteSubmitFlgInStoreMstrInChangeRouteCase(String StoreID,int flgSubmitFromQuotation)
     {
         final ContentValues values = new ContentValues();
         values.put("flgSubmitFromQuotation", flgSubmitFromQuotation);
         int affected = db.update("tblStoreList", values, "StoreID=?",new String[] { StoreID });
     }
 
-    public String[] FetchStoreStatusflgSubmitFromQuotation()
+    public static String[] FetchStoreStatusflgSubmitFromQuotation()
     {
         int ScodecolumnIndex = 0;
         Cursor cursor = db.rawQuery("SELECT flgSubmitFromQuotation FROM tblStoreList ORDER BY DistanceNear", null);
@@ -23406,9 +23408,9 @@ open();
         }
     }
 
-    public LinkedHashMap<String, String> fnGetListQuoteISOfUnmappedWithProducts(String StoreID)
+    public static LinkedHashMap<String, String> fnGetListQuoteISOfUnmappedWithProducts(String StoreID)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("Select Distinct tblSalesQuotePersonMeetMstr.SalesQuoteId from tblSalesQuotePersonMeetMstr Where tblSalesQuotePersonMeetMstr.SalesQuoteId not in(Select tblSalesQuoteProductsMstr.SalesQuoteId from tblSalesQuoteProductsMstr) and StoreId='"+StoreID+"'", null);
         LinkedHashMap<String, String> hmapList=new LinkedHashMap<String, String>();
         try {
@@ -23424,25 +23426,25 @@ open();
         finally
         {
             //cursor.close();
-            close();
+          //  close();
         }
     }
 
-    public void fndeleteQuoteISOfUnmappedWithProducts(String SalesQuoteId)
+    public static void fndeleteQuoteISOfUnmappedWithProducts(String SalesQuoteId)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblSalesQuoteProductsMstr WHERE SalesQuoteId='"+SalesQuoteId+"'");
         db.execSQL("DELETE FROM tblSalesQuotePersonMeetMstr WHERE SalesQuoteId='"+SalesQuoteId+"'");
         db.execSQL("DELETE FROM tblRateDistribution WHERE SalesQuoteId='"+SalesQuoteId+"'");
-        close();
+       // close();
     }
 
-    public int fnGetBusinessSegmentIDAgainstStoreType(int OutChannelID)
+    public static int fnGetBusinessSegmentIDAgainstStoreType(int OutChannelID)
     {
 
         int ScodecolumnIndex = 0;
         int BusinessSegmentID=0;
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT BusinessSegmentID FROM tblOutletChannelBusinessSegmentMaster where OutChannelID="+OutChannelID, null);
         try
         {
@@ -23462,16 +23464,16 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public int fnGetAnsValID(int optionId)
+    public static int fnGetAnsValID(int optionId)
     {
 //tblOptionMstr(OptID int null,QuestID int null,OptionNo int null,OptionDescr text null,Sequence int null );";
         int ScodecolumnIndex = 0;
         int ansValId=0;
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT OptionNo FROM tblOptionMstr where OptID="+optionId, null);
         try
         {
@@ -23491,18 +23493,18 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public String fnGetQuestIDForOutChannelFromQuestionMstr()
+    public static String fnGetQuestIDForOutChannelFromQuestionMstr()
     {//tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null,GrpCopyID int null,QuestCopyID int null);";
 
         int ScodecolumnIndex = 0;
         int ansCntrlTypeIndex = 1;
         int grpQuestIdIndex = 2;
         String QuestID="0";
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT tblQuestionMstr.QuestID,tblQuestionMstr.AnsControlType,tblPDAQuestGrpMappingMstr.GrpQuestID FROM tblQuestionMstr inner join tblPDAQuestGrpMappingMstr ON tblQuestionMstr.QuestID=tblPDAQuestGrpMappingMstr.QuestID where tblQuestionMstr.flgQuestIDForOutChannel=1", null);
         try
         {
@@ -23522,11 +23524,11 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public long saveTblSalesQuoteSponsorMstr(String SalesQuoteSponsorID,String SponsorDescr,String Ordr)
+    public static long saveTblSalesQuoteSponsorMstr(String SalesQuoteSponsorID,String SponsorDescr,String Ordr)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -23538,7 +23540,7 @@ open();
         return db.insert(TABLE_tblSalesQuoteSponsorMstr, null, initialValues);
     }
 
-    public long saveTblManufacturerMstrMain(String ManufacturerID,String ManufacturerName,String NodeType)
+    public static long saveTblManufacturerMstrMain(String ManufacturerID,String ManufacturerName,String NodeType)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -23550,7 +23552,7 @@ open();
         return db.insert(TABLE_tblManufacturerMstrMain, null, initialValues);
     }
 
-    public long saveTblRateDistribution(String SalesQuoteId,String StoreId,String SalesQuoteSponsorID,String ManufacturerID,String Percentage,String SponsorDescr,String ManufacturerName,String Sstat)
+    public static long saveTblRateDistribution(String SalesQuoteId,String StoreId,String SalesQuoteSponsorID,String ManufacturerID,String Percentage,String SponsorDescr,String ManufacturerName,String Sstat)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -23567,10 +23569,10 @@ open();
         return db.insert(TABLE_tblRateDistribution, null, initialValues);
     }
 
-    public LinkedHashMap<String, String> fnGettblManufacturerMstrMain()
+    public static LinkedHashMap<String, String> fnGettblManufacturerMstrMain()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 // Cursor cursor = db.rawQuery("SELECT SST_NameId,SST_Name_des from tbl_SST_NameMstr Order By Sequence ASC  ", null);// Where PNodeID='"+TSIID+"'
 
 // (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
@@ -23596,16 +23598,16 @@ open();
         finally
         {
 
-            close();
+           // close();
             return hmapQuestionMstr;
         }
     }
 
-    public LinkedHashMap<String, ArrayList<String>> fnGettblRateDistribution(String SalesQuoteId,String StoreId)
+    public static LinkedHashMap<String, ArrayList<String>> fnGettblRateDistribution(String SalesQuoteId,String StoreId)
     {
         LinkedHashMap<String, ArrayList<String>> hmapQuestionMstr=new LinkedHashMap<String, ArrayList<String>>();
 
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT SalesQuoteSponsorID,ManufacturerID,Percentage,SponsorDescr,ManufacturerName from tblRateDistribution   where SalesQuoteId='"+SalesQuoteId+"' and StoreId='"+StoreId+"'", null);// Where PNodeID='"+TSIID+"'
@@ -23634,15 +23636,15 @@ open();
         finally
         {
 
-            close();
+           // close();
             return hmapQuestionMstr;
         }
     }
 
-    public LinkedHashMap<String, String> fnGettblSalesQuoteSponsorMstr()
+    public static LinkedHashMap<String, String> fnGettblSalesQuoteSponsorMstr()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 // Cursor cursor = db.rawQuery("SELECT SST_NameId,SST_Name_des from tbl_SST_NameMstr Order By Sequence ASC  ", null);// Where PNodeID='"+TSIID+"'
 
 // (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
@@ -23668,15 +23670,15 @@ open();
         finally
         {
 
-            close();
+            //close();
             return hmapQuestionMstr;
         }
     }
 
-    public LinkedHashMap<String, String> fnProductManufractureIDList()
+    public static LinkedHashMap<String, String> fnProductManufractureIDList()
     {
         LinkedHashMap<String, String> hmapProductManufractureIDList=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT ProductID,ManufacturerID from tblProductList", null);
@@ -23698,14 +23700,14 @@ open();
         finally
         {
 
-            close();
+           // close();
             return hmapProductManufractureIDList;
         }
     }
 
-    public ArrayList<String> fectProductIDMappedInSchSlbSubBukRowIdTemp(int schSlbSubRowID)
+    public static ArrayList<String> fectProductIDMappedInSchSlbSubBukRowIdTemp(int schSlbSubRowID)
     {
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT ProductID FROM tblSchemeSlabBucketProductMapping WHERE RowID ="+ schSlbSubRowID , null);
         try {
             ArrayList<String> CompleteResult = new ArrayList<String>();
@@ -23721,15 +23723,15 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
     }
 
-    public String fnGetBenifitAssignedValue(String StoreID,int ProductIdOnClicked,int schId,String TmpInvoiceCodePDA)
+    public static String fnGetBenifitAssignedValue(String StoreID,int ProductIdOnClicked,int schId,String TmpInvoiceCodePDA)
     {
         //tblStoreProductAppliedSchemesBenifitsRecords (StoreID text not null,ProductID int not null,schId int not null,schSlabId integer not null,schSlbBuckId integer not null,schSlabSubBucketValue real not null,schSubBucketValType integer not null,schSlabSubBucketType int not null,BenifitRowID integer not null,BenSubBucketType int null,FreeProductID int null,BenifitSubBucketValue real null,BenifitMaxValue real null,BenifitAssignedValue real null,BenifitAssignedValueType int null,BenifitDiscountApplied int null,BenifitCouponCode text null,Sstat integer not null,Per real null,UOM real null,WhatFinallyApplied int null,schSlbRowId int null,SchTypeId int null,DiscountPercentage real null,OrderIDPDA text null);";
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT FreeProductID,BenifitAssignedValue,BenSubBucketType FROM tblStoreProductAppliedSchemesBenifitsRecords WHERE StoreID ='"+ StoreID + "' and  schId="+schId+" and BenSubBucketType in(1,5,2,6,3,7) AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' and ProductID="+ProductIdOnClicked, null);
         String chkI = "";
         try {
@@ -23751,14 +23753,14 @@ open();
 
         } finally {
             cursor.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public ArrayList<String> fnGetProductsSchIdSlabRowList(String StoreID,int RowID,String pdaOrderID,String TmpInvoiceCodePDA)
+    public static ArrayList<String> fnGetProductsSchIdSlabRowList(String StoreID,int RowID,String pdaOrderID,String TmpInvoiceCodePDA)
     {//tblSchemeSlabBenefitsProductMappingDetail (RowID text null,ProductID text null)
-        open();//schId
+        //open();//schId
 // Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID, null);
         Cursor cursorE2 = db.rawQuery("SELECT ProductID FROM  tblStoreProductAppliedSchemesBenifitsRecords where schSlbRowId="+RowID +" AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'  and StoreID='"+StoreID+"'", null);
         ArrayList<String> AllProductInSlab = new ArrayList<String>();
@@ -23780,17 +23782,17 @@ open();
             return AllProductInSlab;
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
 
     }
 
-    public void updateManufacturerIDAndName(String SalesQuoteId,String ManufacturerID, String ManufacturerName)
+    public static void updateManufacturerIDAndName(String SalesQuoteId,String ManufacturerID, String ManufacturerName)
     {
 
         try
         {
-            open();
+            //open();
 
             final ContentValues values = new ContentValues();
             values.put("ManufacturerID", ManufacturerID);
@@ -23805,19 +23807,19 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
     }
 
-    public String getManufacturerIDAndManufacturerNameDetails(String SalesQuoteId)
+    public static String getManufacturerIDAndManufacturerNameDetails(String SalesQuoteId)
     {
         String searchString="0^0";
         // LinkedHashMap<String, String> hmapQuotationPersionMeetDetails=new LinkedHashMap<String, String>();
 
         try
         {
-            open();
+            //open();
             Cursor cur=db.rawQuery("Select ManufacturerID,ManufacturerName from tblSalesQuotePersonMeetMstr Where tblSalesQuotePersonMeetMstr.SalesQuoteId='"+SalesQuoteId+"'", null);
 
             if(cur.getCount()>0)
@@ -23858,7 +23860,7 @@ open();
 
         {
 
-            close();
+           // close();
 
             return searchString;
 
@@ -23866,7 +23868,7 @@ open();
 
     }
 
-    public int checkMessageIDExistOrNotForNotification(int MsgServerID)
+    public static int checkMessageIDExistOrNotForNotification(int MsgServerID)
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblNotificationMstr WHERE MsgServerID ="+ MsgServerID, null);
         int chkI = 0;
@@ -23890,17 +23892,17 @@ open();
         return chkI;
     }
 
-    public void Delete_tblNotificationMstr()
+    public static void Delete_tblNotificationMstr()
     {
         db.execSQL("DELETE FROM tblNotificationMstr");
 
 
     }
 
-    public ArrayList<String> getGstDataByStore(String StoreID)
+    public static ArrayList<String> getGstDataByStore(String StoreID)
     {
         ArrayList<String> PrevAccuracy=new ArrayList<String>();
-        open();
+        //open();
         try
         {
             Cursor cursor2 = db.rawQuery("Select flgGSTCapture,flgGSTCompliance,GSTNumber from tblStoreList where StoreID ='"+ StoreID + "'", null);
@@ -23924,18 +23926,18 @@ open();
         {}
         finally
         {
-            close();
+          //  close();
         }
         return PrevAccuracy;
     }
 
-    public int fnGetflgServerRecordFromOutletMstr(String StoreID)
+    public static int fnGetflgServerRecordFromOutletMstr(String StoreID)
     {
         int flgServerRecord = 0;
 
         try
         {
-            open();
+            //open();
             //Cursor cursor = db.rawQuery("SELECT flgGSTRecordFromServer FROM tblStoreList where StoreID='" + StoreID + "' and Sstat=3", null);
             Cursor cursor = db.rawQuery("SELECT flgGSTRecordFromServer FROM tblStoreList where StoreID='" + StoreID + "'", null);
 
@@ -23955,15 +23957,15 @@ open();
             return flgServerRecord;
         } finally
         {
-            close();
+           // close();
         }
     }
 
-    public void UpdateStoreInfoGST(String StoreID,String flgGSTCapture,String flgGSTCompliance,String GSTNumber)
+    public static void UpdateStoreInfoGST(String StoreID,String flgGSTCapture,String flgGSTCompliance,String GSTNumber)
     {
         try
         {
-            open();
+            //open();
             final ContentValues values = new ContentValues();
             values.put("flgGSTCapture", flgGSTCapture);
             values.put("flgGSTCompliance", flgGSTCompliance);
@@ -23978,18 +23980,18 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
 
     }
 
-    public String fnGetGstOptionIDComplianceWhileAddingNewStore(String flgGSTCompliance)
+    public static String fnGetGstOptionIDComplianceWhileAddingNewStore(String flgGSTCompliance)
     {
         String flgGSTComplianceResult = "0";
 
         try
         {
-            open();
+            //open();
             Cursor cursor = db.rawQuery("SELECT OptionNo FROM tblOptionMstr where OptID='" + flgGSTCompliance+"'", null);
 
             if (cursor.moveToFirst())
@@ -24008,11 +24010,11 @@ open();
             return flgGSTComplianceResult;
         } finally
         {
-            close();
+           // close();
         }
     }
 
-    public int countNumberOFNotificationtblNotificationMstr()  throws IOException
+    public static int countNumberOFNotificationtblNotificationMstr()  throws IOException
     {
         int chkI = 0;
         Cursor cursorE2 = db.rawQuery("SELECT Count(*) FROM tblNotificationMstr where Noti_NewOld=1 and Noti_ReadStatus=1", null);
@@ -24036,9 +24038,9 @@ open();
         return chkI;
     }
 
-    public  LinkedHashMap<String,String> fngetAllOptionForQuestionID(int QuestID)
+    public static  LinkedHashMap<String,String> fngetAllOptionForQuestionID(int QuestID)
     {
-        open();
+        //open();
         LinkedHashMap<String,String> hashMapOption=new LinkedHashMap<String,String>();
 
         try {
@@ -24058,7 +24060,7 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return hashMapOption;
         }
 
@@ -24068,10 +24070,10 @@ open();
     //private static final String DATABASE_CREATE_TABLE_OPTIONMstr = "create table tblOptionMstr" +
     //"(OptID int null,QuestID int null,OptionNo int null,OptionDescr text null,Sequence int null );";
 
-    public String[] getAllOptValueDpndntQuest()
+    public static String[] getAllOptValueDpndntQuest()
     {
         String[] allQuestValesDpndnt=null;
-        open();
+        //open();
         try {
 
             //tblQuestionDependentMstr(QuestionID int null,OptionID int null,DependentQuestionID int null,GrpID int null,GrpDepQuestID int null)
@@ -24093,7 +24095,7 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return allQuestValesDpndnt;
         }
 
@@ -24102,11 +24104,11 @@ open();
 
     // New Added Store Fun Start
 
-    public String[] fnGetDependentParentQuesIdr()
+    public static String[] fnGetDependentParentQuesIdr()
     {
 
 
-        open();
+        //open();
 //tblQuestionDependentMstr(QuestionID int null,OptionID int null,DependentQuestionID int null,GrpID int null,GrpDepQuestID int null);";
         Cursor cursor = db.rawQuery("SELECT DISTINCT GrpDepQuestID from tblQuestionDependentMstr", null);// Where PNodeID='"+TSIID+"'
         String []arrbhi=new String[cursor.getCount()];
@@ -24128,14 +24130,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGetQuestionID_AnsCntrlType()
+    public static LinkedHashMap<String, String> fnGetQuestionID_AnsCntrlType()
     {
         LinkedHashMap<String, String> hmapQuestionId_AnsCntrlTyper=new LinkedHashMap<String, String>();
-        open();
+        //open();
         int lastIndex=0;
         //tblQuestionMstr(QuestID int null,QuestCode int null,QuestDesc text null,QuestType int null,AnsControlType int null,AnsControlInputTypeID int null,AnsControlInputTypeMinLength int null,AnsControlInputTypeMaxLength int null,AnsMustRequiredFlg int null,QuestBundleFlg int null,ApplicationTypeID int null,Sequence int null,AnsHint text null);";
         Cursor cursor = db.rawQuery("SELECT QuestID,AnsControlType from tblQuestionMstr", null);
@@ -24158,11 +24160,11 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public LinkedHashMap<String, ArrayList<String>> getAllQuestIdDpndnt()
+    public static LinkedHashMap<String, ArrayList<String>> getAllQuestIdDpndnt()
     {// //tblQuestionDependentMstr(QuestionID int null,OptionID int null,DependentQuestionID int null,GrpID int null,GrpDepQuestID int null);";
         LinkedHashMap<String, ArrayList<String>> hmapQuestDependVisible=new LinkedHashMap<String, ArrayList<String>>();
         ArrayList<String> listQestDpndnt=new ArrayList<String>();
@@ -24170,7 +24172,7 @@ open();
         try {
 
 
-            open();
+            //open();
 
             Cursor cur=db.rawQuery("Select GrpID,GrpDepQuestID from tblQuestionDependentMstr Order By GrpDepQuestID", null);
             if(cur.getCount()>0)
@@ -24216,15 +24218,15 @@ open();
             System.out.println("ErrorDatabase getAllQuestIdWhoseValuesDpndnt ="+ e.toString());
         } finally
         {
-            close();
+           // close();
             return hmapQuestDependVisible;
         }
     }
 
-    public LinkedHashMap<String, String> getAllQstGrpIdAgainstGrp()
+    public static LinkedHashMap<String, String> getAllQstGrpIdAgainstGrp()
     {
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
-        open();
+        //open();
         LinkedHashMap<String, String> hmapData=new LinkedHashMap<String, String>();
         Cursor cur=db.rawQuery("Select GrpID,GrpQuestID from tblPDAQuestGrpMappingMstr", null);
         if(cur.getCount()>0)
@@ -24238,14 +24240,14 @@ open();
                 }
             }
         }
-        close();
+       // close();
         return hmapData;
     }
 
-    public LinkedHashMap<String, String> getQuestGrpIdLnkWdQstId()
+    public static LinkedHashMap<String, String> getQuestGrpIdLnkWdQstId()
     {
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
-        open();
+        //open();
         LinkedHashMap<String, String> hmapData=new LinkedHashMap<String, String>();
         Cursor cur=db.rawQuery("Select QuestID,GrpQuestID from tblPDAQuestGrpMappingMstr", null);
         if(cur.getCount()>0)
@@ -24259,11 +24261,11 @@ open();
                 }
             }
         }
-        close();
+       // close();
         return hmapData;
     }
 
-    public String getChannelGroupIdOptId()
+    public static String getChannelGroupIdOptId()
     {
         String grpQstIdOptIdForChannel="0-0-0";
 
@@ -24290,9 +24292,9 @@ open();
         }
     }
 
-    public LinkedHashMap<String, String> getQuestAnswer(String tempId)
+    public static LinkedHashMap<String, String> getQuestAnswer(String tempId)
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapRtrvQuestAns=new LinkedHashMap<String, String>();
         try {
             String channelOptId=getChannelGroupIdOptId();
@@ -24323,14 +24325,14 @@ open();
         }
         finally
         {
-            close();
+            //close();
             return hmapRtrvQuestAns;
         }
     }
 
-    public LinkedHashMap<String, String> getPDAUserPreviousQuestionAnswerMasterServer(String tempId)
+    public static LinkedHashMap<String, String> getPDAUserPreviousQuestionAnswerMasterServer(String tempId)
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapPreviousVisitServerQuestionSavedAns=new LinkedHashMap<String, String>();
         try {
 //tblPreAddedStoresDataDetails (StoreIDDB text null,GrpQuestID text null,QstId text null,AnsControlTypeID text null,AnsTextVal text null,flgPrvVal text null);";
@@ -24353,14 +24355,14 @@ open();
         }
         finally
         {
-            close();
+            //close();
             return hmapPreviousVisitServerQuestionSavedAns;
         }
     }
-/*	public LinkedHashMap<String, String> fnGetQuestionIdFlgPrvValue(String TempID)
+/*	public static LinkedHashMap<String, String> fnGetQuestionIdFlgPrvValue(String TempID)
 	{
 	LinkedHashMap<String, String> hmapQuestionflgPrvValue=new LinkedHashMap<String, String>();
-	open();
+	//open();
 
 	int lastIndex=0;
 	Cursor cursor;
@@ -24385,14 +24387,14 @@ open();
 	finally
 	{
 		cursor.close();
-		close();
+		//close();
 	}
 }*/
 
-    public LinkedHashMap<String, String> getGroupIdCopyAsAbove()
+    public static LinkedHashMap<String, String> getGroupIdCopyAsAbove()
     {
         LinkedHashMap<String, String> hmapGroupIdCopyAsAbove=new LinkedHashMap<String, String>();
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select DISTINCT GrpID,GrpCopyID from tblPDAQuestGrpMappingMstr where GrpCopyID<>0",null);
         if(cur.getCount()>0)
         {
@@ -24405,15 +24407,15 @@ open();
                 }
             }
         }
-        close();
+       // close();
         return hmapGroupIdCopyAsAbove;
     }
 
-    public String getChannelGroupId()
+    public static String getChannelGroupId()
     {
         String grpQstIdForChannel="";
 
-        open();
+        //open();
         try {
 
 //tblQuestIDForOutChannel(GrpQstId int null,QuestID int null,OptID text null,SectionCount int null);";
@@ -24430,16 +24432,16 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return grpQstIdForChannel;
         }
     }
 
-    public LinkedHashMap<String,String> getNameQstGrpId_QstId()
+    public static LinkedHashMap<String,String> getNameQstGrpId_QstId()
     {
         LinkedHashMap<String,String> grpQstId_qstIdForName=new LinkedHashMap<>();
 
-        open();
+        //open();
         try {
 
 
@@ -24461,18 +24463,18 @@ open();
         }
         finally
         {
-            close();
+          //  close();
             return grpQstId_qstIdForName;
         }
     }
 
-    public  LinkedHashMap<String, String> getDepOptMstr()
+    public static  LinkedHashMap<String, String> getDepOptMstr()
     {
 
 
         LinkedHashMap<String, String> hmapgetOptDepMstr=new LinkedHashMap<String, String>();
 
-        open();
+        //open();
         try {
 
 
@@ -24497,14 +24499,14 @@ open();
         }
         finally
         {
-            close();
+            //close();
             return hmapgetOptDepMstr;
         }
     }
 
-    public ArrayList<String> getImagePath(String StoreID)
+    public static ArrayList<String> getImagePath(String StoreID)
     {
-        open();
+        //open();
         ArrayList<String> listImagePath=new ArrayList<String>();
         try {
 
@@ -24528,12 +24530,12 @@ open();
         }
         finally
         {
-            close();
+            //close();
             return listImagePath;
         }
     }
 
-    public String getChannelGroupIdKey()
+    public static String getChannelGroupIdKey()
     {
         String keyForChannel="";
 
@@ -24559,10 +24561,10 @@ open();
         }
     }
 
-    public void fnsaveOutletQuestAnsMstrSectionWise(LinkedHashMap<String, String> hmapQuesAnsVal,int CurrentsectionID,String CurrentOutletID)
+    public static void fnsaveOutletQuestAnsMstrSectionWise(LinkedHashMap<String, String> hmapQuesAnsVal,int CurrentsectionID,String CurrentOutletID)
     {
 
-        open();
+        //open();
         fnDeletesaveOutletQuestAnsMstrSctionWise(CurrentOutletID,CurrentsectionID);
         String channelOptId=getChannelGroupIdOptId();
         String channelkey =getChannelGroupIdKey();
@@ -24614,11 +24616,11 @@ open();
         }
 
 
-        close();
+       // close();
 
     }
 
-    public String fngettblNewStoreSalesQuotePaymentDetails(String StoreID)
+    public static String fngettblNewStoreSalesQuotePaymentDetails(String StoreID)
 
     {
 
@@ -24629,7 +24631,7 @@ open();
 
 
         try {
-            open();
+            //open();
 
             Cursor cur=db.rawQuery("Select IFNULL(PymtStageId,0) from tblNewStoreSalesQuotePaymentDetails Where StoreId ='"+ StoreID + "'", null);
 
@@ -24671,7 +24673,7 @@ open();
 
         {
 
-            close();
+           // close();
 
             return searchString;
 
@@ -24679,10 +24681,10 @@ open();
 
     }
 
-    public LinkedHashMap<String, String> fnGettblSalesQuotePaymentModeMstrAllValues()
+    public static LinkedHashMap<String, String> fnGettblSalesQuotePaymentModeMstrAllValues()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         Cursor cursor= db.rawQuery("SELECT PymtModeId,PymtMode from tblSalesQuotePaymentModeMstr", null);// Where PNodeID='"+TSIID+"'
         //(String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
         // close();
@@ -24703,17 +24705,17 @@ open();
         finally
         {
             cursor.close();
-            close();
+          //  close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGettblSalesQuotePaymentModeMstr(String PaymentStageID)
+    public static LinkedHashMap<String, String> fnGettblSalesQuotePaymentModeMstr(String PaymentStageID)
     {
 
 
         String strPaymentModeID="";
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         strPaymentModeID=fngetPaymentModeIDsBasedOnStageID(PaymentStageID);
 
         String searchString="0";
@@ -24774,21 +24776,21 @@ open();
             finally
             {
                 cursor.close();
-                close();
+               // close();
             }
         }
         return hmapQuestionMstr;
 
     }
 
-    public ArrayList<String> fnGetOptionMstr(int questionId)
+    public static ArrayList<String> fnGetOptionMstr(int questionId)
     {
         //  LinkedHashMap<String, String> hmapOptionMstr=new LinkedHashMap<String, String>();
         ArrayList<String> listOptionMstr = new ArrayList<String>();
         // ArrayList<String> al1 = new ArrayList<String>();
         String idd="0";
 
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT  tblQuestionMstr.AnsControlType ,tblOptionMstr.OptID,tblOptionMstr.QuestID,tblOptionMstr.OptionDescr,tblOptionMstr.Sequence from tblOptionMstr inner join tblQuestionMstr on tblOptionMstr.QuestID =tblQuestionMstr.QuestID  Where tblOptionMstr.QuestID='"+questionId+"' Order By tblOptionMstr.Sequence ASC ", null);// Where PNodeID='"+TSIID+"'
         // close();
         try {
@@ -24811,14 +24813,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+          //  close();
         }
     }
 
-    public String[] getQuestIdGroupIdCopyAsAbove(int GrpCopyID,int groupId)
+    public static String[] getQuestIdGroupIdCopyAsAbove(int GrpCopyID,int groupId)
     {
         String[] questGroupIdCopyAsAbove = null;
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select QuestCopyID from tblPDAQuestGrpMappingMstr where GrpID="+groupId+" AND GrpCopyID="+GrpCopyID,null);
         if(cur.getCount()>0)
         {
@@ -24832,14 +24834,14 @@ open();
                 }
             }
         }
-        close();
+        //close();
         return questGroupIdCopyAsAbove;
     }
 
-    public String[] fnGetGroupIdQuestionMstr(String questGroupID,int section)
+    public static String[] fnGetGroupIdQuestionMstr(String questGroupID,int section)
     {
         String[] questonWdSameGroupId=new String[2];
-        open();
+        //open();
         int lastIndex=0;
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
         Cursor cursor = db.rawQuery("SELECT tblQuestionMstr.QuestID,tblQuestionMstr.AnsControlType, tblPDAQuestGrpMappingMstr.GrpQuestID from tblQuestionMstr inner join tblPDAQuestGrpMappingMstr on tblQuestionMstr.QuestID=tblPDAQuestGrpMappingMstr.QuestID where tblQuestionMstr.QuestBundleGroupId = '"+questGroupID+"' AND tblPDAQuestGrpMappingMstr.SectionNo="+section, null);
@@ -24861,14 +24863,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+          //  close();
         }
     }
 
-    public ArrayList<String> getDepOtnVal(String depAnsValid,int grpId,int grpQstDepId)
+    public static ArrayList<String> getDepOtnVal(String depAnsValid,int grpId,int grpQstDepId)
     {
         ////  private static final String DATABASE_CREATE_TABLE_QUESTION_OPTION_VAL_DEPENDENTMstr = "create table tblPDAQuestOptionValuesDependentMstr(DepQstId int null,DepAnswValId int null,QstId int null,AnswValId text null,OptDescr text null,Sequence int null,GrpQuestID int null,GrpDepQuestID int null);";
-        open();
+        //open();
 
         ArrayList<String> listOptId_OptName=new ArrayList<String>();
         try {
@@ -24897,28 +24899,28 @@ open();
         }
         finally
         {
-            close();
+            //close();
             return listOptId_OptName;
         }
 
     }
 
-    public void deleteImageData(String imageValidName,String storeId)
+    public static void deleteImageData(String imageValidName,String storeId)
     {
         //tableImage(tempId text null,QstIdAnsCntrlTyp text null,imageName text null,imagePath text null,Sstat integer null);";
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select imageName from tableImage where StoreID='"+storeId+"' AND imageName='"+imageValidName+"'", null);
         if(cur.getCount()>0)
         {
             db.delete(TABLE_IMAGE, "StoreID=? AND imageName=?", new String[]{storeId,imageValidName});
         }
-        close();
+       // close();
     }
 
-    public void insertImageInfo(String tempId,LinkedHashMap<String, String> hmapAllValues)
+    public static void insertImageInfo(String tempId,LinkedHashMap<String, String> hmapAllValues)
     {
         //tableImage(tempId text null,QstIdAnsCntrlTyp text null,imageName text null,imagePath text null,Sstat integer null);";
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select imageName from tableImage where StoreID='"+tempId+"'", null);
         if(cur.getCount()>0)
         {
@@ -24951,15 +24953,15 @@ open();
 
         }
 
-        close();
+       // close();
     }
 
-    public void fnInsertOrUpdate_tblStoreDeatils(String StoreID,String StoreName,String ActualLatitude,String ActualLongitude,String VisitStartTS,String VisitEndTS,String LocProvider,String Accuracy,String BateryLeftStatus,int IsStoreDataCompleteSaved,String PaymentStage,int flgLocationTrackEnabled,String StoreAddress,String StoreCity,String StorePinCode,String StoreState,int Sstat)
+    public static void fnInsertOrUpdate_tblStoreDeatils(String StoreID,String StoreName,String ActualLatitude,String ActualLongitude,String VisitStartTS,String VisitEndTS,String LocProvider,String Accuracy,String BateryLeftStatus,int IsStoreDataCompleteSaved,String PaymentStage,int flgLocationTrackEnabled,String StoreAddress,String StoreCity,String StorePinCode,String StoreState,int Sstat)
     {
 
 
 
-		/*open();
+		/*//open();
 		try {
 			Cursor cursor = db.rawQuery("SELECT StoreID FROM "+ DATABASE_TABLE_MAINtblStoreDeatils +" where StoreID='"+StoreID +"'" , null);
 
@@ -25004,7 +25006,7 @@ open();
 
     }
 
-    public void UpdateStoreReturnphotoFlag(String sID, int flag2set)
+    public static void UpdateStoreReturnphotoFlag(String sID, int flag2set)
     {
         try
         {
@@ -25018,7 +25020,7 @@ open();
         }
     }
 
-    public void UpdateNewAddedStorephotoFlag(String sID, int flag2set)
+    public static void UpdateNewAddedStorephotoFlag(String sID, int flag2set)
     {
         try
         {
@@ -25032,7 +25034,7 @@ open();
         }
     }
 
-    public void UpdateStoreClosephotoWithOutFlag(String sID, int flag2set)
+    public static void UpdateStoreClosephotoWithOutFlag(String sID, int flag2set)
     {
         try
         {
@@ -25047,7 +25049,7 @@ open();
         }
     }
 
-    /*public void UpdateStoreReturnphotoFlag(String StoreID, String StoreName,int flgReMap)
+    /*public static void UpdateStoreReturnphotoFlag(String StoreID, String StoreName,int flgReMap)
 	{
 		try
 		{
@@ -25064,10 +25066,10 @@ open();
 
 		}
 	}*/
-    public String getTodatAndTotalStores()
+    public static String getTodatAndTotalStores()
     {
         String StoresData="0";
-        open();
+        //open();
         try {
             Cursor cur=db.rawQuery("Select TotStoreAdded , TodayStoreAdded from tblStoreCountDetails", null);
 
@@ -25090,27 +25092,27 @@ open();
         }
         finally
         {
-            close();
+           // close();
             return StoresData;
         }
     }
 
-    public void fnDeletesaveNewOutletFromOutletMstr(String OutletID)
+    public static void fnDeletesaveNewOutletFromOutletMstr(String OutletID)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblPreAddedStores WHERE StoreID ='"+ OutletID + "'");// and sectionID="+sectionID
-        close();
+       // close();
     }
 
-    public void deletetblStoreCountDetails()
+    public static void deletetblStoreCountDetails()
     {
         db.execSQL("DELETE FROM tblStoreCountDetails");
 
     }
 
-    public int checkCountIntblNewStoreMainTable(String  StoreId)
+    public static int checkCountIntblNewStoreMainTable(String  StoreId)
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -25135,12 +25137,12 @@ open();
         }
         finally {
             cursor.close();
-            close();
+           // close();
         }
         return check;
     }
 
-	/*public long saveTblStoreCountDetails(String TotStoreAdded,String TodayStoreAdded)
+	/*public static long saveTblStoreCountDetails(String TotStoreAdded,String TodayStoreAdded)
 	{
 
 		ContentValues initialValues = new ContentValues();
@@ -25151,7 +25153,7 @@ open();
 		return db.insert(DATABASE_TABLE_tblStoreCountDetails, null, initialValues);
 	}*/
 
-	/*public long saveTblPreAddedStores(String StoreID,String StoreName,String LatCode,String LongCode,String DateAdded,int flgOldNewStore,int flgReMap,int Sstat)
+	/*public static long saveTblPreAddedStores(String StoreID,String StoreName,String LatCode,String LongCode,String DateAdded,int flgOldNewStore,int flgReMap,int Sstat)
 	{
 		ContentValues initialValues = new ContentValues();
 
@@ -25169,13 +25171,13 @@ open();
 		return db.insert(DATABASE_TABLE_tblPreAddedStores, null, initialValues);
 	}*/
 
-    public void fndeleteNewStoreSalesQuotePaymentDetails(String StoreID)
+    public static void fndeleteNewStoreSalesQuotePaymentDetails(String StoreID)
     {
 
         db.execSQL("DELETE FROM tblNewStoreSalesQuotePaymentDetails WHERE StoreId ='" + StoreID + "'");
     }
 
-    public long fnsaveNewStoreSalesQuotePaymentDetails(String StoreId,String PaymentStageId) {
+    public static long fnsaveNewStoreSalesQuotePaymentDetails(String StoreId,String PaymentStageId) {
 
         ContentValues initialValues = new ContentValues();
 
@@ -25188,11 +25190,11 @@ open();
         return db.insert(DATABASE_TABLE_NewStoreSalesQuotePaymentDetails, null, initialValues);
     }
 
-    public String getLocationDetails()
+    public static String getLocationDetails()
     {
         //String StoresData="0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0^0";
         String StoresData="0";
-        open();
+        //open();
         try {                           //  0           1        2         3       4     5       6     7                 8          9   1 0              11     12    13           14          15         16          17                        18        19    20                21                                   22                                   23
             Cursor cur=db.rawQuery("Select Lattitude,Longitude,Accuracy,Address,City,Pincode,State,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt from tblLocationDetails", null);
 
@@ -25215,12 +25217,12 @@ open();
         }
         finally
         {
-            close();
+          //  close();
             return StoresData;
         }
     }
 
-    public long  saveLatLngToTxtFile(String StoreID, String fnLati, String fnLongi,
+    public static long  saveLatLngToTxtFile(String StoreID, String fnLati, String fnLongi,
                                      String fnAccuracy, String fnAccurateProvider,
                                      String GpsLat, String GpsLong, String GpsAccuracy,
                                      String NetwLat, String NetwLong, String NetwAccuracy, String FusedLat,
@@ -25228,7 +25230,7 @@ open();
                                      int Sstat, String flgLocNotFound, String fnAddress, String AllProvidersLocation, String GpsAddress, String NetwAddress
             , String FusedAddress, String FusedLocationLatitudeWithFirstAttempt, String FusedLocationLongitudeWithFirstAttempt, String FusedLocationAccuracyWithFirstAttempt)
     {
-        open();
+        //open();
         try
         {
             ContentValues initialValues = new ContentValues();
@@ -25285,14 +25287,14 @@ open();
         }
         finally
         {
-            close();
+           // close();
         }
         return 0;
     }
 
-    public LinkedHashMap<String, String> fetch_DSRCoverage_List()
+    public static LinkedHashMap<String, String> fetch_DSRCoverage_List()
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
 
         Cursor cursor = db.rawQuery("SELECT CoverageAreaNodeID,CoverageArea FROM tblDSRCoverageMaster",null);
@@ -25321,14 +25323,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
     //private static final String DATABASE_CREATE_TABLE_4 = "create table tblDistributorListMaster " +
     //	"(DBRNodeID int null,DistributorNodeType int null,Distributor text null);";
 
-    public String[] getDistributorDataMstr()
+    public static String[] getDistributorDataMstr()
     {
         String strStoreTypeNamesDetais[] =null;
         try {
@@ -25361,7 +25363,7 @@ open();
         }
     }
 
-    public void Delete_tblDistributorMapping(int DistribtrId,int DistributorNodeType)
+    public static void Delete_tblDistributorMapping(int DistribtrId,int DistributorNodeType)
     {
         try
         {
@@ -25378,7 +25380,7 @@ open();
         }
     }
 
-    public long savetblDistributorMappingData(String DistribtrUniqueId,String  DistribtrId ,String DistributorNodeType ,
+    public static long savetblDistributorMappingData(String DistribtrUniqueId,String  DistribtrId ,String DistributorNodeType ,
                                               String flgGSTCapture,String flgGSTCompliance ,String GSTNumber, String Address,
                                               String PinCode,String City,String State,String fnLati,
                                               String fnLongi ,String fnAccuracy ,String flgLocNotFound,String fnAccurateProvider,
@@ -25443,9 +25445,9 @@ open();
         return db.insert(TABLE_tblDistributorMapping, null, initialValues);
     }
 
-    public int fnCheckIfStoreIDExistsIn_tblStoreDeatils(String StoreID)
+    public static int fnCheckIfStoreIDExistsIn_tblStoreDeatils(String StoreID)
     {
-        open();
+        //open();
         int flgCheckIfStoreExists=0;
         //tblStoreDetails(StoreID
         Cursor cursor2 = db.rawQuery("SELECT Count(*) FROM tblStoreList where StoreID='"+StoreID+"'", null);
@@ -25471,16 +25473,16 @@ open();
         }
         finally {
             cursor2.close();
-            close();
+          //  close();
         }
         return flgCheckIfStoreExists;
     }
 
-    public ArrayList<String> fnGetDetails_tblStoreDeatils(String StoreID)
+    public static ArrayList<String> fnGetDetails_tblStoreDeatils(String StoreID)
     {
         ArrayList<String> arrBasisDetailsAgainstStore=new ArrayList<String>();
 
-        open();
+        //open();
         try
         {
             //Cursor cursor = db.rawQuery("SELECT StoreName,IFNULL(PaymentStage,'0') AS PaymentStage,IFNULL(StoreAddress,'NA') AS StoreAddress,IFNULL(StoreCity,'NA') AS StoreCity,IFNULL(StorePinCode,'NA') AS StorePinCode,IFNULL(StoreState,'NA') AS StoreState,ActualLatitude,ActualLongitude,Accuracy FROM tblStoreList where StoreID='" + StoreID+"'", null);
@@ -25516,17 +25518,17 @@ open();
         }
         finally
         {
-            close();
+          //  close();
         }
 
         return arrBasisDetailsAgainstStore;
     }
 
-    public LinkedHashMap<String, ArrayList<String>> fnGetQuestionMstrKey()
+    public static LinkedHashMap<String, ArrayList<String>> fnGetQuestionMstrKey()
     {
         LinkedHashMap<String, ArrayList<String>> hmapQuestionMstr=new LinkedHashMap<String, ArrayList<String>>();
         ArrayList<String> listKeyQuesVal=new ArrayList<String>();
-        open();
+        //open();
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null,GrpCopyID int null,QuestCopyID int null,Sequence int null);";
         //tblQuestionMstr(QuestID int null,QuestCode int null,QuestDesc text null,QuestType int null,AnsControlType int null,AnsControlInputTypeID int null,AnsControlInputTypeMinLength int null,AnsControlInputTypeMaxLength int null,AnsMustRequiredFlg int null,QuestBundleFlg int null,ApplicationTypeID int null,Sequence int null,AnsHint text null);";
         Cursor cursor = db.rawQuery("SELECT tblQuestionMstr.QuestID,tblQuestionMstr.AnsControlType,tblPDAQuestGrpMappingMstr.GrpQuestID,tblPDAQuestGrpMappingMstr.GrpID,tblPDAQuestGrpMappingMstr.Sequence from tblQuestionMstr inner join tblPDAQuestGrpMappingMstr where tblQuestionMstr.QuestID=tblPDAQuestGrpMappingMstr.QuestID  Order By tblPDAQuestGrpMappingMstr.GrpID ASC,tblPDAQuestGrpMappingMstr.Sequence", null);// Where PNodeID='"+TSIID+"'
@@ -25574,13 +25576,13 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public LinkedHashMap<String, String> getGroupDescription()
+    public static LinkedHashMap<String, String> getGroupDescription()
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapGroupDescrptn=new LinkedHashMap<String, String>();
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
         Cursor cur=db.rawQuery("Select Distinct GrpID,GrpDesc from tblPDAQuestGrpMappingMstr", null);
@@ -25596,16 +25598,16 @@ open();
 
             }
         }
-        close();
+       // close();
         return hmapGroupDescrptn;
     }
 
-    public LinkedHashMap<String, ArrayList<String>> fnGetGroupIdMpdWdSectionId()
+    public static LinkedHashMap<String, ArrayList<String>> fnGetGroupIdMpdWdSectionId()
     {
         LinkedHashMap<String, ArrayList<String>> hmapQuestionMstr=new LinkedHashMap<String, ArrayList<String>>();
         ArrayList<String> listKeyQuesVal=new ArrayList<String>();
 
-        open();
+        //open();
         int sectionCount=getsectionCount();
         //    int sectionCount=0;
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
@@ -25663,15 +25665,15 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGetDependentQuestionMstr()
+    public static LinkedHashMap<String, String> fnGetDependentQuestionMstr()
     {
 
         LinkedHashMap<String, String> hmapDpndntQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         //tblQuestionDependentMstr(QuestionID int null,OptionID int null,DependentQuestionID int null,GrpID int null,GrpDepQuestID int null);";
         Cursor cursor = db.rawQuery("SELECT DISTINCT GrpDepQuestID,OptionID from tblQuestionDependentMstr", null);// Where PNodeID='"+TSIID+"'
         String []arrbhi=new String[cursor.getCount()];
@@ -25703,16 +25705,16 @@ open();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
 
     }
 
-    public LinkedHashMap<String, ArrayList<String>> fnGetSection_Key()
+    public static LinkedHashMap<String, ArrayList<String>> fnGetSection_Key()
     {
         LinkedHashMap<String, ArrayList<String>> hmapQuestionMstr=new LinkedHashMap<String, ArrayList<String>>();
         ArrayList<String> listKeyQuesVal=new ArrayList<String>();
-        open();
+        //open();
         //tblPDAQuestGrpMappingMstr(GrpQuestID int null,QuestID int null,GrpID int null,GrpNodeID int null,GrpDesc text null,SectionNo int null);";
         //tblQuestionMstr(QuestID int null,QuestCode int null,QuestDesc text null,QuestType int null,AnsControlType int null,AnsControlInputTypeID int null,AnsControlInputTypeMinLength int null,AnsControlInputTypeMaxLength int null,AnsMustRequiredFlg int null,QuestBundleFlg int null,ApplicationTypeID int null,Sequence int null,AnsHint text null);";
         Cursor cursor = db.rawQuery("SELECT tblQuestionMstr.QuestID,tblQuestionMstr.AnsControlType,tblPDAQuestGrpMappingMstr.GrpQuestID,tblPDAQuestGrpMappingMstr.SectionNo from tblQuestionMstr inner join tblPDAQuestGrpMappingMstr where tblQuestionMstr.QuestID=tblPDAQuestGrpMappingMstr.QuestID  Order By tblPDAQuestGrpMappingMstr.SectionNo ASC  ", null);// Where PNodeID='"+TSIID+"'
@@ -25758,17 +25760,17 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public  void deleteLocationTable()
+    public static  void deleteLocationTable()
     {
         db.execSQL("DELETE FROM tblLocationDetails");
 
     }
 
-    public long saveTblLocationDetails(String Lattitude, String Longitude, String Accuracy, String Address, String City, String Pincode, String State, String fnAccurateProvider, String GpsLat, String GpsLong, String GpsAccuracy, String NetwLat, String NetwLong, String NetwAccuracy, String FusedLat, String FusedLong, String FusedAccuracy, String AllProvidersLocation, String GpsAddress, String NetwAddress, String FusedAddress, String FusedLocationLatitudeWithFirstAttempt, String FusedLocationLongitudeWithFirstAttempt, String FusedLocationAccuracyWithFirstAttempt)
+    public static long saveTblLocationDetails(String Lattitude, String Longitude, String Accuracy, String Address, String City, String Pincode, String State, String fnAccurateProvider, String GpsLat, String GpsLong, String GpsAccuracy, String NetwLat, String NetwLong, String NetwAccuracy, String FusedLat, String FusedLong, String FusedAccuracy, String AllProvidersLocation, String GpsAddress, String NetwAddress, String FusedAddress, String FusedLocationLatitudeWithFirstAttempt, String FusedLocationLongitudeWithFirstAttempt, String FusedLocationAccuracyWithFirstAttempt)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -25804,10 +25806,10 @@ open();
         return db.insert(DATABASE_TABLE_tblLocationDetails, null, initialValues);
     }
 
-    public int fncheckCountNearByStoreExistsOrNot(int DistanceRange)
+    public static int fncheckCountNearByStoreExistsOrNot(int DistanceRange)
     {
         int flgCheck=0;
-        open();
+        //open();
 
         try {
             // Cursor cursor = db.rawQuery("SELECT Count(*) from tblPreAddedStores Where (LatCode<>'0' and LatCode<>'NA') and DistanceNear<"+ DistanceRange+ " ORDER BY DistanceNear", null);
@@ -25831,7 +25833,7 @@ open();
         finally
         {
 
-            close();
+           // close();
             if(flgCheck==0)
             {
                 flgCheck=fncheckCountNewAddedNearByStoreExistsOrNotSM(flgCheck);
@@ -25840,10 +25842,10 @@ open();
         }
     }
 
-    public int fncheckCountNewAddedNearByStoreExistsOrNotSM(int DistanceRange)
+    public static int fncheckCountNewAddedNearByStoreExistsOrNotSM(int DistanceRange)
     {
 
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT StoreID,StoreName,LatCode,LongCode,DateAdded,DistanceNear from tblPreAddedStores WHERE (LatCode<>'0' AND LatCode<>'NA') AND DistanceNear<"+ DistanceRange +" ORDER BY DistanceNear  ASC Limit 30", null);//
@@ -25865,17 +25867,17 @@ open();
         finally
         {
 
-            close();
+           // close();
 
         }
         return DistanceRange;
     }
-    public LinkedHashMap<String, String> fnGetALLOutletMstrSM()
+    public static LinkedHashMap<String, String> fnGetALLOutletMstrSM()
     {
         Cursor cursor=null;
 
         LinkedHashMap<String, String> hmapOutletMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         cursor = db.rawQuery("SELECT StoreID,ifnull(LatCode,0),ifnull(LongCode,0) from tblPreAddedStores", null);
 
@@ -25899,14 +25901,14 @@ open();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public int fncheckCountNewAddedNearByStoreExistsOrNot(int flgCheck)
+    public static int fncheckCountNewAddedNearByStoreExistsOrNot(int flgCheck)
     {
 
-        open();
+        //open();
 
         try {
             //Cursor cursor = db.rawQuery("SELECT StoreID,StoreName,LatCode,LongCode,DateAdded,DistanceNear from tblPreAddedStores WHERE (LatCode<>'0' AND LatCode<>'NA') AND DistanceNear<"+ DistanceRange +" ORDER BY DistanceNear  ASC Limit 30", null);//
@@ -25928,17 +25930,17 @@ open();
         finally
         {
 
-            close();
+           // close();
 
         }
         return flgCheck;
     }
 
-    public LinkedHashMap<String, String> fnGeStoreList(int DistanceRange)
+    public static LinkedHashMap<String, String> fnGeStoreList(int DistanceRange)
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
         String ForDate=fnGetDateTimeString();
-        open();
+        //open();
 
         try {
             Cursor cursor = db.rawQuery("SELECT StoreID,StoreLatitude,StoreLongitude,DistanceNear,0 AsflgReMap from tblStoreList WHERE (StoreLatitude<>'0' AND StoreLatitude<>'NA') ORDER BY DistanceNear", null);//
@@ -25969,16 +25971,16 @@ open();
         finally
         {
 
-            close();
+           // close();
             fnGeNewlyAddedStoreList(hmapQuestionMstr);
             return hmapQuestionMstr;
         }
     }
 
-    public void fnGeNewlyAddedStoreList(LinkedHashMap<String, String> hmapQuestionMstr)
+    public static void fnGeNewlyAddedStoreList(LinkedHashMap<String, String> hmapQuestionMstr)
     {
 
-        open();
+        //open();
 
         try {
             //Cursor cursor = db.rawQuery("SELECT StoreID,StoreName,LatCode,LongCode,DateAdded,DistanceNear from tblPreAddedStores WHERE (LatCode<>'0' AND LatCode<>'NA') AND DistanceNear<"+ DistanceRange +" ORDER BY DistanceNear  ASC Limit 30", null);//
@@ -26011,17 +26013,17 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
 
-            close();
+            //close();
 
         }
     }
 
-    public LinkedHashMap<String, String> fnGetALLOutletMstr()
+    public static LinkedHashMap<String, String> fnGetALLOutletMstr()
     {
         Cursor cursor=null;
 
         LinkedHashMap<String, String> hmapOutletMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         cursor = db.rawQuery("SELECT StoreID,ifnull(StoreLatitude,0),ifnull(StoreLongitude,0) from tblStoreList", null);
 
@@ -26045,11 +26047,11 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public void UpdateStoreDistanceNear(String OutletID, int DistanceNear)
+    public static void UpdateStoreDistanceNear(String OutletID, int DistanceNear)
     {
         try
         {
@@ -26069,7 +26071,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public long savetblManagerMstr(String PersonID, String PersonType, String  PersonName, String ManagerID, String ManagerType,String ManagerName)
+    public static long savetblManagerMstr(String PersonID, String PersonType, String  PersonName, String ManagerID, String ManagerType,String ManagerName)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -26084,9 +26086,9 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN261, null, initialValues);
     }
 
-    public LinkedHashMap<String, String> fetch_Manager_List()
+    public static LinkedHashMap<String, String> fetch_Manager_List()
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         Cursor cursor = db.rawQuery("SELECT ManagerID,ManagerName FROM tblManagerMstr ",null);
         try
@@ -26118,19 +26120,19 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public void deletetblSelectedManagerDetails()
+    public static void deletetblSelectedManagerDetails()
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblSelectedManagerDetails");
 
-        close();
+       // close();
     }
 
-    public int counttblSelectedManagerDetails()
+    public static int counttblSelectedManagerDetails()
     {
         Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblSelectedManagerDetails", null);
         int chkI = 0;
@@ -26150,9 +26152,9 @@ String fetchdate=fnGetDateTimeString();
         return chkI;
     }
 
-    public String Fetch_tblSelectedManagerDetails()
+    public static String Fetch_tblSelectedManagerDetails()
     {
-        open();
+        //open();
         Cursor cursor = null;
         try
         {
@@ -26172,12 +26174,12 @@ String fetchdate=fnGetDateTimeString();
             return RankOutletName;
         } finally {
             cursor.close();
-            close();
+            //close();
         }
 
     }
 
-    public String fetchOtherNameBasicOfManagerID(int ManagerID)
+    public static String fetchOtherNameBasicOfManagerID(int ManagerID)
     {
         int SnamecolumnIndex1 = 0;
         String LocIDDesc="0";
@@ -26202,7 +26204,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public long savetblSelectedManagerDetails(String IMEI,String CurDate,String PersonID,
+    public static long savetblSelectedManagerDetails(String IMEI,String CurDate,String PersonID,
                                               String PersonType, String  PersonName, String ManagerID, String ManagerType,
                                               String ManagerName,String OtherName)
     {
@@ -26222,9 +26224,9 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN262, null, initialValues);
     }
 
-    public String fetchtblManagerMstr(String ManagerID)
+    public static String fetchtblManagerMstr(String ManagerID)
     {
-        open();
+        //open();
         int SnamecolumnIndex1 = 0;
         String LocIDDesc="0";
         Cursor cursor = null;
@@ -26247,20 +26249,20 @@ String fetchdate=fnGetDateTimeString();
             return LocIDDesc;
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
 
     }
 
-    public void droptblManagerMstr()
+    public static void droptblManagerMstr()
     {
         db.execSQL("DROP TABLE IF EXISTS tblManagerMstr");
         db.execSQL("DROP TABLE IF EXISTS tblSelectedManagerDetails");
 
     }
 
-    public void createtblManagerMstr()
+    public static void createtblManagerMstr()
     {
         try
         {
@@ -26274,19 +26276,19 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void Delete_tblRouteMasterAndDistributorMstr()
+    public static void Delete_tblRouteMasterAndDistributorMstr()
     {
         db.execSQL("DELETE FROM tblRouteMstr");
         db.execSQL("DELETE FROM tblDistributorListMaster");
     }
 
-    public void Delete_tblManagerMstr()
+    public static void Delete_tblManagerMstr()
     {
         //db.execSQL("DELETE FROM tblManagerMstr");
         //db.execSQL("DELETE FROM tblSelectedManagerDetails");
     }
 
-    public long savetblDistributorListMaster(int DBRNodeID,int DistributorNodeType, String Distributor, String DistLat, String DistLong,int flgHasLocation,int flgDefault)
+    public static long savetblDistributorListMaster(int DBRNodeID,int DistributorNodeType, String Distributor, String DistLat, String DistLong,int flgHasLocation,int flgDefault)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -26303,7 +26305,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN4, null, initialValues);
     }
 
-    public String[] getDistributorData()
+    public static String[] getDistributorData()
     {
         Cursor cursor2=null;
         try {
@@ -26337,9 +26339,9 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public String fetchDistributorIdByName(String Distributor)
+    public static String fetchDistributorIdByName(String Distributor)
     {
-        open();
+        //open();
         Cursor cursor2=null;
         String strStoreTypeNamesDetais = "0^0";
         try {
@@ -26362,14 +26364,14 @@ String fetchdate=fnGetDateTimeString();
         }finally {
 
             cursor2.close();
-            close();
+            //close();
             return strStoreTypeNamesDetais;
         }
     }
 
-    public int fetchDistributorNodeTypeByID(int DBRNodeID)
+    public static int fetchDistributorNodeTypeByID(int DBRNodeID)
     {
-        open();
+        //open();
         Cursor cursor2=null;
         int strStoreTypeNamesDetais = 0;
         try {
@@ -26392,14 +26394,14 @@ String fetchdate=fnGetDateTimeString();
         }finally {
 
             cursor2.close();
-            close();
+            //close();
             return strStoreTypeNamesDetais;
         }
     }
 
-    public String fetchProductNodeTypeByID(int ProductNodeID,int DistID,int DistNodeType)
+    public static String fetchProductNodeTypeByID(int ProductNodeID,int DistID,int DistNodeType)
     {
-        open();
+        //open();
         Cursor cursor2=null;
         String strStoreTypeNamesDetais = "0^0";
         try {
@@ -26422,14 +26424,14 @@ String fetchdate=fnGetDateTimeString();
         }finally {
 
             //cursor2.close();
-            close();
+           // close();
             return strStoreTypeNamesDetais;
         }
     }
 
-    public int countDataIntblDistributorSavedData(int DistribtrId,int DistributorNodeType,int Sstat)
+    public static int countDataIntblDistributorSavedData(int DistribtrId,int DistributorNodeType,int Sstat)
     {
-        open();
+        //open();
 
         Cursor cursorE2=null;
         int chkI = 0;
@@ -26447,17 +26449,17 @@ String fetchdate=fnGetDateTimeString();
 
         } finally {
             //cursorE2.close();
-            close();
+           // close();
         }
         return chkI;
     }
 
-    public int counttblDistributorSavedData()  throws IOException
+    public static int counttblDistributorSavedData()  throws IOException
     {
         int chkI = 0;
         try
         {
-            open();
+            //open();
             Cursor cursorE2 = db.rawQuery("SELECT * from tblDistributorMapping where Sstat=3", null);
 
             if(cursorE2.getCount()>0)
@@ -26478,16 +26480,16 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             //cursorE2.close();
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public void deleteDistributorStockTbles()
+    public static void deleteDistributorStockTbles()
     {
         try
         {
-            open();
+            //open();
 
             db.execSQL("DELETE FROM tblDistributorDayReport");
             db.execSQL("DELETE FROM tblDistributorDayReportColumnsDesc");
@@ -26499,12 +26501,12 @@ String fetchdate=fnGetDateTimeString();
 
         }finally
         {
-            close();
+          //  close();
         }
 
     }
 
-    public String GetActiveRouteIDForDistributor()
+    public static String GetActiveRouteIDForDistributor()
     {
         int LoncolumnIndex = 0;
         String activeRouteID = "0";
@@ -26531,11 +26533,11 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void deleteDistributorStockTblesOnDistributorIDBasic(int DistributorNodeID,int DistributorNodeType)
+    public static void deleteDistributorStockTblesOnDistributorIDBasic(int DistributorNodeID,int DistributorNodeType)
     {
         try
         {
-            open();
+            //open();
 
             db.execSQL("DELETE FROM tblDistributorDayReport where DistributorNodeID="+DistributorNodeID+" and DistributorNodeType="+DistributorNodeType);
             db.execSQL("DELETE FROM tblDistributorDayReportColumnsDesc where DistributorNodeID="+DistributorNodeID+" and DistributorNodeType="+DistributorNodeType);
@@ -26547,12 +26549,12 @@ String fetchdate=fnGetDateTimeString();
 
         }finally
         {
-            close();
+            //close();
         }
 
     }
 
-    public LinkedHashMap<String,String> fetchtblDistribtrReport(int DistributorNodeID,int DistributorNodeType)
+    public static LinkedHashMap<String,String> fetchtblDistribtrReport(int DistributorNodeID,int DistributorNodeType)
     {
         int ScodecolumnIndex = 0;
 
@@ -26583,7 +26585,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public ArrayList<String> fetchtblDistribtrReportColumnDesc(int DistributorNodeID,int DistributorNodeType)
+    public static ArrayList<String> fetchtblDistribtrReportColumnDesc(int DistributorNodeID,int DistributorNodeType)
     {
         int ScodecolumnIndex = 0;
 
@@ -26615,11 +26617,11 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public void Delete_tblDistributorSavedData(int DistribtrId,int DistributorNodeType)
+    public static void Delete_tblDistributorSavedData(int DistribtrId,int DistributorNodeType)
     {
         try
         {
-            open();
+            //open();
             db.execSQL("DELETE FROM tblDistributorSavedData where DistribtrId="+DistribtrId+" and DistributorNodeType="+DistributorNodeType);
             db.execSQL("DELETE FROM tblDistributorOldStockData where DistribtrId="+DistribtrId+" and DistributorNodeType="+DistributorNodeType);
         }
@@ -26629,11 +26631,11 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
         }
     }
 
-    public long savetblDistributorSavedData(String ProductName,String ShortName,String ProductID,String Date,String EnteredValue, int DistribtrId,int DistributorNodeType,int ProductNodeType,String StockDate, int Sstat,int EntryType,int StockPcsCaseType)
+    public static long savetblDistributorSavedData(String ProductName,String ShortName,String ProductID,String Date,String EnteredValue, int DistribtrId,int DistributorNodeType,int ProductNodeType,String StockDate, int Sstat,int EntryType,int StockPcsCaseType)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -26654,9 +26656,9 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblDistributorSavedData, null, initialValues);
     }
 
-    public LinkedHashMap<String, String> fetchtblDistribtrMnthDates(int DistributorNodeID,int DistributorNodeType)
+    public static LinkedHashMap<String, String> fetchtblDistribtrMnthDates(int DistributorNodeID,int DistributorNodeType)
     {
-        open();
+        //open();
         int ScodecolumnIndex = 0;
 
         Cursor cursor = null;
@@ -26684,11 +26686,11 @@ String fetchdate=fnGetDateTimeString();
             return HmapForDates;
         } finally {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public String[] getDistinctProdctName(int DistributorNodeID,int DistributorNodeType)
+    public static String[] getDistinctProdctName(int DistributorNodeID,int DistributorNodeType)
     {
         int LoncolumnIndex = 0;
 
@@ -26712,7 +26714,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public String[] getPrdctIdAndSku(String SKUName,int DistribtrId,int DistributorNodeType)
+    public static String[] getPrdctIdAndSku(String SKUName,int DistribtrId,int DistributorNodeType)
     {
         int LoncolumnIndex = 0;
 
@@ -26738,9 +26740,9 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public LinkedHashMap<String,String> fetchtblDistribtrOldStockData(int DistribtrId,int DistribtrNodeType)
+    public static LinkedHashMap<String,String> fetchtblDistribtrOldStockData(int DistribtrId,int DistribtrNodeType)
     {
-        open();
+        //open();
         int ScodecolumnIndex = 0;
 
         Cursor cursor = null;
@@ -26764,13 +26766,13 @@ String fetchdate=fnGetDateTimeString();
             return HmapDistrbutrSavedData;
         } finally {
             //cursor.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String,String> fetchtblDistribtrSavedData(int DistribtrId,int DistribtrNodeType)
+    public static LinkedHashMap<String,String> fetchtblDistribtrSavedData(int DistribtrId,int DistribtrNodeType)
     {
-        open();
+        //open();
         int ScodecolumnIndex = 0;
 
         Cursor cursor = null;
@@ -26794,17 +26796,17 @@ String fetchdate=fnGetDateTimeString();
             return HmapDistrbutrSavedData;
         } finally {
             //cursor.close();
-            close();
+           // close();
         }
 
 
 
     }
 
-    public int fnGetDistributorStockPcsCaseType(int DistribtrId,int DistributorNodeType)
+    public static int fnGetDistributorStockPcsCaseType(int DistribtrId,int DistributorNodeType)
     {
 
-        open();
+        //open();
         int ScodecolumnIndex = 0;
 
         Cursor cursor = null;
@@ -26823,14 +26825,14 @@ String fetchdate=fnGetDateTimeString();
             return ScodecolumnIndex;
         } finally {
             //cursor.close();
-            close();
+           // close();
         }
 
     }
 
-    public String getDistinctStockDate()
+    public static String getDistinctStockDate()
     {
-        open();
+        //open();
         int LoncolumnIndex = 0;
 
         Cursor cursor2=null;
@@ -26850,11 +26852,11 @@ String fetchdate=fnGetDateTimeString();
             return strStoreTypeNamesDetais;
         } finally {
             cursor2.close();
-            close();
+           // close();
         }
     }
 
-    public long savetblDistributorOldStockData(int DistribtrId,int DistributorNodeType,String DistribtrTag,String EnteredValue)
+    public static long savetblDistributorOldStockData(int DistribtrId,int DistributorNodeType,String DistribtrTag,String EnteredValue)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -26866,7 +26868,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblDistributorOldStockData, null, initialValues);
     }
 
-    public long savetblDistributorDayReportColumnsDesc(String DistDayReportCoumnName,String DistDayReportColumnDisplayName,int CustomerNodeID,int CustomerNodeType)
+    public static long savetblDistributorDayReportColumnsDesc(String DistDayReportCoumnName,String DistDayReportColumnDisplayName,int CustomerNodeID,int CustomerNodeType)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -26878,7 +26880,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblDistributorDayReportColumnsDesc, null, initialValues);
     }
 
-    public long savetblDistributorDayReport(String ProductNodeID,String ProductNodeType,String SKUName,String FlvShortName,String StockDate,int CustomerNodeID,int CustomerNodeType)
+    public static long savetblDistributorDayReport(String ProductNodeID,String ProductNodeType,String SKUName,String FlvShortName,String StockDate,int CustomerNodeID,int CustomerNodeType)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -26892,7 +26894,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblDistributorDayReport, null, initialValues);
     }
 
-    public void updateDistributorSstat()
+    public static void updateDistributorSstat()
     {
 
         try
@@ -26909,7 +26911,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public void updateDistributorCheckInSstat()
+    public static void updateDistributorCheckInSstat()
     {
 
         try
@@ -26926,7 +26928,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public long savetblTargetVsAchievedNote(String msgToDisplay)
+    public static long savetblTargetVsAchievedNote(String msgToDisplay)
     {
         //DATABASE_TABLE_MAIN236 = "create table tblTargetVsAchievedNote (MsgToDisplay text null);";
         ContentValues initialValues = new ContentValues();
@@ -26937,9 +26939,9 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN236, null, initialValues);
     }
 
-    public String fetchNoteFromtblTargetVsAchievedNote()
+    public static String fetchNoteFromtblTargetVsAchievedNote()
     {
-        open();
+        //open();
         int ScodecolumnIndex = 0;
         ////DATABASE_TABLE_MAIN236 = "create table tblTargetVsAchievedNote (MsgToDisplay text null);";
 
@@ -26962,12 +26964,12 @@ String fetchdate=fnGetDateTimeString();
             return note;
         } finally {
 
-            close();
+           // close();
         }
 
     }
 
-    public long savetblStoreWiseTarget(String StoreID, String TargetValue)
+    public static long savetblStoreWiseTarget(String StoreID, String TargetValue)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -26980,7 +26982,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN23, null, initialValues);
     }
 
-    public long savetblTargetVsAchievedSummary(int AutoId,String Descr,String TodayTarget,String TodayAchieved,String TodayBal,
+    public static long savetblTargetVsAchievedSummary(int AutoId,String Descr,String TodayTarget,String TodayAchieved,String TodayBal,
                                                String Todayflg,String MonthTarget,String MonthAchieved,String MonthBal,String Monthflg,int flgValTgtOrPrdct)
     {
         //ValTgtOrPrdctFlg
@@ -27002,11 +27004,11 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN235, null, initialValues);
     }
 
-    public String GetActiveRouteIDSunilAgain()
+    public static String GetActiveRouteIDSunilAgain()
     {
         int LoncolumnIndex = 0;
         String activeRouteID = "0";
-        // open();
+        // //open();
         Cursor cursor2 = null;
         try
         {
@@ -27035,15 +27037,15 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void Delete_tblStoreWiseTarget()
+    public static void Delete_tblStoreWiseTarget()
     {
         db.execSQL("DELETE FROM tblStoreWiseTarget");
     }
 
-    public String fetchtblStoreWiseTarget(String StoreID)
+    public static String fetchtblStoreWiseTarget(String StoreID)
     {
 
-        open();
+        //open();
         String LocIDDesc="0";
         Cursor cursor = db.rawQuery("SELECT  TargetValue from tblStoreWiseTarget where StoreID='"+StoreID+"'", null);
         try
@@ -27064,13 +27066,13 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
 
 
     }
 
-    public ArrayList<Object> fetchIncentiveData()
+    public static ArrayList<Object> fetchIncentiveData()
     {
         ArrayList<Object> arrlstObjects=new ArrayList<Object>();
         ArrayList<LinkedHashMap<String, ArrayList<String>>> array=new ArrayList<LinkedHashMap<String,ArrayList<String>>>();;
@@ -27081,7 +27083,7 @@ String fetchdate=fnGetDateTimeString();
         LinkedHashMap<String, ArrayList<String>> HmapInnerData=new LinkedHashMap<String, ArrayList<String>>();
         String total_earning="0",Incentive_msg="NA";
 
-        open();
+        //open();
         try
         {
             Cursor cursor = db.rawQuery("SELECT tblIncentiveMaster.IncId,OutputType,IncentiveName,count(tblIncentiveDetailsColumnsDesc.IncId) as ColumnCount,flgAcheived,Earning FROM tblIncentiveMaster INNER JOIN tblIncentiveDetailsColumnsDesc ON tblIncentiveMaster.IncId = tblIncentiveDetailsColumnsDesc.IncId group by tblIncentiveDetailsColumnsDesc.IncId", null);
@@ -27133,12 +27135,12 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
         }
         return arrlstObjects;
     }
 
-    public ArrayList<String> fetchIncentiveInnerData(String IncId)
+    public static ArrayList<String> fetchIncentiveInnerData(String IncId)
     {
         LinkedHashMap<String, ArrayList<String>> HmapInnerData=new LinkedHashMap<String, ArrayList<String>>();
         String columnIncentives="";
@@ -27192,7 +27194,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public ArrayList<String> fetchColumnData(String IncId,String columnIncentives,int ColumnCount,ArrayList<String> list_frstTbl)
+    public static ArrayList<String> fetchColumnData(String IncId,String columnIncentives,int ColumnCount,ArrayList<String> list_frstTbl)
     {
         try
         {
@@ -27249,7 +27251,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public String fetchTotalEarning()
+    public static String fetchTotalEarning()
     {
         String total_earning="NA";
         try
@@ -27272,7 +27274,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public ArrayList<String> fetchIncPastDetailData(String IncId)
+    public static ArrayList<String> fetchIncPastDetailData(String IncId)
     {
         LinkedHashMap<String, ArrayList<String>> HmapInnerData=new LinkedHashMap<String, ArrayList<String>>();
 
@@ -27323,7 +27325,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public void fetchIncPastDetailColumnData(String IncId,String columnIncentives,int ColumnCount,ArrayList<String> list_frstTbl)
+    public static void fetchIncPastDetailColumnData(String IncId,String columnIncentives,int ColumnCount,ArrayList<String> list_frstTbl)
     {
         try
         {
@@ -27359,7 +27361,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public int getCountFromIncPastDetails(String IncId)
+    public static int getCountFromIncPastDetails(String IncId)
     {
         int cal=0;
         try
@@ -27378,7 +27380,7 @@ String fetchdate=fnGetDateTimeString();
         return cal;
     }
 
-    public long savetblIncentiveMsgToDisplay(String MsgToDisplay)
+    public static long savetblIncentiveMsgToDisplay(String MsgToDisplay)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -27387,7 +27389,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblIncentiveMsgToDisplay_Define, null, initialValues);
     }
 
-    public String getMsgToDisplay()
+    public static String getMsgToDisplay()
     {
         String val="NA";
         try
@@ -27409,16 +27411,16 @@ String fetchdate=fnGetDateTimeString();
         return val;
     }
 
-    public void truncatetblTargetVsAchievedSummary()
+    public static void truncatetblTargetVsAchievedSummary()
     {
         db.execSQL("DELETE FROM tblTargetVsAchievedSummary");
 
     }
 
-    public String[] fetchAllDataFromtblTargetVsAchievedSummary()
+    public static String[] fetchAllDataFromtblTargetVsAchievedSummary()
     {
         int ScodecolumnIndex = 0;
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT *  FROM tblTargetVsAchievedSummary", null);
         try {
             String allData[]=new String[cursor.getCount()];
@@ -27441,12 +27443,12 @@ String fetchdate=fnGetDateTimeString();
             return allData;
         } finally {
             cursor.close();
-            close();
+            //close();
         }
 
     }
 
-    public long savetblIncentiveMaster(int IncId,int OutputType,String IncentiveName,String flgAcheived,String Earning)
+    public static long savetblIncentiveMaster(int IncId,int OutputType,String IncentiveName,String flgAcheived,String Earning)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -27459,7 +27461,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblIncentiveMaster, null, initialValues);
     }
 
-    public void CreateDynamicTables(String Table_Name, String TableColumn[])
+    public static void CreateDynamicTables(String Table_Name, String TableColumn[])
     {
         db.execSQL("DROP TABLE IF EXISTS " + Table_Name);
 
@@ -27481,7 +27483,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void insertDynamicTables(String Table_Name,String[] TableColumn,String TableColumnValue[])
+    public static void insertDynamicTables(String Table_Name,String[] TableColumn,String TableColumnValue[])
     {
         ContentValues cv = new ContentValues();
 
@@ -27493,7 +27495,7 @@ String fetchdate=fnGetDateTimeString();
         db.insert(Table_Name, null, cv);
     }
 
-    public void CreateDynamicTblIncPastDetails(String Table_Name, String TableColumn[])
+    public static void CreateDynamicTblIncPastDetails(String Table_Name, String TableColumn[])
     {
         db.execSQL("DROP TABLE IF EXISTS " + Table_Name);
 
@@ -27514,7 +27516,7 @@ String fetchdate=fnGetDateTimeString();
         System.out.println("hi");
     }
 
-    public long savetblIncentiveDetailsColumnsDesc(int IncId,String ReportColumnName,String DisplayColumnName)
+    public static long savetblIncentiveDetailsColumnsDesc(int IncId,String ReportColumnName,String DisplayColumnName)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -27525,7 +27527,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblIncentiveDetailsColumnsDesc, null, initialValues);
     }
 
-    public long savetblIncentivePastDetailsColumnsDesc(int IncId,String ReportColumnName,String DisplayColumnName, String Ordr)
+    public static long savetblIncentivePastDetailsColumnsDesc(int IncId,String ReportColumnName,String DisplayColumnName, String Ordr)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -27537,7 +27539,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblIncentivePastDetailsColumnsDesc, null, initialValues);
     }
 
-    public long savetblTotalEarning(String Total_Earning)
+    public static long savetblTotalEarning(String Total_Earning)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -27546,7 +27548,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblTotalEarning, null, initialValues);
     }
 
-    public void deleteIncentivesTbles()
+    public static void deleteIncentivesTbles()
     {
         try
         {
@@ -27564,10 +27566,10 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public void insertRestartStoreInfo(String prvsStoreID, String CrntStoreID, String isSavedOrSubmittedStore, String MsgToRestartPopUpShown, String isRestartDoneByDSR, int Sstat, String ActionTime)
+    public static void insertRestartStoreInfo(String prvsStoreID, String CrntStoreID, String isSavedOrSubmittedStore, String MsgToRestartPopUpShown, String isRestartDoneByDSR, int Sstat, String ActionTime)
     {
         //tblsameLocationForStoreRestartDone(UniqueID INTEGER PRIMARY KEY AUTOINCREMENT,prvsStoreID text null,CrntStoreID text null,isSavedOrSubmittedStore text null,is MsgToRestartPopUpShown text null,isRestartDoneByDSR text null ,prvsStoreFlag text null,Sstat text null);";
-        open();
+        //open();
 
         Cursor cursor=db.rawQuery("Select prvsStoreID from tblsameLocationForStoreRestartDone where prvsStoreID='"+CrntStoreID+"'",null);
 
@@ -27599,24 +27601,24 @@ String fetchdate=fnGetDateTimeString();
         }
 
 
-        close();
+        //close();
 
 
     }
 
-    public void updateMsgToRestartPopUpShown(String prvsStoreId, String visitSTime)
+    public static void updateMsgToRestartPopUpShown(String prvsStoreId, String visitSTime)
     {
-        open();
+        //open();
         ContentValues values=new ContentValues();
         values.put("isMsgToRestartPopUpShown","1");
         values.put("ActionTime",visitSTime);
         db.update(DATABASE_TABLE_tblSameLocationForStoreRestartDone,values,"prvsStoreID=?",new String[]{prvsStoreId});
-        close();
+       // close();
     }
 
-    public boolean isPrvsStoreMsgShownAndRestrtDone(String prvsStoreId)
+    public static boolean isPrvsStoreMsgShownAndRestrtDone(String prvsStoreId)
     {
-        open();
+        //open();
         boolean isToShowPopUpForResart=true;
         try {
             Cursor cur=db.rawQuery("Select prvsStoreID from tblsameLocationForStoreRestartDone where isMsgToRestartPopUpShown='1' AND isRestartDoneByDSR='1' AND prvsStoreID='"+prvsStoreId+"'",null);
@@ -27630,15 +27632,15 @@ String fetchdate=fnGetDateTimeString();
 
         }
         finally {
-            close();
+            //close();
             return isToShowPopUpForResart;
         }
 
     }
 
-    public String PrvsStoreMsgShownAndRestrtDone()
+    public static String PrvsStoreMsgShownAndRestrtDone()
     {
-        open();
+        //open();
         String storeShowPopUpForResartAndDone="";
         try {
             Cursor cur=db.rawQuery("Select prvsStoreID from tblsameLocationForStoreRestartDone where isMsgToRestartPopUpShown='1' AND isRestartDoneByDSR='1' AND UniqueID=(SELECT MAX(UniqueID) FROM tblsameLocationForStoreRestartDone)",null);
@@ -27669,34 +27671,34 @@ String fetchdate=fnGetDateTimeString();
             e.printStackTrace();
         }
         finally {
-            close();
+           // close();
             return storeShowPopUpForResartAndDone;
         }
 
     }
 
-    public void updateisRestartDoneByDSR(String prvsStoreId)
+    public static void updateisRestartDoneByDSR(String prvsStoreId)
     {
-        open();
+        //open();
         ContentValues values=new ContentValues();
         values.put("isRestartDoneByDSR","1");
         db.update(DATABASE_TABLE_tblSameLocationForStoreRestartDone,values,"prvsStoreID=?",new String[]{prvsStoreId});
-        close();
+        //close();
     }
 
-    public void updateCurrentStoreId(String crntStoreID, String prvsStoreId)
+    public static void updateCurrentStoreId(String crntStoreID, String prvsStoreId)
     {
-        open();
+        //open();
         ContentValues values=new ContentValues();
         values.put("CrntStoreID",crntStoreID);
         db.update(DATABASE_TABLE_tblSameLocationForStoreRestartDone,values,"prvsStoreID=?",new String[]{prvsStoreId});
-        close();
+        //close();
     }
 
-    public String getPreviousStoreId()
+    public static String getPreviousStoreId()
     {
         String prvsStoreId="";
-        open();
+        //open();
         try {
             Cursor cursor=db.rawQuery("Select prvsStoreID from tblsameLocationForStoreRestartDone where UniqueID=(SELECT MAX(UniqueID) FROM tblsameLocationForStoreRestartDone)",null);
             if(cursor.getCount()>0)
@@ -27712,16 +27714,16 @@ String fetchdate=fnGetDateTimeString();
             e.printStackTrace();
         }
         finally {
-            close();
+           // close();
             return prvsStoreId;
         }
 
     }
 
-    public String getPreviousShownPopUpStoreId()
+    public static String getPreviousShownPopUpStoreId()
     {
         String prvsStoreId="";
-        open();
+        //open();
         try {
             Cursor cursor=db.rawQuery("Select prvsStoreID from tblsameLocationForStoreRestartDone where UniqueID=(SELECT MAX(UniqueID) FROM tblsameLocationForStoreRestartDone) AND isMsgToRestartPopUpShown='1'",null);
             if(cursor.getCount()>0)
@@ -27737,13 +27739,13 @@ String fetchdate=fnGetDateTimeString();
 
         }
         finally {
-            close();
+            //close();
             return prvsStoreId;
         }
 
     }
 
-    public void fnDeleteFlgStoreUnusedPrvs(String MsgToRestartPopUpShown) {
+    public static void fnDeleteFlgStoreUnusedPrvs(String MsgToRestartPopUpShown) {
         try {
             db.execSQL("DELETE FROM tblsameLocationForStoreRestartDone WHERE isMsgToRestartPopUpShown='"+ MsgToRestartPopUpShown + "'");// and sectionID="+sectionID
         }
@@ -27755,7 +27757,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public String[] getAllStoreIDIntblNewAddedStorePhotoDetail()
+    public static String[] getAllStoreIDIntblNewAddedStorePhotoDetail()
     {
 
         int SnamecolumnIndex1 = 0;
@@ -27785,7 +27787,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public String[] getAllStoreIDIntblStoreCheckIn()
+    public static String[] getAllStoreIDIntblStoreCheckIn()
     {
 
         int SnamecolumnIndex1 = 0;
@@ -27815,7 +27817,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public int getExistingPicNosForNewAddedStore(String StoreID)
+    public static int getExistingPicNosForNewAddedStore(String StoreID)
     {
 
         int ScodecolumnIndex = 0;
@@ -27839,7 +27841,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public int getExistingPicNosForStoreCheckIn(String StoreID)
+    public static int getExistingPicNosForStoreCheckIn(String StoreID)
     {
 
         int ScodecolumnIndex = 0;
@@ -27863,7 +27865,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public String[] getImgsPathForNewAddedStore(String StoreID)
+    public static String[] getImgsPathForNewAddedStore(String StoreID)
     {
 
         int SnamecolumnIndex1 = 0;
@@ -27891,7 +27893,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public String[] getImgsPathForStoreCheckIn(String StoreID)
+    public static String[] getImgsPathForStoreCheckIn(String StoreID)
     {
 
         int SnamecolumnIndex1 = 0;
@@ -27919,12 +27921,12 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void updateImageRecordsSyncdForNewAddedStore(String PhotoName)
+    public static void updateImageRecordsSyncdForNewAddedStore(String PhotoName)
     {
 
         try
         {
-            open();
+            //open();
             //System.out.println("Sunil Doing Testing Response after sending Image inside BD" + PhotoName);
             final ContentValues values = new ContentValues();
             values.put("Sstat", 4);
@@ -27937,18 +27939,18 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
         }
 
 
     }
 
-    public void updateImageRecordsSyncdForStoreCheckIN(String PhotoName)
+    public static void updateImageRecordsSyncdForStoreCheckIN(String PhotoName)
     {
 
         try
         {
-            open();
+            //open();
             //System.out.println("Sunil Doing Testing Response after sending Image inside BD" + PhotoName);
             final ContentValues values = new ContentValues();
             values.put("Sstat", 4);
@@ -27961,13 +27963,13 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
         }
 
 
     }
 
-    public LinkedHashMap<String, LinkedHashMap<String, String>> fetchTblRowSummary()
+    public static LinkedHashMap<String, LinkedHashMap<String, String>> fetchTblRowSummary()
     {
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         LinkedHashMap<String, LinkedHashMap<String, String>> hmapCatgryAll = new LinkedHashMap<String, LinkedHashMap<String, String>>();
@@ -27996,9 +27998,9 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public LinkedHashMap<String, String> fetch_Summary_Detail_DayData(String TableNo)
+    public static LinkedHashMap<String, String> fetch_Summary_Detail_DayData(String TableNo)
     {
-//		open();
+//		//open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         try
         {
@@ -28031,7 +28033,7 @@ String fetchdate=fnGetDateTimeString();
 //nitika
 
     //nitika
-    public long savetblAllSummaryDayAndMTD(int AutoId,String Measures,String TodaysSummary,String MTDSummary, String TableNo,String ColorCode)
+    public static long savetblAllSummaryDayAndMTD(int AutoId,String Measures,String TodaysSummary,String MTDSummary, String TableNo,String ColorCode)
     {
 //table tblAllSummaryDay (AutoId int not null,Measures text null," +
         //"TodaysSummary text null,MTDSummary text null , TableNo text not null,ColorCode text not null);";
@@ -28052,17 +28054,17 @@ String fetchdate=fnGetDateTimeString();
     }
 
     //nitika
-    public void truncateAllSummaryDayDataTable()
+    public static void truncateAllSummaryDayDataTable()
     {
         db.execSQL("DELETE FROM tblAllSummaryDay");
 
     }
 
-    public void updateFlgCrediBal(String storeId,int flgCreditRetailBal)
+    public static void updateFlgCrediBal(String storeId,int flgCreditRetailBal)
     {
         //flgRetailerCreditBalnce
         // tblStoreList(StoreID text not null, StoreType string not null, StoreName string not null, StoreLatitude real not null, StoreLongitude real not null, LastVisitDate string not null, LastTransactionDate string not null, Sstat integer not null, ForDate string not null, ActualLatitude text null, ActualLongitude text null, VisitStartTS text null, VisitEndTS text null,AutoIdStore int null, LocProvider text null, Accuracy text null, BateryLeftStatus text null,StoreClose integer null,StoreNextDay integer null,chainID integer null,ISNewStore int null,StoreRouteID int null,RouteNodeType int null,StoreCatNodeId int null,IsNewStoreDataCompleteSaved int null,flgFromWhereSubmitStatus int null,StoreAddress text null,PaymentStage text null,flgHasQuote int null,flgAllowQuotation int null,flgSubmitFromQuotation int null,flgGSTCapture text null,flgGSTCompliance text null,GSTNumber text null,flgGSTRecordFromServer int null,DistanceNear int null,flgLocationServicesOnOff int null,flgGPSOnOff int null,flgNetworkOnOff int null,flgFusedOnOff int null,flgInternetOnOffWhileLocationTracking int null,flgRestart int null,flgStoreOrder int null,StoreCity text null,StorePinCode text not null,StoreState text null,flgRetailerCreditBalnce text null);";
-        open();
+        //open();
         try{
 
             ContentValues values=new ContentValues();
@@ -28076,16 +28078,16 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
         }
 
     }
 
-    public boolean isFlgCrediBalSubmitted(String storeId)
+    public static boolean isFlgCrediBalSubmitted(String storeId)
     {
         boolean isRtalrCreditBalSbmtd=true;
         Cursor cur=null;
-        open();
+        //open();
         try {
 
             cur=db.rawQuery("Select flgRetailerCreditBalnce from tblStoreList where StoreID='"+storeId+"' AND flgRetailerCreditBalnce<>-1",null);
@@ -28104,14 +28106,14 @@ String fetchdate=fnGetDateTimeString();
             {
                 cur.close();
             }
-            close();
+           // close();
             return isRtalrCreditBalSbmtd;
         }
     }
 
-    public void insertCycleId(int cycleId,String CycStartTime,String CycleTime)
+    public static void insertCycleId(int cycleId,String CycStartTime,String CycleTime)
     {
-        //open();
+        ////open();
 
         ContentValues values=new ContentValues();
 
@@ -28127,9 +28129,9 @@ String fetchdate=fnGetDateTimeString();
         //close();
     }
 
-    public int fetchtblStockUploadedCycleId()
+    public static int fetchtblStockUploadedCycleId()
     {
-        open();
+        //open();
         int retVal=0;
         try
         {
@@ -28152,14 +28154,14 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
             return retVal;
         }
     }
 
-    public int fetchtblVanCycleId()
+    public static int fetchtblVanCycleId()
     {
-        open();
+        //open();
         int retVal=-1;
         try
         {
@@ -28183,14 +28185,14 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
             return retVal;
         }
     }
 
-    public String fetchtblVanCycleTime()
+    public static String fetchtblVanCycleTime()
     {
-        open();
+        //open();
         String CycStartTime="";
         try
         {
@@ -28214,14 +28216,14 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
             return CycStartTime;
         }
     }
 
-    public void insertDistributorStock(String prdctId,String stockQntty,String distributorNodeIdNodeType,String SKUName,String OpeningStock,String TodaysAddedStock,String CycleAddedStock,String NetStockQty,String TodaysUnloadStk,String CycleUnloadStk,String CategoryID)
+    public static void insertDistributorStock(String prdctId,String stockQntty,String distributorNodeIdNodeType,String SKUName,String OpeningStock,String TodaysAddedStock,String CycleAddedStock,String NetStockQty,String TodaysUnloadStk,String CycleUnloadStk,String CategoryID)
     {
-        //open();
+        ////open();
 
 // tblDistributorStock(PrdctId text null,StockQntty text null,DistributorNodeIdNodeType text null,SKUName text null,OpeningStock text null,TodaysAddedStock text null,CycleAddedStock text null,NetSalesQty text null,TodaysUnloadStk text null,CycleUnloadStk text null,CategoryID text null);";
         ContentValues  values=new ContentValues();
@@ -28250,9 +28252,9 @@ String fetchdate=fnGetDateTimeString();
         // close();
     }
 
-    public void updateOriginalStock(HashMap<String,Integer> hmapProductStock,String distId)
+    public static void updateOriginalStock(HashMap<String,Integer> hmapProductStock,String distId)
     {
-        open();
+        //open();
         for(Map.Entry<String,Integer> entry:hmapProductStock.entrySet())
         {
             ContentValues values=new ContentValues();
@@ -28261,12 +28263,12 @@ String fetchdate=fnGetDateTimeString();
             db.update(DATABASE_TABLE_DISTRIBUTOR_STOCK,values,"DistributorNodeIdNodeType=? AND PrdctId=?", new String[]{distId,entry.getKey()});
         }
 
-        close();
+       // close();
     }
 
-    public void insertDistributorLeftOrderId(String distributorNodeIdNodeType,String orderId,int flgProcessedInvoice)
+    public static void insertDistributorLeftOrderId(String distributorNodeIdNodeType,String orderId,int flgProcessedInvoice)
     {
-        //open();
+        ////open();
 
         ContentValues values=new ContentValues();
 
@@ -28281,9 +28283,9 @@ String fetchdate=fnGetDateTimeString();
         //close();
     }
 
-    public void insertStockOut(int flgStockOutEntryDone)
+    public static void insertStockOut(int flgStockOutEntryDone)
     {
-        //open();
+        ////open();
 
         ContentValues values=new ContentValues();
 
@@ -28296,9 +28298,9 @@ String fetchdate=fnGetDateTimeString();
         //close();
     }
 
-    public String getDistinctInvoiceNumbers()
+    public static String getDistinctInvoiceNumbers()
     {
-        open();
+        //open();
         String distIDOrderId="";
         Cursor cur=null;
         //tblDistributorProductLeft
@@ -28336,16 +28338,16 @@ String fetchdate=fnGetDateTimeString();
             {
                 cur.close();
             }
-            close();
+           // close();
             return distIDOrderId;
         }
 
     }
 
 
-    public String getDistinctCollectionPaymentIds()
+    public static String getDistinctCollectionPaymentIds()
     {
-        open();
+        //open();
         String strStoreCollectionUniquneVisitId="";
         Cursor cur=null;
         try {
@@ -28381,16 +28383,16 @@ String fetchdate=fnGetDateTimeString();
             {
                 cur.close();
             }
-            close();
+           // close();
             return strStoreCollectionUniquneVisitId;
         }
 
     }
 
-    public void insertDistributorPDAOrderId(String distributorNodeIdNodeType,String orderId,String productId,String orderQntty,int Sstat)
+    public static void insertDistributorPDAOrderId(String distributorNodeIdNodeType,String orderId,String productId,String orderQntty,int Sstat)
     {
         //tblDistributorOrderPdaId(DistributorNodeIdNodeType text null,OrderPDAID text null,ProductId text null,OrderQntty text null,Sstat integer not null);";
-        open();
+        //open();
 //tblDistributorOrderPdaId
         Cursor cur=db.rawQuery("Select DistributorNodeIdNodeType from tblDistributorOrderPdaId where OrderPDAID='"+orderId+"' AND ProductId='"+productId+"' AND DistributorNodeIdNodeType='"+distributorNodeIdNodeType+"'",null);
         ContentValues values=new ContentValues();
@@ -28417,23 +28419,23 @@ String fetchdate=fnGetDateTimeString();
             System.out.println("Nitish Entered = "+insertd);
         }
 
-        close();
+       // close();
     }
 
-    public void deleteExistStockTable(String distributorNodeIdNodeType,String orderId,String ProductId)
+    public static void deleteExistStockTable(String distributorNodeIdNodeType,String orderId,String ProductId)
     {
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select DistributorNodeIdNodeType from tblDistributorOrderPdaId where OrderPDAID='"+orderId+"' AND DistributorNodeIdNodeType='"+distributorNodeIdNodeType+"' AND ProductId='"+ProductId+"'",null);
         if(cur.getCount()>0)
         {
             db.delete(DATABASE_TABLE_DISTRIBUTOR_ORDERPDAID,"DistributorNodeIdNodeType=? AND OrderPDAID=? AND ProductId=?",new String[]{distributorNodeIdNodeType, orderId, ProductId});
         }
-        close();
+       // close();
     }
 
-    public HashMap<String,String> getProductStock(String orderPDAId,String distId)
+    public static HashMap<String,String> getProductStock(String orderPDAId,String distId)
     {
-        open();
+        //open();
         HashMap<String,String> hmapPrdctStock=new HashMap<String,String>();
         Cursor cur=db.rawQuery("Select ProductId,OrderQntty from tblDistributorOrderPdaId where DistributorNodeIdNodeType='"+distId+"' AND OrderPDAID='"+orderPDAId+"'",null);
         if(cur.getCount()>0)
@@ -28447,11 +28449,11 @@ String fetchdate=fnGetDateTimeString();
                 }
             }
         }
-        close();
+       // close();
         return hmapPrdctStock;
     }
 
-    public void deleteCompleteDataDistStock()
+    public static void deleteCompleteDataDistStock()
     {
 
 
@@ -28470,13 +28472,13 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public String fngetSalesPersonMstrData()
+    public static String fngetSalesPersonMstrData()
     {
         String abcd="0^0";
         Cursor cursor=null;
         try
         {
-            open();
+            //open();
             cursor = db.rawQuery("SELECT PersonNodeID,PersonNodeType from tblUserAuthenticationMstr", null);
             if(cursor.getCount()>0)
             {
@@ -28497,16 +28499,16 @@ String fetchdate=fnGetDateTimeString();
             {
                 cursor.close();
             }
-            close();
+            //close();
             return abcd;
         }
     }
 
-    public HashMap<String,Integer> getDistStockCount(String distId)
+    public static HashMap<String,Integer> getDistStockCount(String distId)
     {
         // tblDistributorStock(PrdctId text null,StockQntty text null,DistributorNodeIdNodeType text null);";
         HashMap<String,Integer> hmapDistPrdctStockCount=new HashMap<>();
-        open();
+        //open();
         try {
             Cursor cur=db.rawQuery("Select PrdctId,OriginalStock from tblDistributorStock where DistributorNodeIdNodeType='"+distId+"'",null);
             // Cursor cur=db.rawQuery("Select PrdctId,OriginalStock from tblDistributorStock",null);// where DistributorNodeIdNodeType='"+distId+"'
@@ -28533,19 +28535,19 @@ String fetchdate=fnGetDateTimeString();
 
         finally
         {
-            close();
+           // close();
             return hmapDistPrdctStockCount;
         }
 
 
     }
 
-    public LinkedHashMap<String,String> getDistStockCountName()
+    public static LinkedHashMap<String,String> getDistStockCountName()
     {
         // tblDistributorStock(PrdctId text null,StockQntty text null,DistributorNodeIdNodeType text null);";
         LinkedHashMap<String,String> hmapDistPrdctStockCount=new LinkedHashMap<>();
         int flgVal=flgConfirmedWareHouse();
-        open();
+        //open();
       //  updateInvoiceExecuted();
        // try {
 
@@ -28592,20 +28594,20 @@ String fetchdate=fnGetDateTimeString();
 
        /* finally
         {*/
-            close();
+           // close();
             return hmapDistPrdctStockCount;
        // }
 
 
     }
 
-    public String getUserId()
+    public static String getUserId()
     {
         // tblDistributorStock(PrdctId text null,StockQntty text null,DistributorNodeIdNodeType text null);";
         String userId="0";
         int flgVal=flgConfirmedWareHouse();
         Cursor cur=null;
-        open();
+        //open();
         try {
             if(flgVal==0)
             {
@@ -28638,14 +28640,14 @@ String fetchdate=fnGetDateTimeString();
 
         finally
         {
-            close();
+          //  close();
             return userId;
         }
 
 
     }
 
-    public int getLeftProductToAddBasedOnInvoiceNumberQantity(int NetStockQty,String distId,String PrdctId)
+    public static int getLeftProductToAddBasedOnInvoiceNumberQantity(int NetStockQty,String distId,String PrdctId)
     {
         int netStock=0;
         //tblTmpInvoiceDetails (IMEIno text not null,RouteID int null,StoreID text not null,CatID text  null,ProdID text not null,TransDate string not null,Stock integer not null,OrderQty integer not null,OrderVal real not null,FreeQty integer not null,DisVal real not null,Sstat integer not null,SampleQuantity int null,ProductShortName text null,ProductPrice real null, TaxRate real null,TaxValue real null,StoreCatNodeId int null,OrderIDPDA text null,flgIsQuoteRateApplied int null,distibutorID text null,flgWholeSellApplicable int null,TmpInvoiceCodePDA text null);";
@@ -28695,7 +28697,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public int getLeftProductQantity(int stockCount,String distId,String PrdctId)
+    public static int getLeftProductQantity(int stockCount,String distId,String PrdctId)
     {
         int netStock=0;
         //tblTmpInvoiceDetails (IMEIno text not null,RouteID int null,StoreID text not null,CatID text  null,ProdID text not null,TransDate string not null,Stock integer not null,OrderQty integer not null,OrderVal real not null,FreeQty integer not null,DisVal real not null,Sstat integer not null,SampleQuantity int null,ProductShortName text null,ProductPrice real null, TaxRate real null,TaxValue real null,StoreCatNodeId int null,OrderIDPDA text null,flgIsQuoteRateApplied int null,distibutorID text null,flgWholeSellApplicable int null,TmpInvoiceCodePDA text null);";
@@ -28745,9 +28747,9 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public String getDisId(String storeId)
+    public static String getDisId(String storeId)
     {
-        open();
+        //open();
         String dbstID="";
         boolean isDBRPresent=false;
         Cursor cur=null;
@@ -28790,12 +28792,12 @@ String fetchdate=fnGetDateTimeString();
             {
                 cur.close();
             }
-            close();
+            //close();
             return dbstID;
         }
     }
 
-    public void updateRtlrCrdtBal(String storeId)
+    public static void updateRtlrCrdtBal(String storeId)
     {
         ContentValues values=new ContentValues();
         values.put("flgRetailerCreditBalnce",1);
@@ -28808,7 +28810,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void deleteOrderId(String orderId)
+    public static void deleteOrderId(String orderId)
     {
         //"Select DistributorNodeIdNodeType from tblDistributorOrderPddb.insert(DATABASE_TABLE_DISTRIBUTOR_ORDERPDAID,null,values);
         Cursor cur=db.rawQuery("Select DistributorNodeIdNodeType from tblDistributorOrderPdaId where OrderPDAID='"+orderId+"'",null);
@@ -28818,7 +28820,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public String[] getAllDSRSignatureAndSelfi()
+    public static String[] getAllDSRSignatureAndSelfi()
     {
 
         int SnamecolumnIndex1 = 0;
@@ -28851,7 +28853,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public int getExistingPicNosForSignatureAndSelfi()
+    public static int getExistingPicNosForSignatureAndSelfi()
     {
 
         int ScodecolumnIndex = 0;
@@ -28883,7 +28885,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public String[] getImgsPathForSignatureAndSelfi()
+    public static String[] getImgsPathForSignatureAndSelfi()
     {
 
         int SnamecolumnIndex1 = 0;
@@ -28918,12 +28920,12 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void updateImageRecordsSyncdForDSRRegistrationAndSelfi()
+    public static void updateImageRecordsSyncdForDSRRegistrationAndSelfi()
     {
 
         try
         {
-            open();
+            //open();
             db.execSQL("Update tblDsrRegDetails SET Sstat=4");
 
         }
@@ -28933,13 +28935,13 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+            //close();
         }
 
 
     }
 
-    public void UpdateDistributerFlag(String DistribtrUniqueId, int flag2set)
+    public static void UpdateDistributerFlag(String DistribtrUniqueId, int flag2set)
     {
 
         try
@@ -28955,7 +28957,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public String fngetDIdAndDType(String DistribtrUniqueId)
+    public static String fngetDIdAndDType(String DistribtrUniqueId)
     {
 
         String flgCheckIfStoreExists="0^0";
@@ -28983,22 +28985,22 @@ String fetchdate=fnGetDateTimeString();
         return flgCheckIfStoreExists;
     }
 
-    public void fnupdateDisributorMstrLocationtrackRemapFlg(String DistribtrUniqueId)
+    public static void fnupdateDisributorMstrLocationtrackRemapFlg(String DistribtrUniqueId)
     {
-        open();
+        //open();
         String DIdAndDType=fngetDIdAndDType(DistribtrUniqueId);
         db.execSQL("UPDATE tblDistribtorMstr SET flgRemap=0 WHERE tblDistribtorMstr.DBRNodeID='"+DIdAndDType.split(Pattern.quote("^"))[0]+"' AND tblDistribtorMstr.DistributorNodeType='"+DIdAndDType.split(Pattern.quote("^"))[1]+"'");
-        close();
+      //  close();
 
     }
 
-    public void Delete_tblDistributorMstr()
+    public static void Delete_tblDistributorMstr()
     {
         db.execSQL("DELETE FROM tblDistribtorMstr");
     }
 
     //map distributor
-    public long  saveDistributorMstrData(int DBRNodeID, int DistributorNodeType, String Distributor, int flgRemap)
+    public static long  saveDistributorMstrData(int DBRNodeID, int DistributorNodeType, String Distributor, int flgRemap)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -29010,16 +29012,16 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblDistribtorMstr, null, initialValues);
     }
 
-    public void deletetblStoreList()
+    public static void deletetblStoreList()
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblStoreList");
-        close();
+       // close();
 
 
     }
 
-    public String[] SaveStoreList()
+    public static String[] SaveStoreList()
     {
 
         int LoncolumnIndex = 0;
@@ -29050,9 +29052,9 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public LinkedHashMap<String, String> fetch_Route_List()
+    public static LinkedHashMap<String, String> fetch_Route_List()
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         Cursor cursor = db.rawQuery("SELECT ID,RouteType,Descr FROM tblRouteMstr ",null);
         //Cursor cursor2 = db.rawQuery("SELECT ID FROM tblRouteMstr where CoverageAreaNodeID='"+CommonInfo.CoverageAreaNodeID+"' and CoverageAreaNodeType='"+CommonInfo.CoverageAreaNodeType+"'", null);
@@ -29086,14 +29088,14 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public int checkDSRCheckIntblDistributorMapping()
+    public static int checkDSRCheckIntblDistributorMapping()
     {
         int chkI = 0;
-        open();
+        //open();
         Cursor cursorE2=null;
 
         try
@@ -29114,13 +29116,13 @@ String fetchdate=fnGetDateTimeString();
         } finally
         {
             cursorE2.close();
-            close();
+           // close();
         }
         return chkI;
     }
     //Cursor cursor2 = db.rawQuery("SELECT StoreID, StoreName FROM tblStoreList WHERE Sstat = 1 ",null);
 
-    public int checkDSRCheckIntblDistributorSavedData()
+    public static int checkDSRCheckIntblDistributorSavedData()
     {
         int chkI = 0;
         Cursor cursorE2=null;
@@ -29146,11 +29148,11 @@ String fetchdate=fnGetDateTimeString();
         return chkI;
     }
 
-    public String GetActiveRouteDescr()
+    public static String GetActiveRouteDescr()
     {
         int LoncolumnIndex = 0;
 
-        open();
+        //open();
         Cursor cursor2 = null;
         try
         {
@@ -29174,12 +29176,12 @@ String fetchdate=fnGetDateTimeString();
             return activeRouteID;
         } finally {
             cursor2.close();
-            close();
+            //close();
         }
 
     }
 
-    public String GetNoActiveRouteDescr()
+    public static String GetNoActiveRouteDescr()
     {
         int LoncolumnIndex = 0;
 
@@ -29210,7 +29212,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public String[] FetchStoreRouteIdType(String rID)
+    public static String[] FetchStoreRouteIdType(String rID)
     {
         int ScodecolumnIndex = 0;
         int SnamecolumnIndex = 1;
@@ -29238,9 +29240,9 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public boolean checkDistributorLocatioExists(String DistribtrId) {
+    public static boolean checkDistributorLocatioExists(String DistribtrId) {
         // int entryCount;
-        open();
+        //open();
         Cursor cursorE2=null;
         boolean chkI = false;
         try {
@@ -29257,22 +29259,22 @@ String fetchdate=fnGetDateTimeString();
 
         } finally {
             cursorE2.close();
-            close();
+           // close();
         }
         return chkI;
     }
 
-    public  void deleteStorecloseLocationTable()
+    public static  void deleteStorecloseLocationTable()
     {
         db.execSQL("DELETE FROM tblStoreCloseLocationDetails");
     }
 
-    public  void deleteStorecloseLocationTableBasedOnStoreID(String StoreID,String StoreVisitCode)
+    public static  void deleteStorecloseLocationTableBasedOnStoreID(String StoreID,String StoreVisitCode)
     {
         db.execSQL("DELETE FROM tblStoreCloseLocationDetails where StoreID='"+StoreID+"' AND StoreVisitCode='"+StoreVisitCode+"'");
     }
 
-    public long saveTblStorecloseLocationDetails(String StoreID,
+    public static long saveTblStorecloseLocationDetails(String StoreID,
                                                  String Lattitude, String Longitude, String Accuracy,
                                                  String Address, String City, String Pincode, String State,
                                                  String fnAccurateProvider, String GpsLat, String GpsLong,
@@ -29318,11 +29320,11 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_tblStoreCloseLocationDetails, null, initialValues);
     }
 
-    public long inserttblStoreClosedPhotoDetail(String storeId,String ClickedDateTime,String PhotoName,
+    public static long inserttblStoreClosedPhotoDetail(String storeId,String ClickedDateTime,String PhotoName,
                                                 String PDAPhotoPath,int Sstat,String StoreVisitCode)
     {
 
-        open();
+        //open();
         ContentValues initialValues = new ContentValues();
         //StoreID text null,ClickedDateTime text null,PhotoName text null,PDAPhotoPath text null,Sstat integer null
         initialValues.put("StoreID", storeId.trim());
@@ -29333,13 +29335,13 @@ String fetchdate=fnGetDateTimeString();
         initialValues.put("Sstat", Sstat);
 
         long inserted=db.insert(DATABASE_TABLE_tblStoreClosedPhotoDetail, null, initialValues);
-        close();
+       // close();
         return inserted;
     }
 
-    public void validateAndDelStoreClosePic(String StoreId,String imgName,String StoreVisitCode)
+    public static void validateAndDelStoreClosePic(String StoreId,String imgName,String StoreVisitCode)
     {
-        open();
+        //open();
         try
         {
             /*tblPutStckRoomPhotoDetails(TempId text null,StoreId text null,PhotoName text null,PhotoPath text null,ClickedDateTime text null,ClickTagPhoto text null,Sstat text null);";*/
@@ -29357,13 +29359,13 @@ String fetchdate=fnGetDateTimeString();
             System.out.println("validate pic..."+ex);
         }
         finally {
-            close();
+           // close();
         }
     }
 
-    public ArrayList<String> getStoreClosedImgNameByStoreId(String StoreID,String StoreVisitCode)
+    public static ArrayList<String> getStoreClosedImgNameByStoreId(String StoreID,String StoreVisitCode)
     {
-        open();
+        //open();
         ArrayList<String> list=new ArrayList<>();
         try
         {
@@ -29386,14 +29388,14 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+            //close();
             return list;
         }
     }
 
-    public void upDateCloseStoreReason(String StoreID,String ReasonID, String ReasonDesc,String StoreVisitCode) {
+    public static void upDateCloseStoreReason(String StoreID,String ReasonID, String ReasonDesc,String StoreVisitCode) {
         try {
-            open();
+            //open();
             final ContentValues values = new ContentValues();
             values.put("ReasonID", ReasonID);
             values.put("ReasonDesc", ReasonDesc);
@@ -29405,11 +29407,11 @@ String fetchdate=fnGetDateTimeString();
             Log.e(TAG, ex.toString());
         }
         finally {
-            close();
+           // close();
         }
     }
 
-    public void savetblStoreCloseReasonMaster(String CloseReasonID,String CloseReasonDescr)
+    public static void savetblStoreCloseReasonMaster(String CloseReasonID,String CloseReasonDescr)
     {
         ContentValues values=new ContentValues();
         values.put("CloseReasonID", CloseReasonID);
@@ -29418,14 +29420,14 @@ String fetchdate=fnGetDateTimeString();
         db.insert(DATABASE_TABLE_tblStoreCloseReasonMaster , null, values);
     }
 
-    public  void deletetblStoreCloseReasonMaster()
+    public static  void deletetblStoreCloseReasonMaster()
     {
         db.execSQL("DELETE FROM tblStoreCloseReasonMaster");
     }
 
-    public LinkedHashMap<String,String> getStoreClosedReasons()
+    public static LinkedHashMap<String,String> getStoreClosedReasons()
     {
-        open();
+        //open();
         LinkedHashMap<String,String> list=new LinkedHashMap<>();
         try
         {
@@ -29460,14 +29462,14 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
             return list;
         }
     }
 
-    public Boolean checkIfRouteExist()
+    public static Boolean checkIfRouteExist()
     {
-        open();
+        //open();
         Boolean isRoute=false;
         Cursor cur=null;
         try {
@@ -29486,14 +29488,14 @@ String fetchdate=fnGetDateTimeString();
             {
                 cur.close();
             }
-            close();
+           // close();
             return isRoute;
         }
     }
 
-    public String getOtherReason(String StoreID,String StoreVisitCode)
+    public static String getOtherReason(String StoreID,String StoreVisitCode)
     {
-        open();
+        //open();
         String list="00^NA";
         try
         {
@@ -29516,15 +29518,15 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
             return list;
         }
     }
 
     //changes
-    public String getLatLongForDistrbtrMap(String DistribtrId)
+    public static String getLatLongForDistrbtrMap(String DistribtrId)
     {
-        open();
+        //open();
         String list="NA";
         try
         {
@@ -29547,14 +29549,14 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+            //close();
             return list;
         }
     }
 
-    public long inserttblStoreCloseReasonSaving(String storeId,String ReasonID,String ReasonDescr,int Sstat,String StoreVisitCode)
+    public static long inserttblStoreCloseReasonSaving(String storeId,String ReasonID,String ReasonDescr,int Sstat,String StoreVisitCode)
     {
-        open();
+        //open();
         ContentValues initialValues = new ContentValues();
         initialValues.put("StoreID", storeId.trim());
         initialValues.put("ReasonID", ReasonID.trim());
@@ -29563,12 +29565,12 @@ String fetchdate=fnGetDateTimeString();
         initialValues.put("Sstat", Sstat);
 
         long inserted=db.insert(DATABASE_TABLE_tblStoreCloseReasonSaving, null, initialValues);
-        close();
+       // close();
         return inserted;
     }
 
     //map distributor
-    public long  savetblIsDBRStockSubmitted(int IsDBRStockSubmitted)
+    public static long  savetblIsDBRStockSubmitted(int IsDBRStockSubmitted)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -29578,9 +29580,9 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblIsDBRStockSubmitted, null, initialValues);
     }
 
-    public int fetchtblIsDBRStockSubmitted()
+    public static int fetchtblIsDBRStockSubmitted()
     {
-        open();
+        //open();
         int retVal=0;
         try
         {
@@ -29603,15 +29605,15 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
             return retVal;
         }
     }
 
-    public int counttblDistribtorMstr()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
+    public static int counttblDistribtorMstr()//If fnChkFlgTodayRoute=1 it will get added to Actual Call On Route Else get Added in Off Route
     {
 
-        open();
+        //open();
         int ActualCall = 0;
         Cursor cursor2= db.rawQuery("SELECT Count(*) FROM tblDistribtorMstr", null);
         try {
@@ -29634,14 +29636,14 @@ String fetchdate=fnGetDateTimeString();
             return ActualCall;
         } finally {
             cursor2.close();
-            close();
+            //close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGetPaymentMode()
+    public static LinkedHashMap<String, String> fnGetPaymentMode()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         // Cursor cursor = db.rawQuery("SELECT SST_NameId,SST_Name_des from tbl_SST_NameMstr Order By Sequence ASC  ", null);// Where PNodeID='"+TSIID+"'
         Cursor cursor = db.rawQuery("SELECT InstrumentModeId,InstrumentMode from tblInstrumentMaster   ", null);// Where PNodeID='"+TSIID+"'
         // (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
@@ -29663,14 +29665,14 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGetBankIdData()
+    public static LinkedHashMap<String, String> fnGetBankIdData()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         // Cursor cursor = db.rawQuery("SELECT SST_NameId,SST_Name_des from tbl_SST_NameMstr Order By Sequence ASC  ", null);// Where PNodeID='"+TSIID+"'
         Cursor cursor = db.rawQuery("SELECT BankId,BankName from tblBankMaster   ", null);// Where PNodeID='"+TSIID+"'
         // (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
@@ -29692,14 +29694,14 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public LinkedHashMap<String, String> fnGettblBankMaster()
+    public static LinkedHashMap<String, String> fnGettblBankMaster()
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
         // Cursor cursor = db.rawQuery("SELECT SST_NameId,SST_Name_des from tbl_SST_NameMstr Order By Sequence ASC  ", null);// Where PNodeID='"+TSIID+"'
         Cursor cursor = db.rawQuery("SELECT BankId,BankName from tblBankMaster   ", null);// Where PNodeID='"+TSIID+"'
         // (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()
@@ -29721,17 +29723,17 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
 
-    public void deleteWhereStoreId(String StoreID,String OrderPDAID,String TmpInvoiceCodePDA )
+    public static void deleteWhereStoreId(String StoreID,String OrderPDAID,String TmpInvoiceCodePDA )
     {
 
         db.execSQL("DELETE FROM tblAllCollectionData WHERE StoreID ='" + StoreID +"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
     }
 
-    public long savetblAllCollectionData(String StoreVisitCode,String StoreID, String paymentMode,String PaymentModeID, String Amount,
+    public static long savetblAllCollectionData(String StoreVisitCode,String StoreID, String paymentMode,String PaymentModeID, String Amount,
                                          String RefNoChequeNoTrnNo, String Date, String Bank,String TmpInvoiceCodePDA,String CollectionCode)
     {
         ContentValues initialValues = new ContentValues();
@@ -29765,11 +29767,11 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_tblAllCollectionData, null, initialValues);
     }
 
-    public String  fnRetrieveCollectionDataBasedOnStoreID(String StoreVisitCode,String StoreID,String OrderPDAID,String TmpInvoiceCodePDA)
+    public static String  fnRetrieveCollectionDataBasedOnStoreID(String StoreVisitCode,String StoreID,String OrderPDAID,String TmpInvoiceCodePDA)
     {
         String flag="0";
         try {
-            open();
+            //open();
             Cursor cursor = db.rawQuery("SELECT PaymentMode, PaymentModeID,Amount,RefNoChequeNoTrnNo,Date,Bank from tblAllCollectionData where StoreID = '"+StoreID +"' and StoreVisitCode='"+StoreVisitCode +"'", null);
 
             if(cursor.getCount()>0){
@@ -29796,12 +29798,12 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
 
-            close();
+           // close();
             return flag;
         }
     }
 
-    public void deleteAllCollectionTables()
+    public static void deleteAllCollectionTables()
     {
 
         db.execSQL("DELETE FROM tblBankMaster");
@@ -29813,7 +29815,7 @@ String fetchdate=fnGetDateTimeString();
 
     //Activity Amount Collection Functions
 
-    public long savetblInstrumentMaster(String InstrumentModeId, String InstrumentMode, String InstrumentType)
+    public static long savetblInstrumentMaster(String InstrumentModeId, String InstrumentMode, String InstrumentType)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -29825,7 +29827,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_tblInstrumentMaster, null, initialValues);
     }
 
-    public long savetblBankMaster(String BankId, String BankName, String LoginIdIns, String TimeStampIns, String LoginIdUpd, String TimeStampUpd)
+    public static long savetblBankMaster(String BankId, String BankName, String LoginIdIns, String TimeStampIns, String LoginIdUpd, String TimeStampUpd)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -29841,11 +29843,11 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_tblBankMaster, null, initialValues);
     }
 
-    public String  fnCheckNewOrUpdateAndRetrieveCollectionData(String StoreID)
+    public static String  fnCheckNewOrUpdateAndRetrieveCollectionData(String StoreID)
     {
         String flag="NEW";
         try {
-            open();
+            //open();
             Cursor cursor = db.rawQuery("SELECT PaymentMode, Amount,RefNoChequeNoTrnNo,Date,Bank from tblAllCollectionData where StoreID = '"+StoreID +"'", null);
 
             if(cursor.getCount()>0){
@@ -29870,14 +29872,14 @@ String fetchdate=fnGetDateTimeString();
         finally
         {
 
-            close();
+            //close();
             return flag;
         }
     }
 
-    public int fetchTblStockOut()
+    public static int fetchTblStockOut()
     {
-        open();
+        //open();
         int retVal=0;
         try
         {
@@ -29900,12 +29902,12 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+           // close();
             return retVal;
         }
     }
 
-    public void inserttblStockUploadedStatus(int flgStockTrans,int VanLoadUnLoadCycID,String CycleTime,int statusId)
+    public static void inserttblStockUploadedStatus(int flgStockTrans,int VanLoadUnLoadCycID,String CycleTime,int statusId)
     {
 
         ContentValues values=new ContentValues();
@@ -29922,9 +29924,9 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public int fetchtblStockUploadedStatus()
+    public static int fetchtblStockUploadedStatus()
     {
-        open();
+        //open();
         int retVal=0;
         try
         {
@@ -29947,12 +29949,12 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+            //close();
             return retVal;
         }
     }
 
-    public String[] getAllStoreClosePhotoDetail()
+    public static String[] getAllStoreClosePhotoDetail()
     {
 
         int SnamecolumnIndex1 = 0;
@@ -29982,7 +29984,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public int getExistingPicNosForStoreClose(String StoreID)
+    public static int getExistingPicNosForStoreClose(String StoreID)
     {
 
         int ScodecolumnIndex = 0;
@@ -30006,7 +30008,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public String[] getImgsPathForStoreClose(String StoreID)
+    public static String[] getImgsPathForStoreClose(String StoreID)
     {
 
         int SnamecolumnIndex1 = 0;
@@ -30034,12 +30036,12 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void updateImageRecordsSyncdForStoreClose(String PhotoName)
+    public static void updateImageRecordsSyncdForStoreClose(String PhotoName)
     {
 
         try
         {
-            open();
+            //open();
             //System.out.println("Sunil Doing Testing Response after sending Image inside BD" + PhotoName);
             final ContentValues values = new ContentValues();
             values.put("Sstat", 4);
@@ -30052,13 +30054,13 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+            //close();
         }
 
 
     }
 
-    public void UpdateStoreClosephotoFlag(String sID, int flag2set)
+    public static void UpdateStoreClosephotoFlag(String sID, int flag2set)
     {
         try
         {
@@ -30072,7 +30074,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public LinkedHashMap<String,String> getPrdctIdAndSkuWrehouse()
+    public static LinkedHashMap<String,String> getPrdctIdAndSkuWrehouse()
     {
         //private static final String CREATE_TABLE_tblDistributorDayReport="
         // create table tblDistributorDayReport(ProductNodeID text null, ProductNodeType text null, SKUName text null, FlvShortName text null,StockDate text null,DistributorNodeID int null,DistributorNodeType int null);";
@@ -30101,17 +30103,17 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public void deleteConfirmWArehouse()
+    public static void deleteConfirmWArehouse()
     {
-        open();
+        //open();
         db.execSQL("Delete from tblStockConfirm");
-        close();
+        //close();
     }
 
-    public void insertConfirmWArehouse(String UserId,String confirmFlg)
+    public static void insertConfirmWArehouse(String UserId,String confirmFlg)
     {
 
-        open();
+        //open();
         deleteVanConfirmFlag();
         ContentValues values=new ContentValues();
         values.put("UserId",UserId);
@@ -30122,15 +30124,22 @@ String fetchdate=fnGetDateTimeString();
         db.execSQL("INSERT INTO " + DATABASE_TABLE_DISTRIBUTOR_STOCK + " SELECT * FROM " + DATABASE_TABLE_TMP_DISTRIBUTOR_STOCK);
         db.execSQL("DELETE FROM tblTmpDistributorStock");
         updateInvoiceExecuted();
+
+        if (SplashScreen.sPrefVanStockChanged != null) {
+            Editor editor = SplashScreen.sPrefVanStockChanged.edit();
+            editor.clear();
+            editor.commit();
+        }
+        CommonInfo.VanLoadedUnloaded=0;
         //DATABASE_TABLE_TMP_DISTRIBUTOR_STOCK
         //  DATABASE_TABE_DISTRIBUTOR_STOCK
 
-        close();
+        //close();
 
     }
 
 
-    public void updateInvoiceExecuted()
+    public static void updateInvoiceExecuted()
     {
        // flgProcessedInvoice,InvoiceNumber
         //tblDistributorProductLeft(DistributorNodeIdNodeType text null,OrderId text null,flgProcessedInvoice int not null);";
@@ -30139,17 +30148,17 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public void deleteVanConfirmFlag()
+    public static void deleteVanConfirmFlag()
     {
 
         db.execSQL("DELETE FROM tblStockConfirm");
 
     }
 
-    public int flgConfirmedWareHouse()
+    public static int flgConfirmedWareHouse()
     {
         int flgConfirm=0;
-        open();
+        //open();
         try{
 
 
@@ -30164,14 +30173,14 @@ String fetchdate=fnGetDateTimeString();
         }
         finally
         {
-            close();
+            //close();
             return flgConfirm;
         }
     }
 
-    public double fnGettblPriceApplycutoffvalue(String storeID)
+    public static double fnGettblPriceApplycutoffvalue(String storeID)
     {
-        open();
+        //open();
         Double cutoffvalue=0.0;
         Cursor cursor=db.rawQuery("Select ifnull(cutoffvalue,0.0) from tblPriceApplyType",null);
 
@@ -30186,17 +30195,17 @@ String fetchdate=fnGetDateTimeString();
         if(cursor!=null) {
             cursor.close();
         }
-        close();
+       // close();
         return cutoffvalue;
     }
 
-    public LinkedHashMap<String, String> fetch_Store_RemaningStockStatus()
+    public static LinkedHashMap<String, String> fetch_Store_RemaningStockStatus()
     {
 
-        open();
+        //open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
-
-        Cursor cursor= db.rawQuery("Select DISTINCT S.SKUName,S.StockQntty-ifnull(D.OrderQty,0) AS StockAvailable from tblDistributorStock S left outer join (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
+//tblDistributorStock(PrdctId text null,StockQntty text null,DistributorNodeIdNodeType text null,SKUName text null,OpeningStock text null,TodaysAddedStock text null,CycleAddedStock text null,NetSalesQty text null,TodaysUnloadStk text null,CycleUnloadStk text null,CategoryID text null);";
+        Cursor cursor= db.rawQuery("Select DISTINCT S.SKUName,S.StockQntty-ifnull(D.OrderQty,0) AS StockAvailable,S.OpeningStock,ifnull(D.OrderQty,0) from tblDistributorStock S left outer join (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
 
 //Cursor cur=db.rawQuery("Select PrdctId,OriginalStock from tblDistributorStock where DistributorNodeIdNodeType='"+distId+"'",null);
       //  Cursor	cursor = db.rawQuery("SELECT Distinct ProductShortName,IFNULL(StockQntty,0),IFNULL(OriginalStock,0) from tblDistributorStock inner join tblProductList on tblDistributorStock.PrdctId=tblProductList.ProductID", null); //order by AutoIdOutlet Desc
@@ -30212,7 +30221,7 @@ String fetchdate=fnGetDateTimeString();
                     {
                         //hmapCatgry.put(cursor.getString(0).toString(),cursor.getString(1).toString() + "( Order Value:-"+cursor.getString(2).toString()+")");
                         // hmapCatgry.put((i+1)+")  "+cursor.getString(0).toString(), "[Stock Left: "+cursor.getString(2).toString()+"]");//[Stock Loaded:->"+cursor.getString(1).toString()+ "]
-                        hmapCatgry.put((i+1)+")  "+cursor.getString(0).toString(), cursor.getString(1).toString());//[Stock Loaded:->"+cursor.getString(1).toString()+ "]
+                        hmapCatgry.put((i+1)+")  "+cursor.getString(0).toString(), cursor.getString(1).toString()+"^"+cursor.getString(2).toString()+"^"+cursor.getString(3).toString());//[Stock Loaded:->"+cursor.getString(1).toString()+ "]
 
                         cursor.moveToNext();
                     }
@@ -30231,14 +30240,14 @@ String fetchdate=fnGetDateTimeString();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
     }
 
-    public Double fetch_Store_MaxCollectionAmount(String StoreID,String TmpInvoiceCodePDA)
+    public static Double fetch_Store_MaxCollectionAmount(String StoreID,String TmpInvoiceCodePDA)
     {
 //tv_GrossInvVal
-        open();
+        //open();
         Double dblMaxCollectionAmount = 0.0;
         Cursor	cursor = db.rawQuery("SELECT ifnull(tblLastOutstanding.Outstanding,'0.0'),tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader left outer join tblLastOutstanding on tblTmpInvoiceHeader.StoreID=tblLastOutstanding.StoreID WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND tblTmpInvoiceHeader.TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
         try
@@ -30270,14 +30279,14 @@ String fetchdate=fnGetDateTimeString();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
     }
 
-    public Double fetch_Store_InvValAmount(String StoreID,String TmpInvoiceCodePDA)
+    public static Double fetch_Store_InvValAmount(String StoreID,String TmpInvoiceCodePDA)
     {
 //tv_GrossInvVal
-        open();
+        //open();
         Double dblMaxCollectionAmount = 0.0;
         //Cursor   cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
         Cursor cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader", null); //order by AutoIdOutlet Desc
@@ -30310,16 +30319,16 @@ String fetchdate=fnGetDateTimeString();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+           // close();
         }
     }
 
 
 
 
-    public double fnGetStoretblLastOutstanding(String storeID)
+    public static double fnGetStoretblLastOutstanding(String storeID)
     {
-        open();
+        //open();
         double LastOutstanding=0.0;
         Cursor cursor=db.rawQuery("Select ifnull(Outstanding,'0.0') from tblLastOutstanding WHERE StoreID='"+storeID+"'",null);
 
@@ -30333,13 +30342,13 @@ String fetchdate=fnGetDateTimeString();
         if(cursor!=null) {
             cursor.close();
         }
-        close();
+       // close();
         return LastOutstanding;
     }
 
-    public Double  fnTotCollectionAmtAgainstStore(String StoreID,String TmpInvoiceCodePDA,String StoreVisitCode)
+    public static Double  fnTotCollectionAmtAgainstStore(String StoreID,String TmpInvoiceCodePDA,String StoreVisitCode)
     {
-        open();
+        //open();
         Double TotCollectionAmt=0.0;
         try {
 
@@ -30359,16 +30368,16 @@ String fetchdate=fnGetDateTimeString();
             {
                 cursor.close();;
             }
-            close();
+           // close();
             // return flag;
         }
         return TotCollectionAmt;
     }
 
-    public String[] fetch_Store_tblInvoiceLastVisitDetails(String StoreID)
+    public static String[] fetch_Store_tblInvoiceLastVisitDetails(String StoreID)
     {
 //tv_GrossInvVal
-        open();
+        //open();
 
         Cursor	cursor = db.rawQuery("SELECT ifnull(tblInvoiceLastVisitDetails.InvCode,'0.0'),ifnull(tblInvoiceLastVisitDetails.InvDate,'NA'),ifnull(tblInvoiceLastVisitDetails.OutstandingAmt,'0.0'),ifnull(tblInvoiceLastVisitDetails.AmtOverdue,'0.0') from tblInvoiceLastVisitDetails WHERE tblInvoiceLastVisitDetails.StoreID='"+StoreID+"'", null); //order by AutoIdOutlet Desc
         String InvoiceLastVisitDetails[]= new String[cursor.getCount()];
@@ -30393,11 +30402,11 @@ String fetchdate=fnGetDateTimeString();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+           // close();
         }
     }
 
-    public long savetblInvoiceCaption(String INVPrefix,int VanIntialInvoiceIds,String INVSuffix)
+    public static long savetblInvoiceCaption(String INVPrefix,int VanIntialInvoiceIds,String INVSuffix)
     {
         ContentValues initialValues = new ContentValues();
         initialValues.put("INVPrefix", INVPrefix);
@@ -30406,15 +30415,15 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_tblInvoiceCaption, null, initialValues);
     }
 
-    public void Delete_tblInvoiceCaption()
+    public static void Delete_tblInvoiceCaption()
     {
         db.execSQL("DELETE FROM tblInvoiceCaption");
 
     }
 
-    public int fnCheckForNewInvoiceOrPreviousValue(String StoreID,String StoreVisitCode)
+    public static int fnCheckForNewInvoiceOrPreviousValue(String StoreID,String StoreVisitCode)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT * FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
         int chkI = 0;
         try {
@@ -30428,14 +30437,14 @@ String fetchdate=fnGetDateTimeString();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+           // close();
         }
         return chkI;
     }
 
-  /*  public String fnGettblInvoiceCaption(String StoreID)
+  /*  public static String fnGettblInvoiceCaption(String StoreID)
     {
-        open();
+        //open();
         String VanInvoiceGeneratedNumber="";
         Cursor cursor=db.rawQuery("Select INVPrefix,VanIntialInvoiceIds from tblInvoiceCaption",null);
 
@@ -30454,9 +30463,9 @@ String fetchdate=fnGetDateTimeString();
     }
 */
 
-    /*public int fnGettblInvoiceIds()
+    /*public static int fnGettblInvoiceIds()
     {
-        open();
+        //open();
         int VanInvoiceIds=0;
         Cursor cursor=null;
         try {
@@ -30484,19 +30493,19 @@ String fetchdate=fnGetDateTimeString();
 
         return VanInvoiceIds;
     }*/
-   /* public void updatetblInvoiceCaption(String VanID)
+   /* public static void updatetblInvoiceCaption(String VanID)
     {
         int VanInvoiceIds=fnGettblInvoiceIds();
-        open();
+        //open();
 //tblInvoiceCaption(INVPrefix text null,VanIntialInvoiceIds int null,FinalAllotedInvoiceIds int null);";
         db.execSQL("Update tblInvoiceCaption Set  VanIntialInvoiceIds="+(VanInvoiceIds+1));
 
         close();
     }*/
 
-  /*  public int fnCheckForNewInvoiceOrPreviousValue(String StoreID)
+  /*  public static int fnCheckForNewInvoiceOrPreviousValue(String StoreID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT * FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND Sstat=1", null);
         int chkI = 0;
         try {
@@ -30514,9 +30523,9 @@ String fetchdate=fnGetDateTimeString();
         }
         return chkI;
     }*/
-    public String fnGetExistingInvoiceNumber (String StoreID)
+    public static String fnGetExistingInvoiceNumber (String StoreID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND Sstat=1", null);
         String TmpInvoiceCodePDA = "0";
         try {
@@ -30530,15 +30539,15 @@ String fetchdate=fnGetDateTimeString();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+           // close();
         }
         return TmpInvoiceCodePDA;
     }
 
-    public void updateOutstandingOfStore(String StoreID,Double OutStandingAmt)
+    public static void updateOutstandingOfStore(String StoreID,Double OutStandingAmt)
     {
 
-        open();
+        //open();
         try
         {
             db.execSQL("Update tblLastOutstanding Set  Outstanding="+OutStandingAmt+" WHERE StoreID='"+StoreID+"'");
@@ -30550,10 +30559,10 @@ String fetchdate=fnGetDateTimeString();
 
 
 
-        close();
+       // close();
     }
 
-    public void deletetblDistributorOrderPdaId()
+    public static void deletetblDistributorOrderPdaId()
     {
 
 
@@ -30567,7 +30576,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public HashMap<String, String> checkForStoreIdVisitStatus()
+    public static HashMap<String, String> checkForStoreIdVisitStatus()
     {
         Cursor cursor=db.rawQuery("Select StoreID,VisitTypeStatus from tblStoreVisitMstr",null);
         HashMap<String, String> hmapStoreIdVisitStatus=new HashMap<String, String>();
@@ -30585,9 +30594,9 @@ String fetchdate=fnGetDateTimeString();
         return hmapStoreIdVisitStatus;
     }
 
-    public void updateVisitTypeStatusOfStore(String StoreID,String VisitTypeStatus,String StoreVisitCode)
+    public static void updateVisitTypeStatusOfStore(String StoreID,String VisitTypeStatus,String StoreVisitCode)
     {
-        open();
+        //open();
         try
         {
             db.execSQL("Update tblStoreVisitMstr Set  VisitTypeStatus="+VisitTypeStatus+" WHERE StoreID='"+StoreID+"' and StoreVisitCode='"+StoreVisitCode+"'");
@@ -30596,12 +30605,12 @@ String fetchdate=fnGetDateTimeString();
         {
 
         }
-        close();
+       // close();
     }
 
-    public int fnStoreCountWithVisitTypeStatus()
+    public static int fnStoreCountWithVisitTypeStatus()
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT Count(VisitTypeStatus) FROM tblStoreVisitMstr WHERE VisitTypeStatus=1 OR VisitTypeStatus=3", null);
         int chkI = 0;
         try {
@@ -30615,14 +30624,14 @@ String fetchdate=fnGetDateTimeString();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public int fnStoreCountWithsStatStatus()
+    public static int fnStoreCountWithsStatStatus()
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT Count(Sstat) FROM tblStoreList WHERE Sstat=1", null);
         int chkI = 0;
         try {
@@ -30636,12 +30645,12 @@ String fetchdate=fnGetDateTimeString();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public void UpdateStoreFlagAtDayEndOrChangeRouteWithOnlyVistOrCollection(String sID, int flag2set)
+    public static void UpdateStoreFlagAtDayEndOrChangeRouteWithOnlyVistOrCollection(String sID, int flag2set)
     {
 
         try
@@ -30745,9 +30754,9 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public LinkedHashMap<String,String> fnGetStoreListToProcessWithoutAlret()
+    public static LinkedHashMap<String,String> fnGetStoreListToProcessWithoutAlret()
     {
-        open();
+        //open();
         int LoncolumnIndex = 0;
         int LoncolumnIndex2 = 1;
         LinkedHashMap<String,String> hmapStoreListToProcessWithoutAlret=new LinkedHashMap<String,String>();
@@ -30774,14 +30783,14 @@ String fetchdate=fnGetDateTimeString();
             {
                 cursor2.close();
             }
-            close();
+           // close();
         }
 
     }
 
-    public int fnCounttblDistributorProductLeft()
+    public static int fnCounttblDistributorProductLeft()
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT * FROM tblDistributorProductLeft", null);
         int chkI = 0;
         try {
@@ -30800,12 +30809,12 @@ String fetchdate=fnGetDateTimeString();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
         return chkI;
     }
 
-    public String fnGetRouteIDWhilePurshase()
+    public static String fnGetRouteIDWhilePurshase()
     {
         int LoncolumnIndex = 0;
 
@@ -30838,9 +30847,9 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public LinkedHashMap<String, String> fetch_Category_ForWarehouseCheckIn()
+    public static LinkedHashMap<String, String> fetch_Category_ForWarehouseCheckIn()
     {
-        open();
+        //open();
         LinkedHashMap<String, String> hmapCatgry = new LinkedHashMap<String, String>();
         Cursor cursor = db.rawQuery("SELECT DISTINCT CategoryID,CategoryDescr FROM tblCatagoryMstr  Order by CatOrdr",null);
       //  Cursor cursorStock = db.rawQuery("SELECT DISTINCT tblDistributorStock.CategoryID,tblCatagoryMstr.CategoryDescr FROM tblCatagoryMstr inner join tblDistributorStock ON tblDistributorStock.CategoryID=tblCatagoryMstr.CategoryID Order by tblCatagoryMstr.CatOrdr",null);
@@ -30875,13 +30884,13 @@ String fetchdate=fnGetDateTimeString();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
     }
 
-   /* public String fnGetFinalAllotedInvoiceIds(String StoreID)
+   /* public static String fnGetFinalAllotedInvoiceIds(String StoreID)
     {
-        open();
+        //open();
         String VanFinalAllotedInvoiceId="";
         Cursor cursor=db.rawQuery("Select INVPrefix,VanIntialInvoiceIds from tblInvoiceCaption",null);
 
@@ -30898,17 +30907,17 @@ String fetchdate=fnGetDateTimeString();
         close();
         return VanFinalAllotedInvoiceId;
     }*/
-   /* public void updateFinalAllotedInvoiceIdstblInvoiceCaption()
+   /* public static void updateFinalAllotedInvoiceIdstblInvoiceCaption()
     {
         int FinalAllotedInvoiceIds=fnGettblInvoiceAllotmentId();
-        open();
+        //open();
 ///tblInvoiceCaption(INVPrefix text null,VanIntialInvoiceIds int null,FinalAllotedInvoiceIds int null);";
         db.execSQL("Update tblInvoiceCaption Set  VanIntialInvoiceIds="+(FinalAllotedInvoiceIds+1));
       //  db.execSQL("Update tblInvoiceCaption Set  VanIntialInvoiceIds="+(FinalAllotedInvoiceIds+1));
 
         close();
     }*/
-    public int fnGettblInvoiceAllotmentId()
+    public static int fnGettblInvoiceAllotmentId()
     {
 
         int VanInvoiceIds=0;
@@ -30939,9 +30948,9 @@ String fetchdate=fnGetDateTimeString();
         return VanInvoiceIds;
     }
 
-  /*  public String fnGetFinalAllotedInvoiceIdsAgainstInvoiceTable(String StoreID)
+  /*  public static String fnGetFinalAllotedInvoiceIdsAgainstInvoiceTable(String StoreID)
     {
-        open();
+        //open();
         String VanFinalAllotedInvoiceId="NA";
         Cursor cursor=db.rawQuery("Select INVPrefix,VanIntialInvoiceIds from tblInvoiceCaption",null);
 
@@ -30958,9 +30967,9 @@ String fetchdate=fnGetDateTimeString();
         close();
         return VanFinalAllotedInvoiceId;
     }*/
-    public int fnGetStoreCurrentOutsStat(String StoreID)
+    public static int fnGetStoreCurrentOutsStat(String StoreID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT Sstat FROM  tblStoreList where StoreID='"+StoreID+"'", null);
         int StoreCurrentOutsStat = 0;
 
@@ -30981,14 +30990,14 @@ String fetchdate=fnGetDateTimeString();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
 
     }
 
-    public String fnGetStoreVisitCode(String StoreID)
+    public static String fnGetStoreVisitCode(String StoreID)
     {
-        open();
+        //open();
         String StoreVisitCode="NA";
         Cursor cursor=db.rawQuery("Select StoreVisitCode from tblStoreVisitMstr Where StoreID='"+StoreID+"' AND Sstat=1",null);
 
@@ -31002,14 +31011,14 @@ String fetchdate=fnGetDateTimeString();
         if(cursor!=null) {
             cursor.close();
         }
-        close();
+        //close();
         return StoreVisitCode;
     }
 
-    public void fnInsertOrUpdate_tblStoreVisitMstr(String StoreVisitCode,String StoreID,int Sstat,String ForDate,String ActualLatitude,String ActualLongitude,String VisitTimeOutSideStore,String VisitTimeInSideStore,String VisitTimeCheckStore,String VisitEndTS,String LocProvider,String Accuracy,String BateryLeftStatus,int StoreClose,int StoreNextDay,int ISNewStore,int IsNewStoreDataCompleteSaved,int flgFromWhereSubmitStatus,int flgSubmitFromQuotation,int flgLocationServicesOnOff,int flgGPSOnOff,int flgNetworkOnOff,int flgFusedOnOff,int flgInternetOnOffWhileLocationTracking,int flgStoreOrder,int flgRetailerCreditBalnce,int VisitTypeStatus,int flgVisitCollectionMarkedStatus)
+    public static void fnInsertOrUpdate_tblStoreVisitMstr(String StoreVisitCode,String StoreID,int Sstat,String ForDate,String ActualLatitude,String ActualLongitude,String VisitTimeOutSideStore,String VisitTimeInSideStore,String VisitTimeCheckStore,String VisitEndTS,String LocProvider,String Accuracy,String BateryLeftStatus,int StoreClose,int StoreNextDay,int ISNewStore,int IsNewStoreDataCompleteSaved,int flgFromWhereSubmitStatus,int flgSubmitFromQuotation,int flgLocationServicesOnOff,int flgGPSOnOff,int flgNetworkOnOff,int flgFusedOnOff,int flgInternetOnOffWhileLocationTracking,int flgStoreOrder,int flgRetailerCreditBalnce,int VisitTypeStatus,int flgVisitCollectionMarkedStatus)
     {
 
-        open();
+        //open();
         try {
             Cursor cursor = db.rawQuery("SELECT StoreVisitCode FROM tblStoreVisitMstr where StoreVisitCode='"+StoreVisitCode +"' AND StoreID='"+StoreID+"' AND Sstat=1" , null);
             ContentValues initialValues = new ContentValues();
@@ -31057,17 +31066,17 @@ String fetchdate=fnGetDateTimeString();
                 db.insert(DATABASE_TABLE_STOREVISIT, null, initialValues);
             }
         } finally {
-            close();
+           // close();
         }
     }
 
 
 
-    public LinkedHashMap<String, String> fngetStoreBasicDetails(String StoreID)
+    public static LinkedHashMap<String, String> fngetStoreBasicDetails(String StoreID)
     {
         LinkedHashMap<String, String> hmapStoreBasicDetails=new LinkedHashMap<String, String>();//=null;
         Cursor cur=null;
-        open();
+        //open();
         try {
             cur=db.rawQuery("Select ifnull(StoreName,'NA'),ifnull(OwnerName,'NA'),ifnull(StoreContactNo,'NA'),ifnull(StoreAddress,'NA'),ifnull(StoreCatType,'NA'),ifnull(SalesPersonName,'NA'),ifnull(SalesPersonContact,'NA') from tblStoreList where StoreID = '"+StoreID+"'", null);//
             if(cur.getCount()>0)
@@ -31100,14 +31109,14 @@ String fetchdate=fnGetDateTimeString();
             if (cur != null) {
                 cur.close();
             }
-            close();
+            //close();
         }
         return hmapStoreBasicDetails;
     }
 
-    public String fnGetInvoiceCodePDA (String StoreID,String StoreVisitCode)
+    public static String fnGetInvoiceCodePDA (String StoreID,String StoreVisitCode)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
         String InvoiceCodePDA = "0";
         try {
@@ -31121,7 +31130,7 @@ String fetchdate=fnGetDateTimeString();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+           // close();
         }
         return InvoiceCodePDA;
     }
@@ -31129,7 +31138,7 @@ String fetchdate=fnGetDateTimeString();
 
     // function given by Abhianv Sir Start
 
-    public long saveStoreTempInvoice(String StoreVisitCode,String TmpInvoiceCodePDA,String storeID,String pickerDate,Double TBtaxDis,Double TAmt,Double Dis,Double INval,
+    public static long saveStoreTempInvoice(String StoreVisitCode,String TmpInvoiceCodePDA,String storeID,String pickerDate,Double TBtaxDis,Double TAmt,Double Dis,Double INval,
                                      int Ftotal,Double InvAfterDis,Double AddDis,int  NoOfCouponValue,Double TotalCoupunAmount,String pickerDateWithTime,int flgTransType,
                                      int flgWholeSellApplicable,int flgRuleTaxVal,int Outstat,int flgTransferStatus)// , Double CreditAmt, Double
 
@@ -31162,7 +31171,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN32, null, initialValues);
     }
 
-    public long fnsaveStoreFinalInvoiceSummaryEntry(String StoreVisitCode,String TmpInvoiceCodePDA,String storeID,String pickerDate,Double TBtaxDis,Double TAmt,Double Dis,Double INval,
+    public static long fnsaveStoreFinalInvoiceSummaryEntry(String StoreVisitCode,String TmpInvoiceCodePDA,String storeID,String pickerDate,Double TBtaxDis,Double TAmt,Double Dis,Double INval,
                                                     int Ftotal,Double InvAfterDis,Double AddDis,int  NoOfCouponValue,Double TotalCoupunAmount,String pickerDateWithTime,int flgTransType,
                                                     int flgWholeSellApplicable,int flgRuleTaxVal,int Outstat,String FinalInvoiceNumberGenerated)// , Double CreditAmt, Double
 
@@ -31198,7 +31207,7 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public long saveStoreFinalInvoiceDetails(String TmpInvoiceCodePDA,String storeID,String PCateId,String ProductID,Double PRate,Double TaxRate,int flgRuleTaxVal,int OrderQTY,int SelectedUOMId,Double LineValBfrTxAftrDscnt,Double LineValAftrTxAftrDscnt,                                                 int OrderFreeQty,Double OrderDisVal,int SampleQTY,String PName,Double TaxValue,String strGlobalOrderID,int flgIsQuoteRateApplied,int PriceApplyDiscountLevelType,String distID,int Outstat,String FinalInvoiceNumberGenerated)
+    public static long saveStoreFinalInvoiceDetails(String TmpInvoiceCodePDA,String storeID,String PCateId,String ProductID,Double PRate,Double TaxRate,int flgRuleTaxVal,int OrderQTY,int SelectedUOMId,Double LineValBfrTxAftrDscnt,Double LineValAftrTxAftrDscnt,                                                 int OrderFreeQty,Double OrderDisVal,int SampleQTY,String PName,Double TaxValue,String strGlobalOrderID,int flgIsQuoteRateApplied,int PriceApplyDiscountLevelType,String distID,int Outstat,String FinalInvoiceNumberGenerated)
     {
         ContentValues initialValues = new ContentValues();
         initialValues.put("TmpInvoiceCodePDA", TmpInvoiceCodePDA);
@@ -31231,7 +31240,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_INVOICE_DETAILS, null, initialValues);
     }
 
-    public String fnGetDateTimeString() {
+    public static String fnGetDateTimeString() {
         long  syncTIMESTAMP = System.currentTimeMillis();
         Date dateobj = new Date(syncTIMESTAMP);
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
@@ -31240,12 +31249,12 @@ String fetchdate=fnGetDateTimeString();
         return StampEndsTime;
     }
 
-    public void UpdateStoreActualLatLongi(String StoreID,
+    public static void UpdateStoreActualLatLongi(String StoreID,
                                           String ActualLatitude, String ActualLongitude, String Accuracy,
                                           String LocProvider, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, int flgRestart, int flgStoreOrder,String StoreVisitCode,String VisitTimeInSideStore)
     {
         String GetDateTimeString=fnGetDateTimeString();
-        open();
+        //open();
         final ContentValues values = new ContentValues();
         values.put("ActualLatitude", ActualLatitude);
         values.put("ActualLongitude", ActualLongitude);
@@ -31263,13 +31272,13 @@ String fetchdate=fnGetDateTimeString();
 
 
         int affected = db.update("tblStoreVisitMstr", values, "StoreID=? AND StoreVisitCode=?",new String[] { StoreID,StoreVisitCode });
-        close();
+       // close();
         Log.w(TAG, "affected records: " + affected);
 
         Log.w(TAG, "UpdateStoreActualLatLongi added..");
     }
 
-    public long fnsaveStoreTempOrderEntryDetails(String TmpInvoiceCodePDA,String storeID,String PCateId,String ProductID,Double PRate,Double TaxRate,int flgRuleTaxVal,int OrderQTY,int SelectedUOMId,Double LineValBfrTxAftrDscnt,Double LineValAftrTxAftrDscnt,
+    public static long fnsaveStoreTempOrderEntryDetails(String TmpInvoiceCodePDA,String storeID,String PCateId,String ProductID,Double PRate,Double TaxRate,int flgRuleTaxVal,int OrderQTY,int SelectedUOMId,Double LineValBfrTxAftrDscnt,Double LineValAftrTxAftrDscnt,
                                                  int OrderFreeQty,Double OrderDisVal,int SampleQTY,String PName,Double TaxValue,String strGlobalOrderID,int flgIsQuoteRateApplied,int PriceApplyDiscountLevelType,String distID,int Outstat,int ProductExtraOrder)
     {
         ContentValues initialValues = new ContentValues();
@@ -31303,10 +31312,10 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN210, null, initialValues);
     }
 
-    public LinkedHashMap<String,Integer> fnGetFinalInvoiceQtyProductWise()
+    public static LinkedHashMap<String,Integer> fnGetFinalInvoiceQtyProductWise()
     {
         LinkedHashMap<String,Integer> hmapFinalInvoiceQtyProductWise=new LinkedHashMap<String,Integer>();
-        open();
+        //open();
         Cursor cursor= db.rawQuery("SELECT DISTINCT S.PrdctId,S.StockQntty-ifnull(D.OrderQty,0) AS StockAvailable  from tblDistributorStock S left outer join (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
         try {
             if(cursor.getCount()>0)
@@ -31325,18 +31334,18 @@ String fetchdate=fnGetDateTimeString();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
 
         return hmapFinalInvoiceQtyProductWise;
     }
 
-    public void UpdateStoreVisitWiseTables(String sID, int flag2set,String StoreVisitCode,String TmpInvoiceCodePDA)
+    public static void UpdateStoreVisitWiseTables(String sID, int flag2set,String StoreVisitCode,String TmpInvoiceCodePDA)
     {
 
         try
         {
-open();
+//open();
             final ContentValues values = new ContentValues();
             values.put("Sstat", flag2set);
 
@@ -31362,14 +31371,14 @@ open();
         {
             Log.e(TAG, ex.toString());
         }
-close();
+//close();
     }
 
     // function given by Abhianv Sir End
 
-    public void UpdateStoreVisitMStrTable(String sID, int flag2set,String StoreVisitCode)
+    public static void UpdateStoreVisitMStrTable(String sID, int flag2set,String StoreVisitCode)
     {
-        open();
+        //open();
         try
         {
 
@@ -31389,14 +31398,14 @@ close();
             Log.e(TAG, ex.toString());
         }
         finally {
-            close();
+           // close();
         }
 
     }
 
-    public String fetchtblVanCycStartTime()
+    public static String fetchtblVanCycStartTime()
     {
-        open();
+        //open();
         String CycStartTime="";
         try
         {
@@ -31420,13 +31429,13 @@ close();
         }
         finally
         {
-            close();
+           // close();
             return CycStartTime;
         }
     }
 
-    public String fetchtblStatusCycleTime() {
-        open();
+    public static String fetchtblStatusCycleTime() {
+        //open();
         String CycStartTime = "0";
         try {
             //tblStockUploadedStatus(flgStockTrans int null,VanLoadUnLoadCycID int null,CycleTime text null,StatusID int null);";
@@ -31442,14 +31451,14 @@ close();
         } catch (Exception e) {
             System.out.println("Error getOtherReason = " + e.toString());
         } finally {
-            close();
+          //  close();
             return CycStartTime;
         }
     }
 
-    public String fnGetInvoiceCodePDAWhileSync (String StoreID,String StoreVisitCode)
+    public static String fnGetInvoiceCodePDAWhileSync (String StoreID,String StoreVisitCode)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
         String InvoiceCodePDA = "0";
         try {
@@ -31463,12 +31472,12 @@ close();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
         return InvoiceCodePDA;
     }
 
-    public void UpdateStoreClose(String sID, int flag2set)
+    public static void UpdateStoreClose(String sID, int flag2set)
     {
 
         try
@@ -31490,7 +31499,7 @@ close();
 
     }
 
-    public void fnInsert_tblNewAddedStoreLocationDetails(String StoreID,int Sstat,String ActualLatitude,String ActualLongitude,String VisitEndTS,String LocProvider,String Accuracy,String BateryLeftStatus,int flgLocationServicesOnOff,int flgGPSOnOff,int flgNetworkOnOff,int flgFusedOnOff,int flgInternetOnOffWhileLocationTracking)
+    public static void fnInsert_tblNewAddedStoreLocationDetails(String StoreID,int Sstat,String ActualLatitude,String ActualLongitude,String VisitEndTS,String LocProvider,String Accuracy,String BateryLeftStatus,int flgLocationServicesOnOff,int flgGPSOnOff,int flgNetworkOnOff,int flgFusedOnOff,int flgInternetOnOffWhileLocationTracking)
     {
 
 
@@ -31528,10 +31537,10 @@ close();
 
     }
 
-    public void inserttblDayCheckIn(int confirmFlg)
+    public static void inserttblDayCheckIn(int confirmFlg)
     {
 
-        open();
+        //open();
         long  syncTIMESTAMP = System.currentTimeMillis();
         Date dateobj = new Date(syncTIMESTAMP);
         SimpleDateFormat	sdfPDaDate = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
@@ -31541,13 +31550,13 @@ close();
         values.put("flgDayDayCheckIn",confirmFlg);
         db.insert(DATABASE_TABLE_DayCheckIn,null,values);
 
-        close();
+       // close();
 
     }
 
-    public int fnCkechDayStart()
+    public static int fnCkechDayStart()
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT * FROM tblDayCheckIn", null);
         int flgCkechDayStart = 0;
         try {
@@ -31561,16 +31570,16 @@ close();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+            //close();
         }
         return flgCkechDayStart;
     }
 
-    public int confirmedStock()
+    public static int confirmedStock()
     {
         int statusId=0;
       //tblStockUploadedStatus(flgStockTrans int null,VanLoadUnLoadCycID int null,CycleTime text null,StatusID int null);";
-        open();
+        //open();
         try {
             Cursor cur=db.rawQuery("Select StatusID from tblStockUploadedStatus",null);
             if(cur.getCount()>0)
@@ -31588,20 +31597,20 @@ close();
         }
         finally
         {
-            close();
+           // close();
             return statusId;
         }
 
     }
 
-    public int CheckStoreListPresentOrNot()
+    public static int CheckStoreListPresentOrNot()
     {
         Cursor cursorE2 = null;
         int chkI = 0;
 
         try
         {
-            open();
+            //open();
             cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblStoreList", null);
 
             if (cursorE2.moveToFirst())
@@ -31623,14 +31632,14 @@ close();
             {
                 cursorE2.close();
             }
-            close();
+           // close();
         }
         return chkI;
     }
 
-    public int fnCheckForPendingImages()
+    public static int fnCheckForPendingImages()
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -31655,16 +31664,16 @@ close();
         }
         finally {
             cursor.close();
-            close();
+            //close();
         }
         return check;
     }
 
     // function by Sunil
 
-    public ArrayList<String> getImageDetails(int sStat)
+    public static ArrayList<String> getImageDetails(int sStat)
     {
-        open();
+        //open();
         ArrayList<String> listImageDetails=new ArrayList<String>();
         try
         {
@@ -31686,14 +31695,14 @@ close();
         }
         finally
         {
-            close();
+          //  close();
             return listImageDetails;
         }
     }
 
-    public void updateSSttImage(String imageName,int sStat)
+    public static void updateSSttImage(String imageName,int sStat)
     {
-        open();
+        //open();
         Cursor cursorImage=db.rawQuery("Select StoreID from tableImage where imageName='"+imageName+"'", null);
         if(cursorImage.getCount()>0)
         {
@@ -31702,21 +31711,21 @@ close();
             db.update(TABLE_IMAGE, value, "imageName=?", new String[]{imageName});
         }
 
-        close();
+        //close();
     }
 
-    public void fndeleteSbumittedStoreImagesOfSotre(int Sstat)
+    public static void fndeleteSbumittedStoreImagesOfSotre(int Sstat)
     {
 
-        open();
+        //open();
 
         db.execSQL("DELETE FROM tableImage WHERE  Sstat='"+Sstat+"'");
-        close();
+       // close();
     }
 
-    public int fnCheckForPendingXMLFilesInTable()
+    public static int fnCheckForPendingXMLFilesInTable()
     {
-        open();
+        //open();
         Cursor cursor =null;
         int check=0;
         try {
@@ -31742,12 +31751,12 @@ close();
         }
         finally {
             cursor.close();
-            close();
+           // close();
         }
         return check;
     }
 
-    public void fnUpdateProcessedInvoiceflg(String InvoiceNumber, int flag2set)
+    public static void fnUpdateProcessedInvoiceflg(String InvoiceNumber, int flag2set)
     {
 
         try
@@ -31769,10 +31778,10 @@ close();
 
     }
 
-    public String[] deletFromSDcCardPhotoNewStoreValidationBasedSstat(String Sstat) {
+    public static String[] deletFromSDcCardPhotoNewStoreValidationBasedSstat(String Sstat) {
 
         String[] imageNameToBeDeleted = null;
-        open();
+        //open();
 
         Cursor cursor = db.rawQuery("SELECT  imageName from tableImage where Sstat='"+Sstat+"'", null);
         try{
@@ -31796,7 +31805,7 @@ close();
         }finally
         {
             cursor.close();
-            close();
+           // close();
         }
 
 
@@ -31804,7 +31813,7 @@ close();
         return imageNameToBeDeleted;
     }
 
-    public int fetchtblVanCycleIdForInvoiceHeader()
+    public static int fetchtblVanCycleIdForInvoiceHeader()
     {
 
         int retVal=-1;
@@ -31840,9 +31849,9 @@ close();
         }
     }
 
-    public int fetchtblInvoiceReviewLineCount(String sID,String TmpInvoiceCodePDA)
+    public static int fetchtblInvoiceReviewLineCount(String sID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         int retVal=0;
         Cursor cur=null;
         try
@@ -31871,14 +31880,14 @@ close();
             {
                 cur.close();
             }
-            close();
+            //close();
             return retVal;
         }
     }
 
-    public int fetchtblInvoiceReviewCount(String sID,String TmpInvoiceCodePDA)
+    public static int fetchtblInvoiceReviewCount(String sID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         int retVal=0;
         Cursor cur=null;
         try
@@ -31907,22 +31916,22 @@ close();
             {
                 cur.close();
             }
-            close();
+          //  close();
             return retVal;
         }
     }
 
-    public void getInvoiceNumber()
+    public static void getInvoiceNumber()
     {
         //tblInvoiceHeader (StoreVisitCode text not null,InvoiceNumber text not null,TmpInvoiceCodePDA text null, StoreID text not null, InvoiceDate string not null, TotalBeforeTaxDis real not null, TaxAmt real not null, TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null, Sstat integer not null, InvAfterDis real not null, AddDis real not null,  NoCoupon int null, TotalCoupunAmount real null,TransDate string not null,FlgInvoiceType text not null,flgWholeSellApplicable int null,flgProcessedInvoice int not null,CycleID  int not null);";
     }
 
-    public void UpdateStoreVisitWiseTablesAfterSync(int flag2set)
+    public static void UpdateStoreVisitWiseTablesAfterSync(int flag2set)
     {
 
         try
         {
-            open();
+            //open();
             final ContentValues values = new ContentValues();
             values.put("Sstat", flag2set);
 
@@ -31948,12 +31957,12 @@ close();
         {
             Log.e(TAG, ex.toString());
         }
-        close();
+       // close();
     }
 
-    public int checkVisitTypeStatus(String  StoreID,String StoreVisitCode)
+    public static int checkVisitTypeStatus(String  StoreID,String StoreVisitCode)
     {
-open();
+//open();
         int check=0;
         Cursor cursor = db.rawQuery("SELECT VisitTypeStatus FROM tblStoreVisitMstr WHERE  StoreID ='"+ StoreID + "' and StoreVisitCode='"+StoreVisitCode+"'", null);
 
@@ -31977,14 +31986,14 @@ open();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
     }
 
-    public void fnTransferDataFromTempToPermanent(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA)
+    public static void fnTransferDataFromTempToPermanent(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         int InvoiceNumber=fnFetchInvoiceNumber();
         int CycleID=fetchtblVanCycleIdForInvoiceHeader();
     try {
@@ -32003,19 +32012,19 @@ open();
         System.out.println("Error While trnasfering data from temp to permanent.");
     }
     finally {
-    close();
+    //close();
     }
 
     }
 
-public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA,int flgTransferStatus)
+public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA,int flgTransferStatus)
 {
             final ContentValues values = new ContentValues();
             values.put("flgTransferStatus", flgTransferStatus);
             int affected1 = db.update("tblTmpInvoiceHeader", values,"StoreID=? AND StoreVisitCode=? AND TmpInvoiceCodePDA=?", new String[] { storeID,StoreVisitCode,TmpInvoiceCodePDA });
 }
 
-        public int fnFetchInvoiceNumber()
+        public static int fnFetchInvoiceNumber()
         {
 
             int flCheckPrevoiusInvoiceNumberIfAnyGenerated=0;
@@ -32032,7 +32041,7 @@ public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String Store
             return  InNumber;
         }
 
-        public int fnCheckForPrevoiusInvoiceNumberIfAnyGenerated()
+        public static int fnCheckForPrevoiusInvoiceNumberIfAnyGenerated()
 {
     int flCheckPrevoiusInvoiceNumberIfAnyGenerated=0;
     Cursor cursor = db.rawQuery("SELECT InvoiceNumber FROM tblInvoiceHeader", null);
@@ -32061,7 +32070,7 @@ public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String Store
 
 }
 
-    public int fnGetMaxInvoiceNumberIfAnyGenerated()
+    public static int fnGetMaxInvoiceNumberIfAnyGenerated()
     {
         int MaxInvoiceNumberGenerated=0;
         Cursor cursor = db.rawQuery("SELECT Max(InvoiceNumber) FROM tblInvoiceHeader", null);
@@ -32090,10 +32099,10 @@ public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String Store
 
     }
 
-    public LinkedHashMap<String,String> fetch_InvoiceCaptionPrefixAndSuffix()
+    public static LinkedHashMap<String,String> fetch_InvoiceCaptionPrefixAndSuffix()
     {
 
-      // open();
+      // //open();
        LinkedHashMap<String,String>hmapInvoiceCaptionPrefixAndSuffix=new LinkedHashMap<String,String>();
 
 
@@ -32123,9 +32132,9 @@ public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String Store
         }
     }
 
-    public ArrayList<String> getImageNameToDel(String StoreID)
+    public static ArrayList<String> getImageNameToDel(String StoreID)
     {
-        open();
+        //open();
         ArrayList<String> listImagePath=new ArrayList<String>();
         try {
 //
@@ -32149,15 +32158,15 @@ public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String Store
         }
         finally
         {
-            close();
+          //  close();
             return listImagePath;
         }
     }
 
-    public void deleteImageDataCanceled(String storeId)
+    public static void deleteImageDataCanceled(String storeId)
     {
         //tableImage(tempId text null,QstIdAnsCntrlTyp text null,imageName text null,imagePath text null,Sstat integer null);";
-        open();
+        //open();
         Cursor cur=db.rawQuery("Select imageName from tableImage where StoreID='"+storeId+"'", null);
         if(cur.getCount()>0)
         {
@@ -32167,12 +32176,12 @@ public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String Store
         {
             cur.close();
         }
-        close();
+        //close();
     }
 
-    public int fnCheckflgTransferStatus(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA)
+    public static int fnCheckflgTransferStatus(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         int flgTransferStatus=0;
         Cursor cursor = db.rawQuery("SELECT ifnull(flgTransferStatus,0) FROM tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreVisitCode='"+StoreVisitCode+"' AND  tblTmpInvoiceHeader.TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' AND tblTmpInvoiceHeader.StoreID=='"+storeID+"'", null);
 
@@ -32196,24 +32205,24 @@ public void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,String Store
             if(cursor!=null) {
                 cursor.close();
             }
-close();
+//close();
         }
 
 
     }
 
-    public  void deleteMasterTblFromParmanentInvoiceTables(String StoreID,String TmpInvoiceCodePDA)
+    public static  void deleteMasterTblFromParmanentInvoiceTables(String StoreID,String TmpInvoiceCodePDA)
     {
-        open();
+        //open();
         db.execSQL("DELETE FROM tblInvoiceHeader WHERE StoreID='"+ StoreID +"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
         db.execSQL("DELETE FROM tblInvoiceDetails WHERE StoreID='"+ StoreID +"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
-        close();
+       // close();
     }
 
-    public LinkedHashMap<String,String> getPerUnitName()
+    public static LinkedHashMap<String,String> getPerUnitName()
     {
         LinkedHashMap<String,String> hmapPerUnitName=new LinkedHashMap<>();
-        open();
+        //open();
         //tblProductList(ProductID text  null,RptUnitName text null,PerbaseUnit text null);";
         Cursor cur=null;
         try {
@@ -32239,16 +32248,16 @@ close();
             {
                 cur.close();
             }
-            close();
+           // close();
             return hmapPerUnitName;
         }
 
     }
 
-    public LinkedHashMap<String,String> getPerBaseQty()
+    public static LinkedHashMap<String,String> getPerBaseQty()
     {
         LinkedHashMap<String,String> hmapPerBaseQty=new LinkedHashMap<>();
-        open();
+        //open();
         //tblProductList(ProductID text  null,RptUnitName text null,PerbaseUnit text null);";
         Cursor cur=null;
         try {
@@ -32274,15 +32283,15 @@ close();
             {
                 cur.close();
             }
-            close();
+            //close();
             return hmapPerBaseQty;
         }
 
     }
 
-    public void UpdateStorWhileAdding(String sID, int flag2set)
+    public static void UpdateStorWhileAdding(String sID, int flag2set)
     {
-        open();
+        //open();
         try
         {
 
@@ -32299,33 +32308,36 @@ close();
         {
             Log.e(TAG, ex.toString());
         }
-        close();
+        //close();
 
     }
     // ---opens the database---
+    public PRJDatabase(Context ctx) {
+        this.context = ctx;
+        DBHelper = new DatabaseHelper(this.context);
+    }
     public PRJDatabase open() throws SQLException
     {
         db = DBHelper.getWritableDatabase();
         isDBOpenflag = true;
         return this;
     }
-    public void close() {
+    public static void close() {
         DBHelper.close();
     }
 
-    private static class DatabaseHelper extends SQLiteOpenHelper
-    {
-        DatabaseHelper(Context context)
-        {
+    private static class DatabaseHelper extends SQLiteOpenHelper {
+        DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
 
-        @Override
         public void onCreate(SQLiteDatabase db)
         {
 
             try
             {
+                db.execSQL(DATABASE_CREATE_TABLE_tblDeliveryNoteNumber);
+                db.execSQL(DATABASE_CREATE_TABLE_tblWarehouseMstr);
                 db.execSQL(DATABASE_CREATE_TABLE_tblStoreCheckInPic);
                 db.execSQL(DATABASE_CREATE_TABLE_tblUserName);
                 db.execSQL(DATABASE_CREATE_TABLE_tblStoreCountDetails);
@@ -32593,10 +32605,12 @@ close();
             }
         }
 
-        @Override
+
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             try
             {
+                db.execSQL("DROP TABLE IF EXISTS tblDeliveryNoteNumber");
+                db.execSQL("DROP TABLE IF EXISTS tblWarehouseMstr");
                 db.execSQL("DROP TABLE IF EXISTS tblStoreCheckInPic");
 
                 db.execSQL("DROP TABLE IF EXISTS tblUserName");
@@ -32803,9 +32817,9 @@ close();
 
 
 
-    public void UpdateXMLCreatedFilesTablesFlag(int flag2set)
+    public static void UpdateXMLCreatedFilesTablesFlag(int flag2set)
     {
-        open();
+        //open();
         try
         {
 
@@ -32841,16 +32855,16 @@ close();
         {
             Log.e(TAG, ex.toString());
         }
-        close();
+      //  close();
 
     }
 
 
 
 
-    public int fnGetCollectionOutSstat(String StoreID)
+    public static int fnGetCollectionOutSstat(String StoreID)
     {
-        open();
+        //open();
         Cursor cursorE2 = db.rawQuery("SELECT Sstat FROM  tblAllCollectionData where StoreID='"+StoreID+"'", null);
         int StoreCurrentOutsStat = 0;
 
@@ -32871,7 +32885,7 @@ close();
             if(cursorE2!=null) {
                 cursorE2.close();
             }
-            close();
+          //  close();
         }
 
     }
@@ -32879,9 +32893,9 @@ close();
 
 
 
-    public String fnGetStoreCollectionCode(String StoreID)
+    public static String fnGetStoreCollectionCode(String StoreID)
     {
-        open();
+        //open();
         String StoreCollectionCode="NA";
         Cursor cursor=db.rawQuery("Select CollectionCode from tblAllCollectionData Where StoreID='"+StoreID+"' AND Sstat=1",null);
 
@@ -32895,15 +32909,15 @@ close();
         if(cursor!=null) {
             cursor.close();
         }
-        close();
+        //close();
         return StoreCollectionCode;
     }
 
 
 
-    public int checkflgVisitCollectionMarkedStatus(String  StoreID,String StoreVisitCode)
+    public static int checkflgVisitCollectionMarkedStatus(String  StoreID,String StoreVisitCode)
     {
-        open();
+        //open();
         int check=0;
         Cursor cursor = db.rawQuery("SELECT flgVisitCollectionMarkedStatus FROM tblStoreVisitMstr WHERE  StoreID ='"+ StoreID + "' and StoreVisitCode='"+StoreVisitCode+"'", null);
 
@@ -32925,24 +32939,24 @@ close();
 
         } finally {
             cursor.close();
-            close();
+           // close();
         }
 
     }
-    public void fnUpdateflgVisitCollectionMarkedStatus(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA,int flgVisitCollectionMarkedStatus)
+    public static void fnUpdateflgVisitCollectionMarkedStatus(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA,int flgVisitCollectionMarkedStatus)
     {
         // Cursor cursor = db.rawQuery("SELECT flgVisitCollectionMarkedStatus FROM tblStoreVisitMstr WHERE  StoreID ='"+ StoreID + "' and StoreVisitCode='"+StoreVisitCode+"'", null);
-        open();
+        //open();
         final ContentValues values = new ContentValues();
         values.put("flgVisitCollectionMarkedStatus", flgVisitCollectionMarkedStatus);
         int affected1 = db.update("tblStoreVisitMstr", values,"StoreID=? AND StoreVisitCode=?", new String[] { storeID,StoreVisitCode });
-        close();
+       // close();
     }
 
 
-    public String getDefaultCity()
+    public static String getDefaultCity()
     {
-        open();
+        //open();
         String defaultCity="";
         Cursor cur=null;
         try {
@@ -32964,13 +32978,13 @@ close();
             {
                 cur.close();
             }
-            close();
+          //  close();
             return defaultCity;
         }
     }
-    public LinkedHashMap<String,String> getCityAgainstState()
+    public static LinkedHashMap<String,String> getCityAgainstState()
     {
-        open();
+        //open();
         LinkedHashMap<String,String> hmapCityAgainstState=new LinkedHashMap<String,String>();
         Cursor cur=null;
         try {
@@ -32996,16 +33010,16 @@ close();
             {
                 cur.close();
             }
-            close();
+            //close();
             return hmapCityAgainstState;
 
         }
     }
 
-    public LinkedHashMap<String, String> fngetCityList()
+    public static LinkedHashMap<String, String> fngetCityList()
     {
 
-        open();
+        //open();
         Cursor cur=null;
         LinkedHashMap<String, String> hmapCityList=new LinkedHashMap<String, String>();
         try {
@@ -33032,15 +33046,15 @@ close();
             {
                 cur.close();
             }
-            close();
+           // close();
             return hmapCityList;
         }
     }
 
-    public LinkedHashMap<String, String> fngetDistinctState()
+    public static LinkedHashMap<String, String> fngetDistinctState()
     {
 
-        open();
+        //open();
         Cursor cur=null;
         LinkedHashMap<String, String> hmapDistinctStates=new LinkedHashMap<String, String>();
         try {
@@ -33067,13 +33081,13 @@ close();
             {
                 cur.close();
             }
-            close();
+          //  close();
             return hmapDistinctStates;
         }
     }
-    public void updateAllDefaultCity(String cityId)
+    public static void updateAllDefaultCity(String cityId)
     {
-        open();
+        //open();
         try {
 
 
@@ -33086,17 +33100,17 @@ close();
 
         }finally
         {
-            close();
+           // close();
         }
 
     }
-    public void deletetblStateCityMaster()
+    public static void deletetblStateCityMaster()
     {
 
         db.execSQL("DELETE FROM tblStateCityMaster");
 
     }
-    public void fnsavetblStateCityMaster(String StateID, String State, String CityID, String City,int cityDefault)
+    public static void fnsavetblStateCityMaster(String StateID, String State, String CityID, String City,int cityDefault)
     {
 
         ContentValues values=new ContentValues();
@@ -33110,9 +33124,9 @@ close();
 
     }
 
-    public LinkedHashMap<Integer, String> fetch_Reason_List_for_option()
+    public static LinkedHashMap<Integer, String> fetch_Reason_List_for_option()
     {
-        open();
+        //open();
         LinkedHashMap<Integer, String> hmapCatgry = new LinkedHashMap<Integer, String>();
         Cursor cursor = db.rawQuery("SELECT ReasonId,ReasonDescr FROM tblNoVisitReasonMaster where flgDSRApplicable='"+1+"' and flgNoVisitOption='"+0+"' order by SeqNo asc",null);
         try
@@ -33139,12 +33153,12 @@ close();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
-    public LinkedHashMap<Integer, String> fetch_NoWorking_Reason_List()
+    public static LinkedHashMap<Integer, String> fetch_NoWorking_Reason_List()
     {
-        open();
+        //open();
         LinkedHashMap<Integer, String> hmapCatgry = new LinkedHashMap<Integer, String>();
         Cursor cursor = db.rawQuery("SELECT ReasonId,ReasonDescr FROM tblNoVisitReasonMaster where flgDSRApplicable='"+1+"' and flgNoVisitOption="+1,null);
         try
@@ -33172,16 +33186,16 @@ close();
         finally
         {
             cursor.close();
-            close();
+            //close();
         }
     }
 
-    public void fnSettblAttandanceDetails() {
+    public static void fnSettblAttandanceDetails() {
 
         try
         {
 
-            open();
+            //open();
             db.execSQL("UPDATE tblAttandanceDetails SET Sstat= 4" );
         }
         catch (Exception ex)
@@ -33189,12 +33203,12 @@ close();
             Log.e(TAG, ex.toString());
         }
         finally {
-            close();
+            //close();
         }
 
     }
 
-    public long savetblAttandanceDetails(String AttandanceTime,String PersonNodeID,String  PersonNodeType ,String PersonName ,
+    public static long savetblAttandanceDetails(String AttandanceTime,String PersonNodeID,String  PersonNodeType ,String PersonName ,
                                          String OptionID,String OptionDesc ,String ReasonID,String ReasonDesc,
                                          String Address,
                                          String PinCode,String City,String State,String fnLati,
@@ -33282,10 +33296,10 @@ close();
 
         return db.insert(TABLE_tblAttandanceDetails, null, initialValues);
     }
-    public void updatetblAttandanceDetails(String OptionID,String OptionDesc,String ReasonID,String ReasonDesc,
+    public static void updatetblAttandanceDetails(String OptionID,String OptionDesc,String ReasonID,String ReasonDesc,
                                            String Comment,String DistributorId,String DistributorNodeType,String DistributorName )
     {
-        open();
+        //open();
         try {
 
 
@@ -33306,11 +33320,11 @@ close();
 
         }finally
         {
-            close();
+            //close();
         }
 
     }
-    public String fnGetPersonNodeIDAndPersonNodeType()
+    public static String fnGetPersonNodeIDAndPersonNodeType()
     {
         String SONodeIdAndNodeType="0^0";
 
@@ -33327,7 +33341,7 @@ close();
 
         return SONodeIdAndNodeType;
     }
-    public int FetchflgPersonTodaysAtt()
+    public static int FetchflgPersonTodaysAtt()
     {
         int CatId=0;
 
@@ -33353,16 +33367,16 @@ close();
 
     }
 
-    public void deleteActualVisitData(String storeID) {
-        open();
+    public static void deleteActualVisitData(String storeID) {
+        //open();
         db.execSQL("DELETE FROM tblActualVisitStock where storeID='"+storeID+"'");
-        close();
+       // close();
     }
 
-    public void saveTblActualVisitStock(String storeID,String ProductID,String Stock,int sStat)
+    public static void saveTblActualVisitStock(String storeID,String ProductID,String Stock,int sStat)
     {
 //(tblActualVisitStock (storeID text null,ProductID text null,Stock text null,Sstat integer null);";
-        open();
+        //open();
         ContentValues initialValues = new ContentValues();
         initialValues.put("storeID",storeID);
         initialValues.put("ProductID", ProductID.trim());
@@ -33371,10 +33385,10 @@ close();
 
 
         db.insert(DATABASE_TABLE_tblActualVisitStock, null, initialValues);
-        close();
+       // close();
     }
 
-    public LinkedHashMap<String,String> fetchActualVisitData(String storeID){
+    public static LinkedHashMap<String,String> fetchActualVisitData(String storeID){
 //tblActualVisitStock (ProductID text null,Stock text null);";
         LinkedHashMap<String,String> hmapData=new LinkedHashMap<>();
         Cursor cursor=null;
@@ -33401,7 +33415,7 @@ close();
     }
 
 
-    public LinkedHashMap<String,String> fetchProductDataForActualVisit(){
+    public static LinkedHashMap<String,String> fetchProductDataForActualVisit(){
         LinkedHashMap<String,String> hmapData=new LinkedHashMap<>();
         Cursor cursor=null;
 
@@ -33427,7 +33441,7 @@ close();
     }
 
 
-    public LinkedHashMap<String,String> fetchProductStockFromPurchaseTable(String storeID){
+    public static LinkedHashMap<String,String> fetchProductStockFromPurchaseTable(String storeID){
 //tblActualVisitStock (ProductID text null,Stock text null);";
         LinkedHashMap<String,String> hmapData=new LinkedHashMap<>();
         Cursor cursor=null;
@@ -33454,11 +33468,11 @@ close();
     }
 
 
-    public LinkedHashMap<String,String>   fetchProductListLastvisitAndOrderBasis(String StoreID){
+    public static LinkedHashMap<String,String>   fetchProductListLastvisitAndOrderBasis(String StoreID){
 //tblActualVisitStock (ProductID text null,Stock text null);";
         LinkedHashMap<String,String> hmapData=new LinkedHashMap<>();
         Cursor cursor=null;
-        open();
+        //open();
         try {
             cursor = db.rawQuery("SELECT  Distinct tblProductListLastVisitStockOrOrderMstr.PrdID,tblProductList.ProductShortName from tblProductListLastVisitStockOrOrderMstr inner join tblProductList on tblProductListLastVisitStockOrOrderMstr.PrdID=tblProductList.ProductID   where tblProductListLastVisitStockOrOrderMstr.StoreID='"+StoreID+"'", null);
             if(cursor.getCount()>0)
@@ -33481,12 +33495,12 @@ close();
                 cursor.close();
             }
 
-            close();
+            //close();
             return hmapData;
         }
     }
 
-    public void savetblProductListLastVisitStockOrOrderMstr(String StoreID,String PrdID)
+    public static void savetblProductListLastVisitStockOrOrderMstr(String StoreID,String PrdID)
     {
 //(tblActualVisitStock (storeID text null,ProductID text null,Stock text null,Sstat integer null);";
 
@@ -33500,13 +33514,13 @@ close();
 
     }
 
-    public void deletetblProductListLastVisitStockOrOrderMstr()
+    public static void deletetblProductListLastVisitStockOrOrderMstr()
     {
         db.execSQL("DELETE FROM tblProductListLastVisitStockOrOrderMstr");
 
     }
 
-    public long inserttblForPDAGetLastVisitDetails(String StoreID,String Date123,String Order123,String Stock,String SKUName,String ExecutionQty,String ProductID)
+    public static long inserttblForPDAGetLastVisitDetails(String StoreID,String Date123,String Order123,String Stock,String SKUName,String ExecutionQty,String ProductID)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -33521,10 +33535,10 @@ close();
         // // System.out.println("Tbl creation string for Sunil Data Print Data insert in  DATABASE_TABLE_MAIN143");
         return db.insert(DATABASE_TABLE_MAIN143, null, initialValues);
     }
-    public String fnGetLastStockDate(String ssStoreID)
+    public static String fnGetLastStockDate(String ssStoreID)
     {
         String lstStockDate="";
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT Date123 FROM tblForPDAGetLastVisitDetails where StoreID= '" + ssStoreID + "'", null);
         try
         {
@@ -33544,15 +33558,15 @@ close();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+           // close();
         }
 
     }
 
-    public HashMap<String,String> fnGetLastStockByDMS_Or_SFA(String ssStoreID)
+    public static HashMap<String,String> fnGetLastStockByDMS_Or_SFA(String ssStoreID)
     {
         HashMap<String, String> hmapProductIdLastStock=new HashMap<String, String>();
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT ProductID,Stock FROM tblForPDAGetLastVisitDetails where StoreID= '" + ssStoreID + "'", null);
         try
         {
@@ -33572,17 +33586,17 @@ close();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
 
     }
 
 
     // store list page methods
-    public int fnGetExistingOutletIDFromOutletMstr(String ODescr)
+    public static int fnGetExistingOutletIDFromOutletMstr(String ODescr)
     {
         int existOutID=0;
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT Count(StoreID)  from tblPreAddedStores where StoreName like '"+ODescr+"%'", null);
         // close();
         try {
@@ -33602,13 +33616,13 @@ close();
         finally
         {
             cursor.close();
-            close();
+           // close();
         }
     }
-    public LinkedHashMap<String, String> fnGeStoreListSM(int DistanceRange)
+    public static LinkedHashMap<String, String> fnGeStoreListSM(int DistanceRange)
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         try {
 
@@ -33645,16 +33659,16 @@ close();
         finally
         {
 
-            close();
+           // close();
             fnGeNewlyAddedStoreList(hmapQuestionMstr);
             return hmapQuestionMstr;
         }
     }
 
-    public int fncheckCountNearByStoreExistsOrNotSM(int DistanceRange)
+    public static int fncheckCountNearByStoreExistsOrNotSM(int DistanceRange)
     {
         int flgCheck=0;
-        open();
+        //open();
 
         try {
 
@@ -33678,7 +33692,7 @@ close();
         finally
         {
 
-            close();
+           // close();
             if(flgCheck==0)
             {
                 flgCheck=fncheckCountNewAddedNearByStoreExistsOrNot(flgCheck);
@@ -33686,7 +33700,7 @@ close();
             return flgCheck;
         }
     }
-    public void UpdateStoreDistanceNearSM(String OutletID, int DistanceNear)
+    public static void UpdateStoreDistanceNearSM(String OutletID, int DistanceNear)
     {
     try
     {
@@ -33705,7 +33719,7 @@ close();
     }
 
 }
-    public void delete_all_storeDetailTables()
+    public static void delete_all_storeDetailTables()
     {
         db.execSQL("DELETE FROM tblUserName");
         db.execSQL("DELETE FROM tblStoreCountDetails");
@@ -33713,7 +33727,7 @@ close();
         db.execSQL("DELETE FROM tblPreAddedStoresDataDetails");
         // db.execSQL("DELETE FROM tblLocationDetails");
     }
-    public long saveTblUserName(String UserName)
+    public static long saveTblUserName(String UserName)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -33722,7 +33736,7 @@ close();
 
         return db.insert(DATABASE_TABLE_tblUserName, null, initialValues);
     }
-    public long saveTblStoreCountDetails(String TotStoreAdded,String TodayStoreAdded)
+    public static long saveTblStoreCountDetails(String TotStoreAdded,String TodayStoreAdded)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -33732,7 +33746,7 @@ close();
 
         return db.insert(DATABASE_TABLE_tblStoreCountDetails, null, initialValues);
     }
-    public long saveTblPreAddedStores(String StoreID,String StoreName,String LatCode,String LongCode,String DateAdded,int flgOldNewStore,int flgReMap,int Sstat,int RouteID,int RouteNodeType)
+    public static long saveTblPreAddedStores(String StoreID,String StoreName,String LatCode,String LongCode,String DateAdded,int flgOldNewStore,int flgReMap,int Sstat,int RouteID,int RouteNodeType)
     {
         ContentValues initialValues = new ContentValues();
 
@@ -33751,7 +33765,7 @@ close();
 
         return db.insert(DATABASE_TABLE_tblPreAddedStores, null, initialValues);
     }
-    public long saveTblPreAddedStoresDataDetails(String StoreIDDB,String GrpQuestID,String QstId,String AnsControlTypeID,String AnsTextVal,String flgPrvVal)
+    public static long saveTblPreAddedStoresDataDetails(String StoreIDDB,String GrpQuestID,String QstId,String AnsControlTypeID,String AnsTextVal,String flgPrvVal)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -33767,10 +33781,10 @@ close();
 
         return db.insert(DATABASE_TABLE_tblPreAddedStoresDataDetails, null, initialValues);
     }
-    public LinkedHashMap<String, String> fnCompleteRouteList()
+    public static LinkedHashMap<String, String> fnCompleteRouteList()
     {
         LinkedHashMap<String, String> hmapRouteMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         try {
 
@@ -33800,16 +33814,16 @@ close();
         finally
         {
 
-            close();
+            //close();
 
             return hmapRouteMstr;
         }
     }
 
-    public String getUsername()
+    public static String getUsername()
     {String userName="0"+"^"+"0";
 
-        open();
+        //open();
         try {
             Cursor cur=db.rawQuery("Select UserName from tblUserName", null);
 
@@ -33831,15 +33845,15 @@ close();
             // TODO: handle exception
         } finally
         {
-            close();
+            //close();
             return userName;
         }
     }
 
-    public LinkedHashMap<String, String> fnGeStoreListAgainstRoute(int RouteID)
+    public static LinkedHashMap<String, String> fnGeStoreListAgainstRoute(int RouteID)
     {
         LinkedHashMap<String, String> hmapQuestionMstr=new LinkedHashMap<String, String>();
-        open();
+        //open();
 
         try {
 
@@ -33873,15 +33887,15 @@ close();
         finally
         {
 
-            close();
+           // close();
             fnGeNewlyAddedStoreList(hmapQuestionMstr);
             return hmapQuestionMstr;
         }
     }
-    public LinkedHashMap<String,String> fnGetHampGetLastProductExecution(String StoreID)
+    public static LinkedHashMap<String,String> fnGetHampGetLastProductExecution(String StoreID)
     {
         LinkedHashMap<String,String> hampGetLastProductExecution=new LinkedHashMap<String,String>();
-        open();
+        //open();
         Cursor cursor = db.rawQuery("SELECT tblProductList.ProductID,ifnull(tblForPDAGetLastVisitDetails.ExecutionQty,0) FROM tblProductList left outer join tblForPDAGetLastVisitDetails  WHERE tblForPDAGetLastVisitDetails.StoreID ='"+ StoreID + "'", null);
 
         try {
@@ -33902,13 +33916,13 @@ close();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
 
     }
 
 
-    public ArrayList<HashMap<String,String>> getDayStartDistributorOtherData()
+    public static ArrayList<HashMap<String,String>> getDayStartDistributorOtherData()
     {
         ArrayList<HashMap<String,String>> arrDiatributorOtherDetails=new ArrayList<HashMap<String,String>>();
         HashMap<String,String> hmapCurrentDistributorNodeIdType=new HashMap<String,String>();
@@ -33916,7 +33930,7 @@ close();
         HashMap<String,String> hmapDistLatLocation=new HashMap<String,String>();
         HashMap<String,String> hmapDistLongLocation=new HashMap<String,String>();
         Cursor cursor2=null;
-        open();
+        //open();
         try {
             cursor2 = db.rawQuery("SELECT *  FROM tblDistributorListMaster Where flgDefault=1", null);
             String strStoreTypeNamesDetais[] =null;// new String[cursor2.getCount()];
@@ -33951,10 +33965,10 @@ close();
             if(cursor2!=null) {
                 cursor2.close();
             }
-            close();
+           // close();
         }
     }
-    public void UpdateStoreReturnphotoFlagSM(String StoreID, String StoreName,int flgReMap)
+    public static void UpdateStoreReturnphotoFlagSM(String StoreID, String StoreName,int flgReMap)
     {
         try
         {
@@ -33971,9 +33985,9 @@ close();
 
         }
     }
-    public Double  fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(String StoreID)
+    public static Double  fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(String StoreID)
     {
-        open();
+        //open();
         Double TotCollectionAmt=0.0;
         try {
 
@@ -33993,16 +34007,16 @@ close();
             {
                 cursor.close();;
             }
-            close();
+            //close();
             // return flag;
         }
         return TotCollectionAmt;
     }
 
 
-    public Double  fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(String StoreID)
+    public static Double  fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(String StoreID)
     {
-        open();
+        //open();
         Double TotCollectionAmt=0.0;
         try {
 
@@ -34022,7 +34036,7 @@ close();
             {
                 cursor.close();;
             }
-            close();
+            //close();
             // return flag;
         }
         return TotCollectionAmt;
@@ -34031,10 +34045,10 @@ close();
 
 
 
-    public Double fetch_Store_AllOustandings(String StoreID)
+    public static Double fetch_Store_AllOustandings(String StoreID)
     {
 //tv_GrossInvVal
-        open();
+        //open();
         Double TotCollectionAmt=0.0;
 
         Cursor cursor = db.rawQuery("SELECT ifnull(SUM(tblInvoiceLastVisitDetails.OutstandingAmt),'0.0') from tblInvoiceLastVisitDetails WHERE tblInvoiceLastVisitDetails.StoreID='"+StoreID+"'", null); //order by AutoIdOutlet Desc
@@ -34060,14 +34074,14 @@ close();
             if(cursor!=null) {
                 cursor.close();
             }
-            close();
+            //close();
         }
     }
 
 
-    public void insertStoreCheckInPic(String storeId,LinkedHashMap<String,String> hmapPicData)
+    public static void insertStoreCheckInPic(String storeId,LinkedHashMap<String,String> hmapPicData)
     {
-        open();
+        //open();
         db.beginTransaction();
 
         ContentValues value=new ContentValues();
@@ -34084,12 +34098,12 @@ close();
 
         db.setTransactionSuccessful();
         db.endTransaction();
-        close();
+        //close();
     }
 
-    public void validateStoreCheckIn(String StoreID,String imgName)
+    public static void validateStoreCheckIn(String StoreID,String imgName)
     {
-        open();
+        //open();
         try
         {
             Cursor cur=db.rawQuery("Select imageName from tblStoreCheckInPic where StoreID='"+StoreID+"' and imageName='"+imgName+"'",null);
@@ -34105,13 +34119,13 @@ close();
             System.out.println("validate pic..."+ex);
         }
         finally {
-            close();
+           // close();
         }
     }
 
-    public ArrayList<String> getImageNameForStoreCheckIn(String StoreID)
+    public static ArrayList<String> getImageNameForStoreCheckIn(String StoreID)
     {
-        open();
+        //open();
         ArrayList<String> list=new ArrayList<>();
         try
         {
@@ -34135,16 +34149,16 @@ close();
         }
         finally
         {
-            close();
+           // close();
             return list;
         }
 
     }
 
-    public Double fnGetStoreVisitSelfCreditNote(String StoreID,String StoreVisitCode) {
+    public static Double fnGetStoreVisitSelfCreditNote(String StoreID,String StoreVisitCode) {
 
         Double valSelfCreditNote=0.0;
-        open();
+        //open();
         Cursor cursor2 = db.rawQuery("SELECT ifnull(SelfCreditNote,0.0) FROM tblStoreVisitMstr Where StoreID='"+StoreID+"' AND StoreVisitCode='"+StoreVisitCode+"'", null);
         try {
             if(cursor2.getCount()>0) {
@@ -34161,20 +34175,217 @@ close();
             if(cursor2!=null) {
                 cursor2.close();
             }
-            close();
+            //close();
         }
         return valSelfCreditNote;
     }
 
-    public void UpdateStoreVisitSelfCreditNote(String StoreID,String StoreVisitCode,Double SelfCreditNote)
+    public static void UpdateStoreVisitSelfCreditNote(String StoreID,String StoreVisitCode,Double SelfCreditNote)
     {
-        open();
+        //open();
         final ContentValues values = new ContentValues();
         values.put("SelfCreditNote", SelfCreditNote);
         int affected = db.update("tblStoreVisitMstr", values, "StoreID=? AND StoreVisitCode=?",new String[] {StoreID,StoreVisitCode });
-        close();
+        //close();
+    }
+    public long  saveWarehouseMstrData(int NodeID, int NodeType, String Descr,String latCode,
+                                       String LongCode, int flgMapped,String Address,String State,String City,String PinCode,String PhoneNo,String TaxNumber)
+    {
+        ContentValues initialValues = new ContentValues();
+
+        initialValues.put("NodeID", NodeID);
+        initialValues.put("NodeType", NodeType);
+        initialValues.put("Descr", Descr.trim());
+        initialValues.put("latCode", latCode.trim());
+        initialValues.put("LongCode", LongCode.trim());
+        initialValues.put("flgMapped", flgMapped);   //0=Not To be mapped Again,1=Can Map Distributor
+        initialValues.put("Address", Address.trim());
+        initialValues.put("State", State.trim());
+        initialValues.put("City", City.trim());
+        initialValues.put("PinCode", PinCode.trim());
+        initialValues.put("PhoneNo", PhoneNo.trim());
+        initialValues.put("TaxNumber", TaxNumber.trim());
+
+        return db.insert(TABLE_tblWarehouseMstr, null, initialValues);
+    }
+    public static void Delete_tblWarehouseMstr()
+    {
+        db.execSQL("DELETE FROM tblWarehouseMstr");
     }
 
+
+    public ArrayList<LinkedHashMap<String,ArrayList<String>>> fnFetch_InvoiceReportForPrint(String VisitCode,String StoreID,int WarehouseNodeID,int WarehouseNodeType)
+    {
+
+        ArrayList<LinkedHashMap<String,ArrayList<String>>> arrResult=new ArrayList<LinkedHashMap<String,ArrayList<String>>>();
+
+        //--------------Ware House Details Starts Here--------------------------------
+        LinkedHashMap<String,ArrayList<String>>hmapWareHouseDetails=new LinkedHashMap<String,ArrayList<String>>();
+        ArrayList<String> arrWareHouseDetails=new ArrayList<String>();
+        arrWareHouseDetails=fnGetWarehouseDataForPrint(VisitCode,StoreID,WarehouseNodeID,WarehouseNodeType);
+        hmapWareHouseDetails.put("WarehouseDetails",arrWareHouseDetails);
+
+        //--------------Ware House Details Ends Here--------------------------------
+        arrResult.add(hmapWareHouseDetails);
+        return arrResult;
+    }
+
+    public static ArrayList<String> fnGetWarehouseDataForPrint(String VisitCode,String StoreID,int WarehouseNodeID,int WarehouseNodeType)
+    {
+        ArrayList<String> arrWareHouseDetails=new ArrayList<String>();
+        try {
+            Cursor cursor2 = db.rawQuery("SELECT Descr,ifnull(State,'') AS State,ifnull(Address,'NA') AS Address,ifnull(City,'') AS City,ifnull(PinCode,'') AS PinCode,ifnull(PhoneNo,'') AS PhoneNo,ifnull(TaxNumber,'NA') AS TaxNumber FROM tblWarehouseMstr Where NodeID="+WarehouseNodeID+" and NodeType="+WarehouseNodeType, null);
+
+            if(cursor2.getCount()>0)
+            {
+                if (cursor2.moveToFirst())
+                {
+                    arrWareHouseDetails.add(cursor2.getString(0));
+                    arrWareHouseDetails.add(cursor2.getString(1));
+                    arrWareHouseDetails.add(cursor2.getString(2));
+                    arrWareHouseDetails.add(cursor2.getString(3));
+                    arrWareHouseDetails.add(cursor2.getString(4));
+                    arrWareHouseDetails.add(cursor2.getString(5));
+                    arrWareHouseDetails.add(cursor2.getString(6));
+                    int IsCompositeStatus=fnGetStoreIsCompositeStatus(StoreID);
+                    arrWareHouseDetails.add(""+IsCompositeStatus);
+                }
+            }
+            return arrWareHouseDetails;
+        } finally {
+
+        }
+    }
+    public static int fnGetStoreIsCompositeStatus(String StoreID)
+    {
+        int IsCompositeStatus=0;
+        try {
+            Cursor cursor2 = db.rawQuery("SELECT ifnull(IsComposite,0) AS IsComposite FROM tblStoreList Where StoreID='"+StoreID+"'", null);
+
+            if(cursor2.getCount()>0)
+            {
+                if (cursor2.moveToFirst())
+                {
+                    IsCompositeStatus=Integer.parseInt(cursor2.getString(0));
+                }
+            }
+            return IsCompositeStatus;
+        } finally {
+
+        }
+    }
+    public static long  savetblDeliveryNoteNumber(int LastDeliveryNoteNumber)
+    {
+        ContentValues initialValues = new ContentValues();
+        initialValues.put("LastDeliveryNoteNumber", LastDeliveryNoteNumber);
+        return db.insert(TABLE_tblDeliveryNoteNumber, null, initialValues);
+    }
+
+    public static void fnupdatetblDeliveryNoteNumber()
+    {
+        int valExistingDeliveryNoteNumber=0;
+        valExistingDeliveryNoteNumber=fnGettblDeliveryNoteNumber();
+        db.execSQL("UPDATE tblDeliveryNoteNumber SET LastDeliveryNoteNumber="+(valExistingDeliveryNoteNumber+1)+"");
+    }
+
+
+    public static void Delete_tblDeliveryNoteNumber()
+    {
+        db.execSQL("DELETE FROM tblDeliveryNoteNumber");
+    }
+    public static int fnGettblDeliveryNoteNumber()
+    {
+        int valExistingDeliveryNoteNumber=0;
+        Cursor cursor2=null;
+        try {
+            cursor2 = db.rawQuery("SELECT LastDeliveryNoteNumber FROM tblDeliveryNoteNumber", null);
+
+            if(cursor2.getCount()>0)
+            {
+                if (cursor2.moveToFirst())
+                {
+                    valExistingDeliveryNoteNumber=Integer.parseInt(cursor2.getString(0));
+                }
+            }
+            return valExistingDeliveryNoteNumber;
+        } finally {
+            if(cursor2!=null)
+            {
+                cursor2.close();
+            }
+        }
+    }
+
+
+    public static ArrayList<HashMap<String,ArrayList<String>>> fnGetStoreDetailsDataForPrint(String StoreVisitCode,String StoreID)
+    {
+        HashMap<String,ArrayList<String>> hmapStoreBasicDetails=new HashMap<String,ArrayList<String>>();
+        HashMap<String,ArrayList<String>> hmapStoreCompleteDetails=new HashMap<String,ArrayList<String>>();
+        ArrayList<String> arrStoreDetails=new ArrayList<String>();
+        ArrayList<HashMap<String,ArrayList<String>>> arrStoreRecodesToPrint=new ArrayList<HashMap<String,ArrayList<String>>>();
+        HashMap<String,ArrayList<String>> hmapPurchasedProductListAgainstInvoice=new HashMap<String,ArrayList<String>>();
+        Cursor cursor2=null;
+        try {
+            cursor2 = db.rawQuery("SELECT StoreName,ifnull(StoreAddress,'') AS StoreAddress,ifnull(StoreState,'') AS StoreState,ifnull(StoreCity,'') AS StoreCity,ifnull(StorePinCode,'') AS StorePinCode,ifnull(StoreContactNo,'') AS StoreContactNo,ifnull(GSTNumber,'NA') AS GSTNumber FROM tblStoreList Where StoreID='"+StoreID+"'", null);
+            if(cursor2.getCount()>0)
+            {
+                if (cursor2.moveToFirst())
+                {
+                    arrStoreDetails.add(cursor2.getString(0));
+                    arrStoreDetails.add(cursor2.getString(1));
+                    arrStoreDetails.add(cursor2.getString(2));
+                    arrStoreDetails.add(cursor2.getString(3));
+                    arrStoreDetails.add(cursor2.getString(4));
+                    arrStoreDetails.add(cursor2.getString(5));
+                    arrStoreDetails.add(cursor2.getString(6));
+                }
+            }
+            hmapStoreBasicDetails.put("StoreDetails",arrStoreDetails);
+            arrStoreRecodesToPrint.add(hmapStoreBasicDetails);
+            hmapPurchasedProductListAgainstInvoice=fnGetInvoiceListForPrint(StoreVisitCode,StoreID);
+            arrStoreRecodesToPrint.add(hmapPurchasedProductListAgainstInvoice);
+            return arrStoreRecodesToPrint;
+        } finally {
+            if(cursor2!=null)
+            {
+                cursor2.close();
+            }
+        }
+    }
+    public static HashMap<String,ArrayList<String>> fnGetInvoiceListForPrint(String StoreVisitCode,String StoreID)
+    {
+        HashMap<String,ArrayList<String>> hmapInvoiceRecodsToPrint=new HashMap<String,ArrayList<String>>();
+        ArrayList<String> arrProductInvoiceDetailsForPrint=new ArrayList<String>();
+        Cursor cursor21=null;
+        try {
+            cursor21 = db.rawQuery("SELECT ProdID,0 AS HSNCode,ifnull(ProductShortName,'NA') AS ProductShortName,ifnull(ProductPrice,'0') AS ProductPrice,ifnull(TaxRate,'0') AS TaxRate,ifnull(OrderQty,'0') AS OrderQty,ifnull(LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails Where StoreID='"+StoreID+"' AND StoreVisitCode='"+StoreVisitCode+"' AND OrderQty>0", null);
+            if(cursor21.getCount()>0)
+            {
+                if (cursor21.moveToFirst())
+                {
+
+                    for(int i=0;i<cursor21.getCount();i++)
+                    {
+                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(1));
+                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(2));
+                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(3));
+                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(4));
+                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(5));
+                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(6));
+                        hmapInvoiceRecodsToPrint.put(cursor21.getString(0).toString().trim(),arrProductInvoiceDetailsForPrint);
+                        cursor21.moveToNext();
+                    }
+                }
+            }
+
+            return hmapInvoiceRecodsToPrint;
+        } finally {
+            if(cursor21!=null)
+            {
+                cursor21.close();
+            }
+        }
+    }
 }
 
 

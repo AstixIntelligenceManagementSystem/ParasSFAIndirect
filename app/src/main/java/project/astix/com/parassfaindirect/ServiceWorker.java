@@ -73,7 +73,7 @@ public class ServiceWorker
 		
         PRJDatabase dbengine = new PRJDatabase(context);
 
-		dbengine.open();
+		//dbengine.open();
 
 		HashMap<String, String> hmapStoreIdSstat=new HashMap<String, String>();
 		HashMap<String, String> hmapStoreIdVisitStatus=new HashMap<String, String>();
@@ -160,7 +160,7 @@ public class ServiceWorker
 	            Document doc = db.parse(is);
 			System.out.println("shivam4");
 	          
-	        //   dbengine.open();
+	        //   //dbengine.open();
 			/*dbengine.Delete_tblInvoiceCaption();
 			dbengine.savetblInvoiceCaption("vanInv",11);*/
 				//throw new RuntimeException();
@@ -212,6 +212,8 @@ public class ServiceWorker
 					String StoreIDPDAFromServer="NA";
 					String SalesPersonName="NA";
 					String SalesPersonContactNo="NA";
+					int IsComposite=0;
+
 					//not used
 					//int IsNextDat=0;
 					//int flgSubmitFromQuotation=0;
@@ -643,7 +645,17 @@ public class ServiceWorker
 					{
 						GSTNumber="0";
 					}
+					if(!element.getElementsByTagName("IsComposite").equals(null))
+					{
+						NodeList IsCompositeNode = element.getElementsByTagName("IsComposite");
+						Element     line = (Element) IsCompositeNode.item(0);
 
+						if(IsCompositeNode.getLength()>0)
+						{
+
+							IsComposite=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						}
+					}
 
 					//flgSubmitFromQuotation
 					//flgAllowQuotation
@@ -657,7 +669,7 @@ public class ServiceWorker
 							StoreLatitude,StoreLongitude,LastVisitDate,LastTransactionDate, Sstat,StoreRouteID,
 							RouteNodeType, StoreCatNodeId,PaymentStage , flgHasQuote , flgAllowQuotation, flgGSTCapture,
 							flgGSTCompliance, GSTNumber , flgGSTRecordFromServer , StoreCity , StorePinCode , StoreState,
-							OutStanding , OverDue , DBR , flgRuleTaxVal,flgTransType,StoreType,IsClose,SalesPersonName,SalesPersonContactNo);
+							OutStanding , OverDue , DBR , flgRuleTaxVal,flgTransType,StoreType,IsClose,SalesPersonName,SalesPersonContactNo,IsComposite);
 					}
 				}
 
@@ -863,8 +875,28 @@ public class ServiceWorker
 					
 					dbengine.insertMinDelQty(prdId, StoreID, QPBT, QPTaxAmt, MinDlvryQty, UOMID,QPAT); 	
 	            }
-	            
-	            
+
+			NodeList tblDeliveryNoteNumber = doc.getElementsByTagName("tblDeliveryNoteNumber");
+			for (int i = 0; i < tblDeliveryNoteNumber.getLength(); i++)
+			{
+				int LastDeliveryNoteNumber=0;
+				Element element = (Element) tblDeliveryNoteNumber.item(i);
+				if(!element.getElementsByTagName("LastDeliveryNoteNumber").equals(null))
+				{
+					NodeList LastDeliveryNoteNumberNode = element.getElementsByTagName("LastDeliveryNoteNumber");
+					Element     line = (Element) LastDeliveryNoteNumberNode.item(0);
+					if(LastDeliveryNoteNumberNode.getLength()>0)
+					{
+						LastDeliveryNoteNumber=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+				int valExistingDeliveryNoteNumber=0;
+				valExistingDeliveryNoteNumber=dbengine.fnGettblDeliveryNoteNumber();
+				if(valExistingDeliveryNoteNumber<LastDeliveryNoteNumber) {
+					dbengine.Delete_tblDeliveryNoteNumber();
+					dbengine.savetblDeliveryNoteNumber(LastDeliveryNoteNumber);
+				}
+			}
 	            setmovie.director = "1";
 				// System.out.println("ServiceWorkerNitish getallStores Completed ");
 				flagExecutedServiceSuccesfully=1;
@@ -881,7 +913,7 @@ public class ServiceWorker
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -944,7 +976,7 @@ public class ServiceWorker
 		
 		this.context = ctx;
 		PRJDatabase dbengine = new PRJDatabase(context);
-		 dbengine.open();
+		 //dbengine.open();
 		
 		decimalFormat.applyPattern(pattern);
 		
@@ -1393,7 +1425,7 @@ public class ServiceWorker
 
 
 			setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
@@ -1402,7 +1434,7 @@ public class ServiceWorker
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -1421,10 +1453,10 @@ PRJDatabase dbengine = new PRJDatabase(context);
 String RouteType="0";
 		try
 		{
-		dbengine.open();
+		//dbengine.open();
 		String RouteID=dbengine.GetActiveRouteID();
 	 RouteType=dbengine.FetchRouteType(rID);
-		dbengine.close();
+		//dbengine.close();;
 		System.out.println("hi"+RouteType);
 		}
 		catch(Exception e)
@@ -1432,7 +1464,7 @@ String RouteType="0";
 			System.out.println("error"+e);
 		}
 		
-		dbengine.open();
+		//dbengine.open();
 		dbengine.deleteAllQuotationTables();
 		
 		final String SOAP_ACTION = "http://tempuri.org/fnGetRouteQuoteData";
@@ -1507,7 +1539,7 @@ String RouteType="0";
 	            Document doc = db.parse(is);
 			System.out.println("shivam4");
 	          
-	        //   dbengine.open();
+	        //   //dbengine.open();
 	            
 	            NodeList tblUOMMstrNode = doc.getElementsByTagName("tblUOMMstr");
 	            for (int i = 0; i < tblUOMMstrNode.getLength(); i++)
@@ -2525,7 +2557,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();		
+			//dbengine.close();;		
 			return setmovie;
 		}
 
@@ -2537,7 +2569,7 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		PRJDatabase dbengine = new PRJDatabase(context);
-		 dbengine.open();
+		 //dbengine.open();
 		decimalFormat.applyPattern(pattern);
 		
 		int chkTblStoreListContainsRow=1;
@@ -2706,7 +2738,7 @@ String RouteType="0";
 		
 
             setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
           
             flagExecutedServiceSuccesfully=4;
 			return setmovie;
@@ -2718,7 +2750,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -2728,7 +2760,7 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		PRJDatabase dbengine = new PRJDatabase(context);
-		 dbengine.open();
+		 //dbengine.open();
 		decimalFormat.applyPattern(pattern);
 		
 		int chkTblStoreListContainsRow=1;
@@ -3209,7 +3241,7 @@ String RouteType="0";
 		
 
             setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
             // System.out.println("ServiceWorkerNitish getAllNewSchemeStructure Inside");
             flagExecutedServiceSuccesfully=4;
 			return setmovie;
@@ -3221,7 +3253,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -3232,7 +3264,7 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();	
+		//dbengine.open();	
 		
 		decimalFormat.applyPattern(pattern);
 		final String SOAP_ACTION = "http://tempuri.org/GetIMEIVersionDetailStatus";
@@ -3340,7 +3372,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -3352,7 +3384,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -3443,7 +3475,7 @@ String RouteType="0";
 
 
 
-			dbengine.open();
+			//dbengine.open();
 
 			dbengine.Delete_tblRouteMasterAndDistributorMstr();
 
@@ -3660,7 +3692,7 @@ String RouteType="0";
 				dbengine.savetblIsDBRStockSubmitted(IsDBRStockSubmitted);
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 			return setmovie;
 
@@ -3683,7 +3715,7 @@ String RouteType="0";
 			}
 
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -3727,7 +3759,7 @@ String RouteType="0";
 		ServiceWorker setmovie = new ServiceWorker();
 		try {
 			
-			dbengine.open();	
+			//dbengine.open();	
 			
 			client = new SoapObject(NAMESPACE, METHOD_NAME);
 			
@@ -3831,7 +3863,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		
+			//dbengine.close();;		
 			
 			setmovie.director = "1";
 			
@@ -3843,7 +3875,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -3908,7 +3940,7 @@ String RouteType="0";
 	           
 	            
 	           dbengine.deleteAllSingleCallWebServiceTable();
-	           dbengine.open();
+	           //dbengine.open();
 	          int  gblQuestIDForOutChannel=0;
 
 			NodeList tblGetPDARsnRtrnMstr = doc.getElementsByTagName("tblGetReturnsReasonForPDAMstr");
@@ -4742,12 +4774,12 @@ String RouteType="0";
 	         	            }
 	            
             setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) 
 		{
-			 dbengine.close();
+			 //dbengine.close();;
 			setmovie.exceptionCode=e.getCause().getMessage();
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
@@ -4779,7 +4811,7 @@ String RouteType="0";
 
 		//DBHelper dbengine=new DBHelper(ctx);
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		//SoapObject param
 		HttpTransportSE transport = null; // That call webservice
 		SoapSerializationEnvelope sse = null;
@@ -4936,14 +4968,14 @@ String RouteType="0";
 				dbengine.savetblDistributorDayReportColumnsDesc(DistDayReportCoumnName, DistDayReportColumnDisplayName,CustomerNodeID,CustomerNodeType);
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
 
 		} catch (Exception e)
 		{
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.exceptionCode=e.getCause().getMessage();
 			System.out.println("Aman Exception occur in fnDistributor :"+e.toString());
 			setmovie.director = e.toString();
@@ -5014,7 +5046,7 @@ String RouteType="0";
 	            
 	          //  <tblSPGetDistributorDetails> <NodeID>1</NodeID> <Descr>SUDARSAN TRADERS</Descr> <Code>101338</Code> <PNodeID>8</PNodeID> </tblSPGetDistributorDetails>
 	           dbengine.deleteAllSingleCallWebServiceTable();
-	           dbengine.open();
+	           //dbengine.open();
 	            
 	            NodeList tblSPGetDistributorDetailsNode = doc.getElementsByTagName("tblGetPDAQuestMstr");
 	            for (int i = 0; i < tblSPGetDistributorDetailsNode.getLength(); i++)
@@ -5455,7 +5487,7 @@ String RouteType="0";
 
 		} catch (Exception e) 
 		{
-			 dbengine.close();
+			 //dbengine.close();;
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -5477,10 +5509,10 @@ String RouteType="0";
 		
 		try
 		{
-		dbengine.open();
+		//dbengine.open();
 		String RouteID=dbengine.GetActiveRouteID();
 		RouteType=dbengine.FetchRouteType(rID);
-		dbengine.close();
+		//dbengine.close();;
 		System.out.println("hi"+RouteType);
 		}
 		catch(Exception e)
@@ -5489,7 +5521,7 @@ String RouteType="0";
 		}
 		
 		
-		dbengine.open();
+		//dbengine.open();
 		
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetStoreListWithPaymentAddressMR";
@@ -5689,7 +5721,7 @@ String RouteType="0";
 				}	
 			}
 			
-			dbengine.close();		
+			//dbengine.close();;		
 			
 			
 			setmovie.director = "1";
@@ -5705,7 +5737,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();		
+			//dbengine.close();;		
 			return setmovie;
 		}
 
@@ -5719,7 +5751,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		final String SOAP_ACTION = "http://tempuri.org/GetProductListMRNew";//GetProductListMRNewProductFilterTest";
 		final String METHOD_NAME = "GetProductListMRNew";//GetProductListMRNewProductFilterTest
@@ -6136,7 +6168,7 @@ String RouteType="0";
 			
 			
 			
-			dbengine.close();		
+			//dbengine.close();;		
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=2;
@@ -6149,7 +6181,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -6161,7 +6193,7 @@ String RouteType="0";
 		this.context = ctx;
 
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		final String SOAP_ACTION = "http://tempuri.org/GetProductListMRNew";//GetProductListMRNewProductFilterTest";
 		final String METHOD_NAME = "GetProductListMRNew";//GetProductListMRNewProductFilterTest
@@ -6485,7 +6517,7 @@ String RouteType="0";
 					{
 
 						ProductRLP=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-						ProductRLP=Double.parseDouble(decimalFormat.format(ProductMRP));
+						ProductRLP=Double.parseDouble(decimalFormat.format(ProductRLP));
 					}
 				}
 
@@ -6499,7 +6531,7 @@ String RouteType="0";
 					{
 
 						ProductTaxAmount=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-						ProductTaxAmount=Double.parseDouble(decimalFormat.format(ProductMRP));
+						ProductTaxAmount=Double.parseDouble(decimalFormat.format(ProductTaxAmount));
 					}
 				}
 
@@ -6721,7 +6753,7 @@ String RouteType="0";
 			}
 
 
-			dbengine.close();
+			//dbengine.close();;
 
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=2;
@@ -6735,7 +6767,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -6745,7 +6777,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();	
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetForPDAProductPriceMR";
 		final String METHOD_NAME = "GetForPDAProductPriceMR";
@@ -6875,7 +6907,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -6887,7 +6919,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -6896,7 +6928,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeList";
 		final String METHOD_NAME = "GetSchemeList";
@@ -7075,7 +7107,7 @@ String RouteType="0";
 			}
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -7088,7 +7120,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -7100,7 +7132,7 @@ String RouteType="0";
 		
 		////// System.out.println("jai called method in service worker");
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/fnGetOutLetInfoOnQuadVolumeCategoryBasis";
 		final String METHOD_NAME = "fnGetOutLetInfoOnQuadVolumeCategoryBasis";
@@ -7309,7 +7341,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -7318,7 +7350,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeDetails";
 		final String METHOD_NAME = "GetSchemeDetails";
@@ -7424,7 +7456,7 @@ String RouteType="0";
 				}
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 		
 			setmovie.director = "1";
 			
@@ -7437,7 +7469,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -7449,8 +7481,8 @@ String RouteType="0";
 		this.context = ctx;
 
 		ServiceWorker setmovie = new ServiceWorker();
-		/*PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetCategoryMstr";
 		final String METHOD_NAME = "GetCategoryMstr";
@@ -7591,10 +7623,10 @@ String RouteType="0";
 					}
 			}
 			} //aa
-			//dbengine.close();
+			////dbengine.close();;
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=3;
@@ -7607,19 +7639,17 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
-*/
-		setmovie.director = "1";
-		flagExecutedServiceSuccesfully=3;
-		return setmovie;
+
+
 	}
 	public ServiceWorker getalllastTransactionDetails(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetlastTransactionDetails";
 		final String METHOD_NAME = "GetlastTransactionDetails";
@@ -7778,7 +7808,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -7792,7 +7822,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -7801,7 +7831,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeStoreTypeMap";
 		final String METHOD_NAME = "GetSchemeStoreTypeMap";
@@ -7880,7 +7910,7 @@ String RouteType="0";
 					}	
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -7894,7 +7924,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -7903,7 +7933,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeProductMap";
 		final String METHOD_NAME = "GetSchemeProductMap";
@@ -8002,7 +8032,7 @@ String RouteType="0";
 				}
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			/*setmovie.director = tableRow.getProperty("Director").toString();
 			setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -8019,7 +8049,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -8028,7 +8058,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();	
+		//dbengine.open();	
 		final String SOAP_ACTION = "http://tempuri.org/GetPDALastTranDetForSecondPage";
 		final String METHOD_NAME = "GetPDALastTranDetForSecondPage";
 		final String NAMESPACE = "http://tempuri.org/";
@@ -8191,7 +8221,7 @@ String RouteType="0";
 				}	
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			/*setmovie.director = tableRow.getProperty("Director").toString();
 			setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -8206,7 +8236,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 				setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8216,7 +8246,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetForPDASchemeApplicableList";
 		final String METHOD_NAME = "GetForPDASchemeApplicableList";
@@ -8370,7 +8400,7 @@ String RouteType="0";
 				}	
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			/*setmovie.director = tableRow.getProperty("Director").toString();
 			setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -8386,7 +8416,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			flagExecutedServiceSuccesfully=0;
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8396,7 +8426,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();	
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSoreType";
 		final String METHOD_NAME = "GetSoreType";
@@ -8501,7 +8531,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -8513,7 +8543,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetSoreType :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -8522,7 +8552,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLocation";
 		final String METHOD_NAME = "GetLocation";
@@ -8632,7 +8662,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -8643,7 +8673,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetLocation :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8652,7 +8682,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetArea";
 		final String METHOD_NAME = "GetArea";
@@ -8763,7 +8793,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -8774,7 +8804,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetArea :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8787,7 +8817,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();	
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetPDALastInvoiceDet";
 		final String METHOD_NAME = "GetPDALastInvoiceDet";
@@ -8904,7 +8934,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -8912,13 +8942,13 @@ String RouteType="0";
 //return counts;
 		} catch (Exception e) {
 			
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetPDALastInvoiceDet :"+e.toString());
 			//////// System.out.println("aman getallProduct: 13 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -8927,7 +8957,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetPDATargetQtyForSecondPage";
 		final String METHOD_NAME = "GetPDATargetQtyForSecondPage";
@@ -9041,7 +9071,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -9054,7 +9084,7 @@ String RouteType="0";
 			//////// System.out.println("aman getallProduct: 14 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -9065,7 +9095,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSyncSummuryDetails";
 		final String METHOD_NAME = "GetSyncSummuryDetails";
@@ -9195,7 +9225,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=22;
@@ -9209,7 +9239,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -9218,7 +9248,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();	
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetPDAIsSchemeApplicable";
 		final String METHOD_NAME = "GetPDAIsSchemeApplicable";
@@ -9326,7 +9356,7 @@ String RouteType="0";
 			}
 			dbengine.SavePDAIsSchemeApplicable(IsSchemeApplicable);
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=21;
@@ -9337,7 +9367,7 @@ String RouteType="0";
 			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetPDAIsSchemeApplicable :"+e.toString());
 			dbengine.SavePDAIsSchemeApplicable(0);
-			dbengine.close();	
+			//dbengine.close();;	
 			//////// System.out.println("aman getallProduct: 17 "+e.toString());
 			setmovie.director = e.toString();
 			flagExecutedServiceSuccesfully=0;
@@ -9417,7 +9447,7 @@ String RouteType="0";
 			//dbengine.reCreateDB();
 			if(chkTblStoreListContainsRow==1)
 			{
-				//dbengine.open();
+				////dbengine.open();
 				/*String ActualCalls="0";
 				String ProductiveCalls="0";
 				String TotSalesValue ="0";
@@ -9479,9 +9509,9 @@ String RouteType="0";
 					*/
 							
 						//dbengine.SavetblSyncSummuryDetails(ActualCalls,ProductiveCalls,TotSalesValue,TotKGSales,TotFreeQtyKGSales,TotSampleKGSales,TotLTSales,TotFreeQtyLTSales,TotSampleLTSales);
-						dbengine.open();		// #4
+						//dbengine.open();		// #4
 						dbengine.SavetblSyncSummuryForProductDetails(SkuName,OrderQty,FreeQty,SampleQty,TotalOrderKgs,TotalFreeKgs,TotalSampleKgs,TotalSales,Lines);
-						dbengine.close();		// #4
+						//dbengine.close();;		// #4
 					}
 			
 					
@@ -9508,7 +9538,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		final String SOAP_ACTION = "http://tempuri.org/GetSyncSummuryForEachStoreWiseDetails";
 		final String METHOD_NAME = "GetSyncSummuryForEachStoreWiseDetails";
 		final String NAMESPACE = "http://tempuri.org/";
@@ -9631,7 +9661,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -9642,7 +9672,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetSyncSummuryForEachStoreWiseDetails :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -9653,7 +9683,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeCoupon";
 		final String METHOD_NAME = "GetSchemeCoupon";
@@ -9748,7 +9778,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=24;
@@ -9762,7 +9792,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -9773,7 +9803,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeCouponSlab";
 		final String METHOD_NAME = "GetSchemeCouponSlab";
@@ -9881,7 +9911,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=25;
@@ -9895,7 +9925,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -9907,7 +9937,7 @@ String RouteType="0";
 		////// System.out.println("isSurveyActive sunil one start");
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSurveyActiveStatus";
 		final String METHOD_NAME = "GetSurveyActiveStatus";
@@ -9997,7 +10027,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -10008,7 +10038,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetSurveyActiveStatus :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -10020,7 +10050,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetDaySummaryNew";
 		final String METHOD_NAME = "GetDaySummaryNew";
@@ -10162,7 +10192,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=26;
@@ -10176,7 +10206,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -10185,7 +10215,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetInvoiceButtonStoreMstr";
@@ -10418,7 +10448,7 @@ String RouteType="0";
 			}
 			
 			dbengine.fnDeleteUnWantedSubmitedInvoiceOrders();
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -10431,7 +10461,7 @@ String RouteType="0";
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 	}
@@ -10439,7 +10469,7 @@ String RouteType="0";
 			this.context = ctx;
 			
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();	
+			//dbengine.open();	
 			
 			final String SOAP_ACTION = "http://tempuri.org/GetInvoiceButtonProductMstr";
 			final String METHOD_NAME = "GetInvoiceButtonProductMstr";
@@ -10548,7 +10578,7 @@ String RouteType="0";
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				
@@ -10561,7 +10591,7 @@ String RouteType="0";
 				////// System.out.println("aman getallProduct: 16 "+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();	
+				//dbengine.close();;	
 				return setmovie;
 			}
 
@@ -10574,7 +10604,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetInvoiceButtonStoreProductwiseOrder";
 		final String METHOD_NAME = "GetInvoiceButtonStoreProductwiseOrder";
@@ -10815,7 +10845,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -10828,7 +10858,7 @@ String RouteType="0";
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -10838,7 +10868,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLastOrderDetailsOnOldSummary";
 		final String METHOD_NAME = "GetLastOrderDetailsOnOldSummary";
@@ -11023,7 +11053,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=27;
@@ -11037,7 +11067,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -11049,7 +11079,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLastVisitDetailsOnOldSummary";
 		final String METHOD_NAME = "GetLastVisitDetailsOnOldSummary";
@@ -11205,7 +11235,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=28;
@@ -11219,7 +11249,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -11230,7 +11260,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLODQtyOnOldSummary";
 		final String METHOD_NAME = "GetLODQtyOnOldSummary";
@@ -11392,7 +11422,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=29;
@@ -11406,7 +11436,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -11419,7 +11449,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastVisitDate";
 		final String METHOD_NAME = "CallspForPDAGetLastVisitDate";
@@ -11549,7 +11579,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=31;
@@ -11563,7 +11593,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -11573,7 +11603,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastOrderDate";
 		final String METHOD_NAME = "CallspForPDAGetLastOrderDate";
@@ -11709,7 +11739,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=32;
@@ -11723,7 +11753,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -11733,7 +11763,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastVisitDetails";
 		final String METHOD_NAME = "CallspForPDAGetLastVisitDetails";
@@ -11893,7 +11923,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=33;
@@ -11907,7 +11937,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			flagExecutedServiceSuccesfully=0;
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -11918,7 +11948,7 @@ String RouteType="0";
 		this.context = ctx;
 
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastVisitDetails";
 		final String METHOD_NAME = "CallspForPDAGetLastVisitDetails";
@@ -12086,7 +12116,7 @@ String RouteType="0";
 			}
 
 
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=33;
@@ -12100,7 +12130,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			flagExecutedServiceSuccesfully=0;
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12110,7 +12140,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastOrderDetails";
 		final String METHOD_NAME = "CallspForPDAGetLastOrderDetails";
@@ -12267,7 +12297,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=34;
@@ -12281,7 +12311,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12292,7 +12322,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();	
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastOrderDetails_TotalValues";
 		final String METHOD_NAME = "CallspForPDAGetLastOrderDetails_TotalValues";
@@ -12427,7 +12457,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=35;
@@ -12441,7 +12471,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -12452,7 +12482,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetExecutionSummary";
 		final String METHOD_NAME = "CallspForPDAGetExecutionSummary";
@@ -12626,7 +12656,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=36;
@@ -12640,7 +12670,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12652,7 +12682,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetStoreTypeMaster";
 		final String METHOD_NAME = "GetStoreTypeMaster";
@@ -12781,7 +12811,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=37;
@@ -12794,7 +12824,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12806,7 +12836,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetTradeChannels";
 		final String METHOD_NAME = "GetTradeChannels";
@@ -12940,7 +12970,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=38;
@@ -12953,7 +12983,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12964,7 +12994,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		final String SOAP_ACTION = "http://tempuri.org/GetStoreProductClassificationTypeMaster";
 		final String METHOD_NAME = "GetStoreProductClassificationTypeMaster";
 		final String NAMESPACE = "http://tempuri.org/";
@@ -13148,7 +13178,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=39;
@@ -13161,7 +13191,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -13174,7 +13204,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();	
+			//dbengine.open();	
 			
 			//String Sstat = "0";
 			
@@ -13476,7 +13506,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -13490,7 +13520,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in CallspRptGetSKUWiseDaySummary :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -13502,7 +13532,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreWiseDaySummary";
@@ -13716,7 +13746,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -13730,7 +13760,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -13741,7 +13771,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();	
+			//dbengine.open();	
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreSKUWiseDaySummary";
@@ -14028,7 +14058,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -14042,7 +14072,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -14054,7 +14084,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();	
+			//dbengine.open();	
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspPDAGetDaySummary";
@@ -14191,7 +14221,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -14205,7 +14235,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -14218,7 +14248,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetSKUWiseMTDSummary";
@@ -14519,7 +14549,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -14533,7 +14563,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in CallspRptGetSKUWiseDaySummary :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();	
+				//dbengine.close();;	
 				return setmovie;
 			}
 
@@ -14544,7 +14574,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreWiseMTDSummary";
@@ -14758,7 +14788,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -14772,7 +14802,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -14783,7 +14813,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreSKUWiseMTDSummary";
@@ -15073,7 +15103,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -15087,7 +15117,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();	
+				//dbengine.close();;	
 				return setmovie;
 			}
 
@@ -15104,10 +15134,10 @@ String RouteType="0";
 			String RouteID="0";
 			try
 			{
-				dbengine.open();
+				//dbengine.open();
 				RouteID=dbengine.GetActiveRouteID();
 				RouteType=dbengine.FetchRouteType(RouteID);
-				dbengine.close();
+				//dbengine.close();;
 				System.out.println("hi"+RouteType);
 			}
 			catch(Exception e)
@@ -15191,7 +15221,7 @@ String RouteType="0";
 				
 				
 				 
-				 dbengine.open();
+				 //dbengine.open();
 				
 				
 				sse.setOutputSoapObject(client);
@@ -15627,7 +15657,7 @@ String RouteType="0";
 		          
 
 	            setmovie.director = "1";
-	            dbengine.close();
+	            //dbengine.close();;
 				return setmovie;
 
 			} 
@@ -15637,7 +15667,7 @@ String RouteType="0";
 				// System.out.println("Getting Response by Shivam Exception occur in getNewStoreInfo :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -15755,7 +15785,7 @@ String RouteType="0";
 				 // System.out.println("Getting Response by Shivam CustomStringForServiceWorker :"+CustomStringForServiceWorker);
 				 */
 				 
-				 dbengine.open();
+				 //dbengine.open();
 				
 				
 				sse.setOutputSoapObject(client);
@@ -15915,7 +15945,7 @@ String RouteType="0";
 		          
 
 	            setmovie.director = "1";
-	            dbengine.close();
+	            //dbengine.close();;
 				return setmovie;
 
 			} 
@@ -15925,7 +15955,7 @@ String RouteType="0";
 				// System.out.println("Getting Response by Shivam Exception occur in getNewStoreInfo :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -15935,7 +15965,7 @@ String RouteType="0";
 			this.context = ctx;
 			
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();
+			//dbengine.open();
 			
 			
 			final String SOAP_ACTION = "http://tempuri.org/fnGetServerDate";
@@ -16025,7 +16055,7 @@ String RouteType="0";
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				
@@ -16036,7 +16066,7 @@ String RouteType="0";
 				// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -16048,7 +16078,7 @@ String RouteType="0";
 			this.context = ctx;
 			
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();
+			//dbengine.open();
 			final String SOAP_ACTION = "http://tempuri.org/CallspToCheckForVisit";
 			final String METHOD_NAME = "CallspToCheckForVisit";
 			final String NAMESPACE = "http://tempuri.org/";
@@ -16155,9 +16185,9 @@ String RouteType="0";
 							//dbengine.savetblStoreProductClassificationTypeListMstr(AutoIdStore,CategoryNodeID,CategoryNodeType,Category,ProductTypeNodeID,ProductTypeNodeType,ProductType,0,0,"NA");
 							
 							dbengine.savetblNoVisitStoreDetails(imei,"NA",ReasonId,ReasonDescr,flgHasVisit,0);
-							/*dbengine.close();
+							/*//dbengine.close();;
 							String[] aa= dbengine.fnGetALLDataInfo();
-							dbengine.open();*/
+							//dbengine.open();*/
 							
 						}
 					}
@@ -16165,7 +16195,7 @@ String RouteType="0";
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				flagExecutedServiceSuccesfully=39;
@@ -16178,7 +16208,7 @@ String RouteType="0";
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
 				flagExecutedServiceSuccesfully=0;
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -16189,7 +16219,7 @@ String RouteType="0";
 			this.context = ctx;
 			
 			PRJDatabase dbengine = new PRJDatabase(context);
-			dbengine.open();
+			//dbengine.open();
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspToGetReasonMasterForNoVisit";
 			final String METHOD_NAME = "CallspToGetReasonMasterForNoVisit";
@@ -16328,7 +16358,7 @@ String RouteType="0";
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				flagExecutedServiceSuccesfully=38;
@@ -16341,7 +16371,7 @@ String RouteType="0";
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
 				flagExecutedServiceSuccesfully=0;
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -16353,7 +16383,7 @@ String RouteType="0";
 		this.context = ctx;
 
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		final String SOAP_ACTION = "http://tempuri.org/CallspToGetReasonMasterForNoVisit";
 		final String METHOD_NAME = "CallspToGetReasonMasterForNoVisit";
@@ -16545,7 +16575,7 @@ String RouteType="0";
 			}
 
 
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=38;
@@ -16558,7 +16588,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -16568,7 +16598,7 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			PRJDatabase dbengine = new PRJDatabase(context);
-			 dbengine.open();
+			 //dbengine.open();
 			decimalFormat.applyPattern(pattern);
 			
 			int chkTblStoreListContainsRow=1;
@@ -16745,7 +16775,7 @@ String RouteType="0";
 			
 
 	            setmovie.director = "1";
-	            dbengine.close();
+	            //dbengine.close();;
 	            // System.out.println("ServiceWorkerNitish getAllNewSchemeStructure Inside");
 	            flagExecutedServiceSuccesfully=4;
 				return setmovie;
@@ -16756,7 +16786,7 @@ String RouteType="0";
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
 				flagExecutedServiceSuccesfully=0;
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -16785,7 +16815,7 @@ String RouteType="0";
 
 		//DBHelper dbengine=new DBHelper(ctx);
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		//SoapObject param
 		HttpTransportSE transport = null; // That call webservice
 		SoapSerializationEnvelope sse = null;
@@ -17121,7 +17151,7 @@ String RouteType="0";
 
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
@@ -17129,7 +17159,7 @@ String RouteType="0";
 		} catch (Exception e)
 		{
 			setmovie.exceptionCode=e.getCause().getMessage();
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -17161,7 +17191,7 @@ String RouteType="0";
 
 		//DBHelper dbengine=new DBHelper(ctx);
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		//SoapObject param
 		HttpTransportSE transport = null; // That call webservice
 		SoapSerializationEnvelope sse = null;
@@ -17263,7 +17293,7 @@ String RouteType="0";
 
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
@@ -17271,7 +17301,7 @@ String RouteType="0";
 		} catch (Exception e)
 		{
 			setmovie.exceptionCode=e.getCause().getMessage();
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -17295,7 +17325,7 @@ String RouteType="0";
 		SoapObject responseBody = null; //Contains XML content of dataset
 
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		//SoapObject param
 		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -17642,7 +17672,7 @@ String RouteType="0";
 				dbengine.savetblIncentiveMsgToDisplay(MsgToDisplay);
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
@@ -17651,7 +17681,7 @@ String RouteType="0";
 		catch (Exception e)
 		{
 			setmovie.exceptionCode=e.getCause().getMessage();
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
 
 			setmovie.director = e.toString();
@@ -17667,7 +17697,7 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 		//String Sstat = "0";
 
 		final String SOAP_ACTION = "http://tempuri.org/fnCallspPDAGetDayAndMTDSummary";
@@ -17836,7 +17866,7 @@ String RouteType="0";
 				}
 			}
 
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -17850,7 +17880,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -17862,7 +17892,7 @@ String RouteType="0";
 
 		this.context = ctx;
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		decimalFormat.applyPattern(pattern);
 
@@ -18109,7 +18139,7 @@ String RouteType="0";
 
 
 			setmovie.director = "1";
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
@@ -18117,7 +18147,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -18145,7 +18175,7 @@ String RouteType="0";
 
 		PRJDatabase dbengine = new PRJDatabase(context);
 		String DstId_OrderPdaId=dbengine.getDstBIDOrderId();
-		dbengine.open();
+		//dbengine.open();
 
 		//SoapObject param
 		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -18351,7 +18381,7 @@ String RouteType="0";
 
 
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=38;
 			return setmovie;
@@ -18359,7 +18389,7 @@ String RouteType="0";
 		}
 		catch (Exception e)
 		{
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
 			flagExecutedServiceSuccesfully=0;
 			setmovie.director = e.toString();
@@ -18370,6 +18400,8 @@ String RouteType="0";
 	}*/
 
 	//map distributor
+
+
 	public ServiceWorker getDistributorMstr(Context ctx,String uuid,String CurDate)
 	{
 		this.context = ctx;
@@ -18430,7 +18462,7 @@ String RouteType="0";
 			is.setCharacterStream(new StringReader(name));
 			Document doc = db.parse(is);
 
-			dbengine.open();
+			//dbengine.open();
 
 			//delete tbl
 			dbengine.Delete_tblDistributorMstr();
@@ -18443,6 +18475,7 @@ String RouteType="0";
 				String DBRNodeType="0";
 				String Distributor="0";
 				String flgReMap="0";
+
 
 				Element element = (Element) tblDistributorListForSONode.item(i);
 				if(!element.getElementsByTagName("DBRNodeId").equals(null))
@@ -18516,14 +18549,14 @@ String RouteType="0";
 			}
 
 			setmovie.director = "1";
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
 			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -18538,10 +18571,10 @@ String RouteType="0";
 		String RouteType="0";
 		try
 		{
-			dbengine.open();
+			//dbengine.open();
 			String RouteID=dbengine.GetActiveRouteID();
 			RouteType=dbengine.FetchRouteType(RouteID);
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("hi"+RouteType);
 		}
 		catch(Exception e)
@@ -18549,7 +18582,7 @@ String RouteType="0";
 			System.out.println("error"+e);
 		}
 
-		dbengine.open();
+		//dbengine.open();
 		dbengine.deleteAllCollectionTables();
 
 		final String SOAP_ACTION = "http://tempuri.org/fnGetPDACollectionMaster";
@@ -18624,7 +18657,7 @@ String RouteType="0";
 			Document doc = db.parse(is);
 			System.out.println("shivam4");
 
-			//   dbengine.open();
+			//   //dbengine.open();
 
 			NodeList tblBankMasterNode = doc.getElementsByTagName("tblBankMaster");
 			for (int i = 0; i < tblBankMasterNode.getLength(); i++)
@@ -18788,7 +18821,7 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -18826,7 +18859,7 @@ String RouteType="0";
 		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,0);
 		String DstId_OrderPdaId=dbengine.getDistinctInvoiceNumbers();
 		//String strStoreCollectionUniquneVisitId=dbengine.getDistinctCollectionPaymentIds();
-		dbengine.open();
+		//dbengine.open();
 		ServiceWorker setmovie = new ServiceWorker();
 
 		try
@@ -18861,8 +18894,8 @@ String RouteType="0";
 			Document doc = db.parse(is);
 
 			dbengine.deleteCompleteDataDistStock();
-			dbengine.Delete_tblProductList_for_refreshData();
-			dbengine.Delete_tblCategory_for_refreshData();
+			//dbengine.Delete_tblProductList_for_refreshData();
+			//dbengine.Delete_tblCategory_for_refreshData();
 
 			NodeList tblCycleIDNode = doc.getElementsByTagName("tblCycleID");
 			for (int i = 0; i < tblCycleIDNode.getLength(); i++)
@@ -19158,558 +19191,12 @@ int flgProcessedInvoice=0;
 
 
 
-
-
-
-			NodeList tblPrdctMstrNode = doc.getElementsByTagName("tblProductListMaster");
-			for (int i = 0; i < tblPrdctMstrNode.getLength(); i++)
-
-			{
-				String CatID="0";
-				String ProductID="0";
-				String ProductShortName="NA";
-				String DisplayUnit="0";
-				Double CalculateKilo=0.0;
-				String KGLiter="0";
-				int StoreCatNodeId=0;
-				String SearchField="";
-
-				int CatOrdr=0;
-				int PrdOrdr=0;
-				int ManufacturerID=0;
-				String rptUnitName="";
-				String perbaseUnit="0";
-				Element element = (Element) tblPrdctMstrNode.item(i);
-
-				if(!element.getElementsByTagName("CatID").equals(null))
-				{
-
-					NodeList CatIDNode = element.getElementsByTagName("CatID");
-					Element     line = (Element) CatIDNode.item(0);
-
-					if(CatIDNode.getLength()>0)
-					{
-
-						CatID=xmlParser.getCharacterDataFromElement(line);
-						StoreCatNodeId=Integer.parseInt(CatID);
-					}
-				}
-				if(!element.getElementsByTagName("ProductID").equals(null))
-				{
-
-					NodeList ProductIDNode = element.getElementsByTagName("ProductID");
-					Element     line = (Element) ProductIDNode.item(0);
-
-					if(ProductIDNode.getLength()>0)
-					{
-
-						ProductID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("ProductShortName").equals(null))
-				{
-
-					NodeList ProductShortNameNode = element.getElementsByTagName("ProductShortName");
-					Element     line = (Element) ProductShortNameNode.item(0);
-
-					if(ProductShortNameNode.getLength()>0)
-					{
-
-						ProductShortName=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-				if(!element.getElementsByTagName("DisplayUnit").equals(null))
-				{
-
-					NodeList DisplayUnitNode = element.getElementsByTagName("DisplayUnit");
-					Element     line = (Element) DisplayUnitNode.item(0);
-
-					if(DisplayUnitNode.getLength()>0)
-					{
-
-						DisplayUnit=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-				if(!element.getElementsByTagName("CalculateKilo").equals(null))
-				{
-
-					NodeList CalculateKiloNode = element.getElementsByTagName("CalculateKilo");
-					Element     line = (Element) CalculateKiloNode.item(0);
-
-					if(CalculateKiloNode.getLength()>0)
-					{
-
-						CalculateKilo=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-					}
-				}
-
-				if(!element.getElementsByTagName("KGLiter").equals(null))
-				{
-
-					NodeList KGLiterNode = element.getElementsByTagName("KGLiter");
-					Element     line = (Element) KGLiterNode.item(0);
-
-					if(KGLiterNode.getLength()>0)
-					{
-
-						KGLiter=xmlParser.getCharacterDataFromElement(line);
-
-					}
-				}
-
-				if(!element.getElementsByTagName("CatOrdr").equals(null))
-				{
-
-					NodeList CatOrdrNode = element.getElementsByTagName("CatOrdr");
-					Element     line = (Element) CatOrdrNode.item(0);
-
-					if(CatOrdrNode.getLength()>0)
-					{
-
-						CatOrdr=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("PrdOrdr").equals(null))
-				{
-
-					NodeList PrdOrdrNode = element.getElementsByTagName("PrdOrdr");
-					Element     line = (Element) PrdOrdrNode.item(0);
-
-					if(PrdOrdrNode.getLength()>0)
-					{
-
-						PrdOrdr=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-				if(!element.getElementsByTagName("StoreCatNodeId").equals(null))
-				{
-
-					NodeList StoreCatNodeIdNode = element.getElementsByTagName("StoreCatNodeId");
-					Element     line = (Element) StoreCatNodeIdNode.item(0);
-
-					if(StoreCatNodeIdNode.getLength()>0)
-					{
-
-						StoreCatNodeId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("SearchField").equals(null))
-				{
-
-					NodeList SearchFieldNode = element.getElementsByTagName("SearchField");
-					Element     line = (Element) SearchFieldNode.item(0);
-
-					if(SearchFieldNode.getLength()>0)
-					{
-
-						SearchField=xmlParser.getCharacterDataFromElement(line);
-
-					}
-				}
-
-
-				if(!element.getElementsByTagName("ManufacturerID").equals(null))
-				{
-
-					NodeList ManufacturerIDNode = element.getElementsByTagName("ManufacturerID");
-					Element     line = (Element) ManufacturerIDNode.item(0);
-
-					if(ManufacturerIDNode.getLength()>0)
-					{
-
-						ManufacturerID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("RptUnitName").equals(null))
-				{
-
-					NodeList RptUnitNameNode = element.getElementsByTagName("RptUnitName");
-					Element     line = (Element) RptUnitNameNode.item(0);
-
-					if(RptUnitNameNode.getLength()>0)
-					{
-
-						rptUnitName=xmlParser.getCharacterDataFromElement(line);
-
-					}
-				}
-				if(!element.getElementsByTagName("PerbaseUnit").equals(null))
-				{
-
-					NodeList PerbaseUnitNode = element.getElementsByTagName("PerbaseUnit");
-					Element     line = (Element) PerbaseUnitNode.item(0);
-
-					if(PerbaseUnitNode.getLength()>0)
-					{
-
-						perbaseUnit=xmlParser.getCharacterDataFromElement(line);
-
-					}
-				}
-
-
-				//SearchField
-				dbengine.saveSOAPdataProductList(CatID,ProductID,ProductShortName,DisplayUnit,CalculateKilo,KGLiter,CatOrdr,PrdOrdr,StoreCatNodeId,SearchField,ManufacturerID,rptUnitName,perbaseUnit);
-
-
-			}
-
-
-			NodeList tblProductSegementMap = doc.getElementsByTagName("tblProductSegementMap");
-			for (int i = 0; i < tblProductSegementMap.getLength(); i++)
-			{
-
-				String ProductID="0";
-				int BusinessSegmentId=0;
-				Double ProductMRP=-99.0;
-				Double ProductRLP=0.0;
-				Double ProductTaxAmount=0.0;
-				Double RetMarginPer=0.0;
-				Double VatTax=0.0;
-				Double StandardRate=-99.0;
-				Double StandardRateBeforeTax=0.0;
-				Double StandardTax=0.0;
-				int flgPriceAva=0;
-				int flgWholeSellApplicable=0;
-				double PriceRangeWholeSellApplicable=0.0;
-				double StandardRateWholeSale=0.0;
-				double StandardRateBeforeTaxWholeSell=0.0;
-				double StandardTaxWholeSale=0.0;
-
-
-				Element element = (Element) tblProductSegementMap.item(i);
-
-				if(!element.getElementsByTagName("ProductId").equals(null))
-				{
-
-					NodeList ProductIDNode = element.getElementsByTagName("ProductId");
-					Element     line = (Element) ProductIDNode.item(0);
-
-					if(ProductIDNode.getLength()>0)
-					{
-
-						ProductID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("ProductMRP").equals(null))
-				{
-
-					NodeList ProductMRPNode = element.getElementsByTagName("ProductMRP");
-					Element     line = (Element) ProductMRPNode.item(0);
-
-					if(ProductMRPNode.getLength()>0)
-					{
-
-						ProductMRP=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-						ProductMRP=Double.parseDouble(decimalFormat.format(ProductMRP));
-					}
-				}
-
-				if(!element.getElementsByTagName("ProductRLP").equals(null))
-				{
-
-					NodeList ProductRLPNode = element.getElementsByTagName("ProductRLP");
-					Element     line = (Element) ProductRLPNode.item(0);
-
-					if(ProductRLPNode.getLength()>0)
-					{
-
-						ProductRLP=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-						ProductRLP=Double.parseDouble(decimalFormat.format(ProductMRP));
-					}
-				}
-
-				if(!element.getElementsByTagName("ProductTaxAmount").equals(null))
-				{
-
-					NodeList ProductTaxAmountNode = element.getElementsByTagName("ProductTaxAmount");
-					Element     line = (Element) ProductTaxAmountNode.item(0);
-
-					if(ProductTaxAmountNode.getLength()>0)
-					{
-
-						ProductTaxAmount=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-						ProductTaxAmount=Double.parseDouble(decimalFormat.format(ProductMRP));
-					}
-				}
-
-
-				if(!element.getElementsByTagName("RetMarginPer").equals(null))
-				{
-
-					NodeList RetMarginPerNode = element.getElementsByTagName("RetMarginPer");
-					Element     line = (Element) RetMarginPerNode.item(0);
-
-					if(RetMarginPerNode.getLength()>0)
-					{
-
-						RetMarginPer=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("Tax").equals(null))
-				{
-
-					NodeList TaxNode = element.getElementsByTagName("Tax");
-					Element     line = (Element) TaxNode.item(0);
-
-					if(TaxNode.getLength()>0)
-					{
-
-						VatTax=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-
-				if(!element.getElementsByTagName("StandardRate").equals(null))
-				{
-
-					NodeList StandardRateNode = element.getElementsByTagName("StandardRate");
-					Element     line = (Element) StandardRateNode.item(0);
-
-					if(StandardRateNode.getLength()>0)
-					{
-
-						StandardRate=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-				if(!element.getElementsByTagName("StandardRateBeforeTax").equals(null))
-				{
-
-					NodeList StandardRateBeforeTaxNode = element.getElementsByTagName("StandardRateBeforeTax");
-					Element     line = (Element) StandardRateBeforeTaxNode.item(0);
-
-					if(StandardRateBeforeTaxNode.getLength()>0)
-					{
-
-						StandardRateBeforeTax=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-				if(!element.getElementsByTagName("StandardTax").equals(null))
-				{
-
-					NodeList StandardTaxNode = element.getElementsByTagName("StandardTax");
-					Element     line = (Element) StandardTaxNode.item(0);
-
-					if(StandardTaxNode.getLength()>0)
-					{
-
-						StandardTax=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-
-				if(!element.getElementsByTagName("SegmentId").equals(null))
-				{
-
-					NodeList BusinessSegmentIdNode = element.getElementsByTagName("SegmentId");
-					Element     line = (Element) BusinessSegmentIdNode.item(0);
-
-					if(BusinessSegmentIdNode.getLength()>0)
-					{
-
-						BusinessSegmentId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("flgPriceAva").equals(null))
-				{
-
-					NodeList flgPriceAvaNode = element.getElementsByTagName("flgPriceAva");
-					Element     line = (Element) flgPriceAvaNode.item(0);
-
-					if(flgPriceAvaNode.getLength()>0)
-					{
-
-						flgPriceAva=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-				//flgPriceAva
-				if(!element.getElementsByTagName("flgPrdBulkPriceapplicable").equals(null))
-				{
-
-					NodeList flgWholeSellApplicableNode = element.getElementsByTagName("flgPrdBulkPriceapplicable");
-					Element     line = (Element) flgWholeSellApplicableNode.item(0);
-
-					if(flgWholeSellApplicableNode.getLength()>0)
-					{
-
-						flgWholeSellApplicable=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-
-				if(!element.getElementsByTagName("Cutoffvalue").equals(null))
-				{
-
-					NodeList PriceRangeWholeSellApplicableNode = element.getElementsByTagName("Cutoffvalue");
-					Element     line = (Element) PriceRangeWholeSellApplicableNode.item(0);
-
-					if(PriceRangeWholeSellApplicableNode.getLength()>0)
-					{
-
-						PriceRangeWholeSellApplicable=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("StandardRateWholeSale").equals(null))
-				{
-
-					NodeList StandardRateWholeSaleNode = element.getElementsByTagName("StandardRateWholeSale");
-					Element     line = (Element) StandardRateWholeSaleNode.item(0);
-
-					if(StandardRateWholeSaleNode.getLength()>0)
-					{
-
-						StandardRateWholeSale=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("StandardRateBeforeTaxWholeSale").equals(null))
-				{
-
-					NodeList StandardRateBeforeTaxWholeSellNode = element.getElementsByTagName("StandardRateBeforeTaxWholeSale");
-					Element     line = (Element) StandardRateBeforeTaxWholeSellNode.item(0);
-
-					if(StandardRateBeforeTaxWholeSellNode.getLength()>0)
-					{
-
-						StandardRateBeforeTaxWholeSell=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-
-				if(!element.getElementsByTagName("StandardTaxWholeSale").equals(null))
-				{
-
-					NodeList StandardTaxWholeSaleNode = element.getElementsByTagName("StandardTaxWholeSale");
-					Element     line = (Element) StandardTaxWholeSaleNode.item(0);
-
-					if(StandardTaxWholeSaleNode.getLength()>0)
-					{
-
-						StandardTaxWholeSale=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-
-					}
-				}
-				dbengine.saveProductSegementMap(ProductID,ProductMRP, ProductRLP, ProductTaxAmount,RetMarginPer,VatTax,StandardRate,StandardRateBeforeTax,StandardTax,BusinessSegmentId,flgPriceAva,flgWholeSellApplicable,PriceRangeWholeSellApplicable,StandardRateWholeSale,StandardRateBeforeTaxWholeSell,StandardTaxWholeSale);
-
-
-			}
-
-			NodeList tblPriceApplyType = doc.getElementsByTagName("tblPriceApplyType");
-			for (int i = 0; i < tblPriceApplyType.getLength(); i++)
-			{
-
-
-				int DiscountLevelType=0;
-				String cutoffvalueTmp="0.0";
-				Double cutoffvalue=0.0;
-
-
-
-				Element element = (Element) tblPriceApplyType.item(i);
-
-				if(!element.getElementsByTagName("DiscountLevel").equals(null))
-				{
-
-					NodeList DiscountLevelTypeNode = element.getElementsByTagName("DiscountLevel");
-					Element     line = (Element) DiscountLevelTypeNode.item(0);
-
-					if(DiscountLevelTypeNode.getLength()>0)
-					{
-
-						DiscountLevelType=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-					}
-				}
-
-				if(!element.getElementsByTagName("cutoffvalue").equals(null))
-				{
-
-					NodeList cutoffvalueNode = element.getElementsByTagName("cutoffvalue");
-					Element     line = (Element) cutoffvalueNode.item(0);
-
-					if(cutoffvalueNode.getLength()>0)
-					{
-
-						cutoffvalueTmp=(xmlParser.getCharacterDataFromElement(line));
-
-						cutoffvalue=Double.parseDouble(cutoffvalueTmp);
-					}
-				}
-
-
-				dbengine.savetblPriceApplyType(DiscountLevelType,cutoffvalue);
-			}
-// Category Details
-			NodeList tblCategoryMaster = doc.getElementsByTagName("tblCategoryMaster");
-			for (int i = 0; i < tblCategoryMaster.getLength(); i++)
-			{
-
-				String stID = "NA";
-				String deDescr = "NA";
-				int CatOrdr=0;
-
-				Element element = (Element) tblCategoryMaster.item(i);
-
-				if(!element.getElementsByTagName("NODEID").equals(null))
-				{
-					NodeList NODEIDNode = element.getElementsByTagName("NODEID");
-					Element      line = (Element) NODEIDNode.item(0);
-					if(NODEIDNode.getLength()>0)
-					{
-						stID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-
-				if(!element.getElementsByTagName("CatOrdr").equals(null))
-				{
-					NodeList CatOrdrNode = element.getElementsByTagName("CatOrdr");
-					Element      line = (Element) CatOrdrNode.item(0);
-					if(CatOrdrNode.getLength()>0)
-					{
-						CatOrdr=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-					}
-				}
-				if(!element.getElementsByTagName("CATEGORY").equals(null))
-				{
-					NodeList CATEGORYNode = element.getElementsByTagName("CATEGORY");
-					Element      line = (Element) CATEGORYNode.item(0);
-					if(CATEGORYNode.getLength()>0)
-					{
-						deDescr=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				dbengine.saveCategory(stID.trim(), deDescr.trim(),CatOrdr);
-				//System.out.println("Column DESC TBL..."+IncId+"-"+ReportColumnName+"-"+DisplayColumnName);
-			}
 			flagExecutedServiceSuccesfully=39;
 
 
 
 
-			dbengine.close();
+			//dbengine.close();;
 
 
 			int statusId = dbengine.confirmedStock();
@@ -19725,7 +19212,7 @@ int flgProcessedInvoice=0;
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 	}
@@ -19747,7 +19234,7 @@ int flgProcessedInvoice=0;
 		SoapObject responseBody = null; //Contains XML content of dataset
 
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		//SoapObject param
 		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -19854,7 +19341,7 @@ int flgProcessedInvoice=0;
 			}
 
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
@@ -19863,7 +19350,7 @@ int flgProcessedInvoice=0;
 		catch (Exception e)
 		{
 			setmovie.exceptionCode=e.getCause().getMessage();
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
 
 			setmovie.director = e.toString();
@@ -19890,7 +19377,7 @@ int flgProcessedInvoice=0;
 		PRJDatabase dbengine = new PRJDatabase(context);
 		int vanCycleId= dbengine.fetchtblVanCycleId();
 		String CycStartTime=dbengine.fetchtblVanCycleTime();
-		dbengine.open();
+		//dbengine.open();
 
 		//SoapObject param
 		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -19958,7 +19445,7 @@ int flgProcessedInvoice=0;
 			}
 
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return flgDataConfirmed;
@@ -19967,7 +19454,7 @@ int flgProcessedInvoice=0;
 		catch (Exception e)
 		{
 			setmovie.exceptionCode=e.getCause().getMessage();
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
 
 			setmovie.director = e.toString();
@@ -19987,7 +19474,7 @@ int flgProcessedInvoice=0;
 		this.context = ctx;
 
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		final String SOAP_ACTION = "http://tempuri.org/fnGetStoreOutStandings";//GetProductListMRNewProductFilterTest";
 		final String METHOD_NAME = "fnGetStoreOutStandings";//GetProductListMRNewProductFilterTest
@@ -20194,7 +19681,7 @@ int flgProcessedInvoice=0;
 
 				dbengine.savetblInvoiceLastVisitDetails(StoreID,InvCode,InvDate,OutstandingAmt,AmtOverdue);
 			}
-			dbengine.close();
+			//dbengine.close();;
 
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=2;
@@ -20207,7 +19694,7 @@ int flgProcessedInvoice=0;
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -20221,7 +19708,7 @@ int flgProcessedInvoice=0;
 		this.context = ctx;
 
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		final String SOAP_ACTION = "http://tempuri.org/fnGetInvoiceCaption";//GetProductListMRNewProductFilterTest";
 		final String METHOD_NAME = "fnGetInvoiceCaption";//GetProductListMRNewProductFilterTest
@@ -20322,7 +19809,7 @@ int flgProcessedInvoice=0;
 				}
 				dbengine.savetblInvoiceCaption(INVPrefix,VanIntialInvoiceIds,InvSuffix);
 			}
-			dbengine.close();
+			//dbengine.close();;
 
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=2;
@@ -20335,7 +19822,7 @@ int flgProcessedInvoice=0;
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -20416,7 +19903,7 @@ int flgProcessedInvoice=0;
 			is.setCharacterStream(new StringReader(name));
 			Document doc = db.parse(is);
 
-			dbengine.open();
+			//dbengine.open();
 
 			dbengine.deletetblStateCityMaster();
 
@@ -20488,7 +19975,7 @@ int flgProcessedInvoice=0;
 
 
 			setmovie.director = "1";
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
@@ -20496,7 +19983,7 @@ int flgProcessedInvoice=0;
 			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -20512,7 +19999,7 @@ int flgProcessedInvoice=0;
         this.context = ctx;
 
         PRJDatabase dbengine = new PRJDatabase(context);
-        dbengine.open();
+        //dbengine.open();
 
         final String SOAP_ACTION = "http://tempuri.org/fnGetProductListWithStockOrOrderLastVisit";//GetProductListMRNewProductFilterTest";
         final String METHOD_NAME = "fnGetProductListWithStockOrOrderLastVisit";//GetProductListMRNewProductFilterTest
@@ -20637,7 +20124,7 @@ int flgProcessedInvoice=0;
 
 
 
-            dbengine.close();
+            //dbengine.close();;
 
             setmovie.director = "1";
             flagExecutedServiceSuccesfully=1;
@@ -20650,7 +20137,7 @@ int flgProcessedInvoice=0;
             setmovie.director = e.toString();
             setmovie.movie_name = e.toString();
             flagExecutedServiceSuccesfully=0;
-            dbengine.close();
+            //dbengine.close();;
             return setmovie;
         }
 
@@ -20660,7 +20147,7 @@ int flgProcessedInvoice=0;
 
 		this.context = ctx;
 		PRJDatabase dbengine = new PRJDatabase(context);
-		dbengine.open();
+		//dbengine.open();
 
 		decimalFormat.applyPattern(pattern);
 
@@ -20973,7 +20460,7 @@ int flgProcessedInvoice=0;
 
 
 			setmovie.director = "1";
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
@@ -20981,7 +20468,7 @@ int flgProcessedInvoice=0;
 			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -20990,6 +20477,220 @@ int flgProcessedInvoice=0;
 
 
 
+	}
+
+	public ServiceWorker getWarehouseMappingMstr(Context ctx,String uuid,String CurDate)
+	{
+		this.context = ctx;
+		PRJDatabase dbengine = new PRJDatabase(context);
+
+		decimalFormat.applyPattern(pattern);
+
+		int chkTblStoreListContainsRow=1;
+		StringReader read;
+		InputSource inputstream;
+		final String SOAP_ACTION = "http://tempuri.org/fnGetWareHouseMstrListForBasedOnIMEI";
+		final String METHOD_NAME = "fnGetWareHouseMstrListForBasedOnIMEI";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+		//Create request
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+			client.addProperty("uuid", uuid.toString());
+			client.addProperty("SysDate", CurDate.toString());
+
+			sse.setOutputSoapObject(client);
+
+			sse.bodyOut = client;
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			responseBody = (SoapObject)sse.bodyIn;
+			// This step: get file XML
+			//responseBody = (SoapObject) sse.getResponse();
+			int totalCount = responseBody.getPropertyCount();
+
+			// // System.out.println("Kajol 2 :"+totalCount);
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			//dbengine.open();
+
+
+			dbengine.Delete_tblWarehouseMstr();
+
+			NodeList tblDistributorListForSONode = doc.getElementsByTagName("tblWareHouseMstrList");
+			for (int i = 0; i < tblDistributorListForSONode.getLength(); i++)
+			{
+
+				String NodeID="0";
+				String NodeType="0";
+				String Descr="0";
+				String latCode="0";
+				String LongCode="0";
+				String flgMapped="0";
+				String State="NA";
+				String Address="NA";
+				String City="NA";
+				String PinCode="NA";
+				String PhoneNo="NA";
+				String TaxNumber="NA";
+
+				Element element = (Element) tblDistributorListForSONode.item(i);
+				if(!element.getElementsByTagName("NodeID").equals(null))
+				{
+					NodeList NodeIDNode = element.getElementsByTagName("NodeID");
+					Element     line = (Element) NodeIDNode.item(0);
+					if (NodeIDNode.getLength()>0)
+					{
+						NodeID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("NodeType").equals(null))
+				{
+					NodeList NodeTypeNode = element.getElementsByTagName("NodeType");
+					Element     line = (Element) NodeTypeNode.item(0);
+					if (NodeTypeNode.getLength()>0)
+					{
+						NodeType=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("Descr").equals(null))
+				{
+					NodeList DescrNode = element.getElementsByTagName("Descr");
+					Element     line = (Element) DescrNode.item(0);
+					if (DescrNode.getLength()>0)
+					{
+						Descr=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("latCode").equals(null))
+				{
+					NodeList latCodeNode = element.getElementsByTagName("latCode");
+					Element     line = (Element) latCodeNode.item(0);
+					if (latCodeNode.getLength()>0)
+					{
+						latCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("LongCode").equals(null))
+				{
+					NodeList LongCodeNode = element.getElementsByTagName("LongCode");
+					Element     line = (Element) LongCodeNode.item(0);
+					if (LongCodeNode.getLength()>0)
+					{
+						LongCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("flgMapped").equals(null))
+				{
+					NodeList flgMappedNode = element.getElementsByTagName("flgMapped");
+					Element     line = (Element) flgMappedNode.item(0);
+					if (flgMappedNode.getLength()>0)
+					{
+						flgMapped=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("Address").equals(null))
+				{
+					NodeList AddressNode = element.getElementsByTagName("Address");
+					Element     line = (Element) AddressNode.item(0);
+					if (AddressNode.getLength()>0)
+					{
+						Address=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("State").equals(null))
+				{
+					NodeList StateNode = element.getElementsByTagName("State");
+					Element     line = (Element) StateNode.item(0);
+					if (StateNode.getLength()>0)
+					{
+						State=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("City").equals(null))
+				{
+					NodeList CityNode = element.getElementsByTagName("City");
+					Element     line = (Element) CityNode.item(0);
+					if (CityNode.getLength()>0)
+					{
+						City=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("PinCode").equals(null))
+				{
+					NodeList PinCodeNode = element.getElementsByTagName("PinCode");
+					Element     line = (Element) PinCodeNode.item(0);
+					if (PinCodeNode.getLength()>0)
+					{
+						PinCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("PhoneNo").equals(null))
+				{
+					NodeList PhoneNoNode = element.getElementsByTagName("PhoneNo");
+					Element     line = (Element) PhoneNoNode.item(0);
+					if (PhoneNoNode.getLength()>0)
+					{
+						PhoneNo=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("TaxNumber").equals(null))
+				{
+					NodeList TaxNumberNode = element.getElementsByTagName("TaxNumber");
+					Element     line = (Element) TaxNumberNode.item(0);
+					if (TaxNumberNode.getLength()>0)
+					{
+						TaxNumber=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				//flgMapped="1";
+
+
+				dbengine.saveWarehouseMstrData(Integer.parseInt(NodeID),Integer.parseInt(NodeType),Descr,latCode,LongCode,Integer.parseInt(flgMapped),Address,State,City,PinCode,PhoneNo,TaxNumber);
+
+			}
+
+
+
+			setmovie.director = "1";
+			//dbengine.close();
+			return setmovie;
+
+		} catch (Exception e) {
+			setmovie.exceptionCode=e.getCause().getMessage();
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			//dbengine.close();
+
+			return setmovie;
+		}
 	}
 
 

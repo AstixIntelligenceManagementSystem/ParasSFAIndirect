@@ -142,9 +142,9 @@ public class DetailReport_Activity extends BaseActivity
       {
 		// TODO Auto-generated method stub
 		super.onResume();
-		dbengine.open();
+		//dbengine.open();
 		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		//dbengine.close();
 		System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -153,7 +153,7 @@ public class DetailReport_Activity extends BaseActivity
 		MsgServerID= Integer.parseInt(token.nextToken().trim());
 		Noti_text= token.nextToken().trim();
 		
-		dbengine.close();
+		//dbengine.close();
 		if(Noti_text.equals("") || Noti_text.equals("Null"))
 		{
 			
@@ -173,10 +173,10 @@ public class DetailReport_Activity extends BaseActivity
 						SimpleDateFormat df = new SimpleDateFormat(
 								"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 						String Noti_ReadDateTime = df.format(dateobj);
-			    	 dbengine.open();
+			    	 //dbengine.open();
 						
 						dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-						dbengine.close();
+						//dbengine.close();
 			      dialog.dismiss();
 			     
 			     }
@@ -396,9 +396,9 @@ protected void onCreate(Bundle savedInstanceState)
 					
 					if(Integer.parseInt(back)==1)
 					{
-						dbengine.open();
+						//dbengine.open();
 				        AllDataContainer= dbengine.fetchAllDataFromtblAllSummary();
-				        dbengine.close();
+				        //dbengine.close();
 				        intializeFields();
 					}
 					else
@@ -444,9 +444,9 @@ private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
 	{
 		super.onPreExecute();
 		
-		dbengine.open();
+		//dbengine.open();
 		dbengine.truncateAllSummaryDataTable();
-		dbengine.close();
+		//dbengine.close();
 		
 		
 		pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -490,9 +490,9 @@ private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
 	      {
 	    	   pDialogGetStores.dismiss();
 		  }
-        dbengine.open();
+        //dbengine.open();
         AllDataContainer= dbengine.fetchAllDataFromtblAllSummary();
-        dbengine.close();
+        //dbengine.close();
         intializeFields();
 	  
 	}

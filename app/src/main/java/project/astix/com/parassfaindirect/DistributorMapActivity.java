@@ -136,7 +136,7 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
     public String fnLongi="0";
     public Double fnAccuracy=0.0;
 
-    PRJDatabase helperDb;
+    PRJDatabase helperDb=new PRJDatabase(this);
 
     public String AccuracyFromLauncher="NA";
     String AddressFromLauncher="NA";
@@ -244,7 +244,7 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
         setContentView(R.layout.activity_distributor_map);
 
         refreshCount=0;
-        helperDb=new PRJDatabase(DistributorMapActivity.this);
+       // helperDb=new PRJDatabase(DistributorMapActivity.this);
         locationManager=(LocationManager) this.getSystemService(LOCATION_SERVICE);
         ll_locationDetails= (LinearLayout) findViewById(R.id.ll_locationDetails);
         ll_parentLayout= (LinearLayout) findViewById(R.id.ll_parentLayout);
@@ -535,10 +535,10 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
 
     public void fnGetDistributorList()
     {
-        helperDb.open();
+        //helperDb.open();
 
         Distribtr_list=helperDb.getDistributorDataMstr();
-        helperDb.close();
+        //helperDb.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             String value=Distribtr_list[i];
@@ -1063,10 +1063,10 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
             // fnAccurateProvider="";
             if(fnAccurateProvider.equals(""))
             {
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-                helperDb.close();
+                //helperDb.close();
 
                 if(pDialog2STANDBY.isShowing())
                 {
@@ -1172,10 +1172,10 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
                 ft.show(mapFrag);
 
 
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                helperDb.close();
+                //helperDb.close();
         //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
                 if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
                 {
@@ -1966,7 +1966,7 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
         String finalCity=etCity.getText().toString().trim();
         String finalState=etState.getText().toString().trim();
 
-        helperDb.open();
+        //helperDb.open();
         helperDb.savetblDistributorMappingData(UniqueDistribtrMapId,""+DistribtrId_Global,""+DistributorNodeType_Global,flgGSTCapture,flgGSTCompliance,
                 GSTNumber,finalAddress,finalPinCode,finalCity,finalState,SOLattitudeFromLauncher,SOLongitudeFromLauncher,
                 SOAccuracyFromLauncer,"0",SOProviderFromLauncher,SOAllProvidersLocationFromLauncher,fnAddressFromLauncher,
@@ -1977,7 +1977,7 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
                 SOFusedLocationAccuracyWithFirstAttemptFromLauncher,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart);
 
 
-        helperDb.close();
+        //helperDb.close();
         try
         {
            FullSyncDataNow task = new FullSyncDataNow(DistributorMapActivity.this);
@@ -2087,12 +2087,12 @@ public class DistributorMapActivity extends BaseActivity implements LocationList
                 DA.close();
 
                 helperDb.savetbl_XMLfiles(newfullFileName, "3","2");
-                helperDb.open();
+                //helperDb.open();
 
                 helperDb.UpdateDistributerFlag(UniqueDistribtrMapId, 4);
 
 
-                helperDb.close();
+                //helperDb.close();
 
                 helperDb.fnupdateDisributorMstrLocationtrackRemapFlg(UniqueDistribtrMapId);
 

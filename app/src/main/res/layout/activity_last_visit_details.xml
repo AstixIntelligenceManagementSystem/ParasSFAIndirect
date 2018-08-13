@@ -1222,7 +1222,7 @@ android:visibility="gone"
 				android:layout_below="@id/parentOfAllPaymentStructure"
 				android:layout_marginLeft="15dp"
 				android:layout_marginTop="10dp"
-				android:text="Outstanding Details :"
+				android:text="Previous Outstanding :"
 				android:textSize="14sp"
 				android:textStyle="bold" />
 

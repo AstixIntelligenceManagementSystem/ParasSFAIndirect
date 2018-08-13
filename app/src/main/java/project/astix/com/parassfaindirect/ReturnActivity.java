@@ -738,9 +738,9 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 		SN = passedvals.getStringExtra("SN");
 		OrderPDAID= passedvals.getStringExtra("OrderPDAID");
 		flgPageToRedirect= passedvals.getStringExtra("flgPageToRedirect");
-		dbengine.open();
+		//dbengine.open();
 		routeID= dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
 
 
 
@@ -860,9 +860,9 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 
 						String productIdOfSpnr=(spnr_comment.getTag().toString()).split(Pattern.quote("_"))[1];
 						EditText edForProductReturn=(EditText) ll_prdct_detal.findViewWithTag("etReturnQty_"+productIdOfSpnr);
-						dbengine.open();
+						//dbengine.open();
 						dbengine.updateReason(storeID, productIdOfSpnr, spnr_comment.getSelectedItem().toString());
-						dbengine.close();
+						//dbengine.close();
 						String sipnerval="0";
 						hmapPhotoDetail.put(productIdOfSpnr, spnr_comment.getSelectedItem().toString()+"~"+hmapPrdctIdPrdctName.get(productIdOfSpnr));
 						if(hmapRtrnRsn.containsKey(spnr_comment.getSelectedItem().toString()))

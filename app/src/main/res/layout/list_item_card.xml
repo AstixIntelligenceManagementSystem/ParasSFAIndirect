@@ -29,7 +29,7 @@
 				android:orientation="horizontal"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:weightSum="6.5"
+				android:weightSum="7.5"
 				android:gravity="center"
 				>
 
@@ -42,7 +42,7 @@
 
 					android:textColor="#000000"
 					android:textSize="12sp"
-					android:layout_weight="3.2"/>
+					android:layout_weight="4.2"/>
 
 				<ImageView
 					android:id="@+id/btnExcptn"
@@ -74,7 +74,7 @@
 					android:layout_height="wrap_content"
 					android:singleLine="true"
 					android:gravity="center"
-					android:layout_marginLeft="8dp"
+					android:layout_marginLeft="10dp"
 					android:enabled="false"
 					android:padding="1dp"
 					android:textSize="12sp"
@@ -125,8 +125,11 @@
 					android:gravity="center"
 					android:layout_marginLeft="2dp"
 					android:enabled="false"
-					android:padding="1dp"
-					android:textSize="12sp"
+					android:paddingLeft="1dp"
+					android:paddingRight="1dp"
+					android:paddingTop="4dp"
+					android:paddingBottom="3.5dp"
+					android:textSize="8sp"
 					android:text="NA/0"
 					android:textColor="#000000"
 					android:background="@drawable/edit_text_diable_bg_transprent"

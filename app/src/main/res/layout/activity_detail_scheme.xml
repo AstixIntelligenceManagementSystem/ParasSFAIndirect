@@ -275,6 +275,7 @@
       <View 
        android:layout_width="match_parent"
        android:layout_height="1dp"
+          android:visibility="gone"
        android:background="#80B0BEC5"/>
            <TableRow 
         android:id="@+id/table_invc_val_aftr_dscnt" 
@@ -530,6 +531,7 @@
             <View 
        android:layout_width="match_parent"
        android:layout_height="1dp"
+                android:visibility="gone"
        android:background="#80B0BEC5"/>
            <TableRow 
         android:id="@+id/table_amnt_prv_due" 
@@ -740,7 +742,7 @@
            android:id="@+id/table_trTotalAmtCollected"
            android:layout_height="wrap_content"
            android:layout_width="match_parent"
-           android:visibility="visible"
+           android:visibility="gone"
            android:weightSum="6">
            <TextView
                android:id="@+id/tvTotalAmtCollectedNew"
@@ -786,11 +788,9 @@
        <View
            android:layout_width="match_parent"
            android:layout_height="1dp"
+
            android:background="#80B0BEC5"/>
-       <View
-           android:layout_width="match_parent"
-           android:layout_height="1dp"
-           android:background="#80B0BEC5"/>
+
    </TableLayout>
                 
            

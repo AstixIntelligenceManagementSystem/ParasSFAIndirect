@@ -52,7 +52,11 @@ public class NotificationActivity extends BaseActivity
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_notification);
-		
+		if(dbengine.isDBOpen()==false)
+		{
+			dbengine.open();
+		}
+
 		Intent passedvals = getIntent();
 		
 		
@@ -72,7 +76,7 @@ public class NotificationActivity extends BaseActivity
 				String Noti_ReadDateTime,int Noti_outStat)*/
 		tbl1_dyntable_For_Notification = (TableLayout) findViewById(R.id.dyntable_For_Notification);
 		
-		dbengine.open();
+		//dbengine.open();
 		int SerialNo=dbengine.countNoRowIntblNotificationMstr();
 		System.out.println("Sunil LastNitificationrList SerialNo : "+SerialNo);
 		//String LastOrderDetail[]=dbengine.fetchAllDataFromtblFirstOrderDetailsOnLastVisitDetailsActivity(storeID);
@@ -80,7 +84,7 @@ public class NotificationActivity extends BaseActivity
 		//String LastNitificationrList[]={"10-06-2015_Hi ","11-06-2015_Bye "};
 		
 		System.out.println("Sunil LastNitificationrList : "+LastNitificationrList.length);
-		dbengine.close();
+		//dbengine.close();
 		
 		LayoutInflater inflater = getLayoutInflater();
 		
@@ -167,9 +171,9 @@ public class NotificationActivity extends BaseActivity
 	    SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
 		String passDate = sdf.format(date1).toString();
 		String fDate = passDate.trim().toString();
-		dbengine.open();
+		//dbengine.open();
 		rID=dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
         Intent submitStoreIntent = new Intent(NotificationActivity.this, StoreSelection.class);
         
         

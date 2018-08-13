@@ -1,8 +1,10 @@
 package project.astix.com.parassfaindirect;
 
+import android.app.ActivityManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -148,7 +150,11 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
     private RadioButton rb_yes;
     private RadioButton rb_no;
 
-
+    Context ctx;
+    //private MyService mMyService;
+    public Context getCtx() {
+        return ctx;
+    }
     public void customHeader()
     {
 
@@ -434,10 +440,10 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
     public void fnGetDistributorList()
     {
 
-        dbengine.open();
+        //dbengine.open();
         Distribtr_list=dbengine.getDistributorData();
 
-        dbengine.close();
+        //dbengine.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             //System.out.println("DISTRIBUTOR........"+Distribtr_list[i]);
@@ -498,6 +504,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_daystart);
+        ctx=this;
         Intent intent=getIntent();
         intentFrom= intent.getIntExtra("IntentFrom", 0);
         sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
@@ -1032,7 +1039,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             mapFrag.getMapAsync(DayStartActivity.this);
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.show(mapFrag);
-            dbengine.open();
+            //dbengine.open();
             dbengine.savetblAttandanceDetails(txt_DayStarttime.getText().toString().trim(),PersonNodeID,PersonNodeType,PersonName,OptionID,OptionDesc,
                     ReasonId,ReasonText,FusedAddress,finalPinCode,finalCity,finalState,fnLati,fnLongi,
                     finalAccuracy,"0",fnAccurateProvider,AllProvidersLocation,FusedAddress,
@@ -1043,7 +1050,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                     FusedLocationAccuracyWithFirstAttempt,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,
                     flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart, cityID, StateID, MapAddress, MapCity, MapPincode, MapState);
 
-            dbengine.close();
+            //dbengine.close();
 
 
 
@@ -1090,7 +1097,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.show(mapFrag);
 
-                dbengine.open();
+                //dbengine.open();
                 dbengine.savetblAttandanceDetails(txt_DayStarttime.getText().toString().trim(),PersonNodeID,PersonNodeType,PersonName,OptionID,OptionDesc,
                         ReasonId,ReasonText,FusedAddress,finalPinCode,finalCity,finalState,fnLati,fnLongi,
                         finalAccuracy,"0",fnAccurateProvider,AllProvidersLocation,FusedAddress,
@@ -1101,7 +1108,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                         FusedLocationAccuracyWithFirstAttempt,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,
                         flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart, cityID, StateID, MapAddress, MapCity, MapPincode, MapState);
 
-                dbengine.close();
+                //dbengine.close();
 
 
 
@@ -1481,17 +1488,17 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             try {
 
 
-               /* dbengine.open();
+               /* //dbengine.open();
                 String rID=dbengine.GetActiveRouteID();
-                 dbengine.close();
+                 //dbengine.close();
 */
 
 
              //  pDialog2.dismiss();
-                   // dbengine.open();
+                   // //dbengine.open();
 
                     //dbengine.updateActiveRoute(rID, 0);
-                   // dbengine.close();
+                   // //dbengine.close();
                     // sync here
 
 
@@ -1541,9 +1548,9 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
         Date dateobj = new Date(syncTIMESTAMP);
 
 
-        dbengine.open();
+        //dbengine.open();
         String presentRoute="0";
-        dbengine.close();
+        //dbengine.close();
         //syncTIMESTAMP = System.currentTimeMillis();
         //Date dateobj = new Date(syncTIMESTAMP);
         SimpleDateFormat df = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
@@ -1577,12 +1584,26 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
 
             if(isOnline())
             {
-                Intent syncIntent = new Intent(DayStartActivity.this, SyncMaster.class);
+
+
+                Intent mMyServiceIntent = new Intent(getCtx(), MyService.class);
+                mMyServiceIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
+                mMyServiceIntent.putExtra("OrigZipFileName", newfullFileName);
+                mMyServiceIntent.putExtra("whereTo", "DayStart");//
+                if (!isMyServiceRunning(MyService.class)) {
+                    startService(mMyServiceIntent);
+                }
+
+                Intent intent=new Intent(DayStartActivity.this,AllButtonActivity.class);
+                startActivity(intent);
+                finish();
+
+                /*Intent syncIntent = new Intent(DayStartActivity.this, SyncMaster.class);
                 syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
                 syncIntent.putExtra("OrigZipFileName", newfullFileName);
                 syncIntent.putExtra("whereTo", "DayStart");
                 startActivity(syncIntent);
-                finish();
+                finish();*/
             }
             else
             {
@@ -1595,5 +1616,18 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             e.printStackTrace();
         }
 
+    }
+
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("isMyServiceRunning?", true+"");
+                return true;
+            }
+        }
+        Log.i ("isMyServiceRunning?", false+"");
+        return false;
     }
 }

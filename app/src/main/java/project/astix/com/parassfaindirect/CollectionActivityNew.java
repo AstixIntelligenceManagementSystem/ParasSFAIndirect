@@ -1,6 +1,7 @@
 package project.astix.com.parassfaindirect;
 
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -21,6 +22,8 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -74,9 +77,12 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class CollectionActivityNew extends BaseActivity  implements DatePickerDialog.OnDateSetListener, LocationListener,GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,InterfaceClass
+        GoogleApiClient.OnConnectionFailedListener,InterfaceClass,View.OnFocusChangeListener
 {
 /* For Location Srvices Start*/
+
+    CustomKeyboard mCustomKeyboardNum, mCustomKeyboardNumWithoutDecimal;
+
 public String VisitTimeInSideStore="NA";
     public  int flgRestartOrderReview=0;
     public  int flgStoreOrderOrderReview=0;
@@ -190,6 +196,36 @@ Double OverAllAmountCollected=0.0;
 
     HashMap<String,Integer> hmapDistPrdctStockCount =new HashMap<String,Integer>();
     HashMap<String,String> hmapPrdctIdOutofStock=new HashMap<String,String> ();
+    Context ctx;
+    //private MyService mMyService;
+    public Context getCtx() {
+        return ctx;
+    }
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+            mCustomKeyboardNumWithoutDecimal.hideCustomKeyboard();
+            mCustomKeyboardNum.hideCustomKeyboard();
+
+            return false;
+
+
+//			return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_HOME) {
+            // finish();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_SEARCH) {
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -197,7 +233,7 @@ Double OverAllAmountCollected=0.0;
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
         setContentView(R.layout.collection_activity);
-
+ctx=this;
         StoreSelection.flgChangeRouteOrDayEnd=0;
         locationManager=(LocationManager) this.getSystemService(LOCATION_SERVICE);
 
@@ -237,6 +273,8 @@ Double OverAllAmountCollected=0.0;
         }
 
         hashmapBank = dbengine.fnGettblBankMaster();
+        mCustomKeyboardNum = new CustomKeyboard(this, R.id.keyboardviewNum, R.xml.num);
+        mCustomKeyboardNumWithoutDecimal = new CustomKeyboard(this, R.id.keyboardviewNumDecimal, R.xml.num_without_decimal);
 
         getDataFromIntent();
 
@@ -463,7 +501,12 @@ Double OverAllAmountCollected=0.0;
         amountEdittextSecond=(EditText) findViewById(R.id.amountEdittextSecond);
         amountEdittextThird=(EditText) findViewById(R.id.amountEdittextThird);
 
+        amountEdittextFirst.setOnFocusChangeListener(this);
+        amountEdittextSecond.setOnFocusChangeListener(this);
+        amountEdittextThird.setOnFocusChangeListener(this);
+        et_SelfCreditNote.setOnFocusChangeListener(this);
         checqueNoEdittextSecond=(EditText) findViewById(R.id.checqueNoEdittextSecond);
+        checqueNoEdittextSecond.setOnFocusChangeListener(this);
         checqueNoEdittextThird=(EditText) findViewById(R.id.checqueNoEdittextThird);
 
 
@@ -694,7 +737,7 @@ Double OverAllAmountCollected=0.0;
         amountEdittextSecond.setEnabled(true);
 
        // paymentModeSpinnerThird.setText("Electronic");
-        paymentModeSpinnerThird.setText("Mobile");
+        paymentModeSpinnerThird.setText("Digital");
         amountEdittextThird.setEnabled(true);
 
 
@@ -730,9 +773,9 @@ Double OverAllAmountCollected=0.0;
             BankSpinnerThird.setEnabled(true);
         }*/
 
-        if(paymentModeSpinnerThird.equals("Mobile"))
+        if(paymentModeSpinnerThird.equals("Digital"))
         {
-            paymentModeSpinnerThird.setText("Mobile");
+            paymentModeSpinnerThird.setText("Digital");
             dateTextViewThird.setBackgroundResource(R.drawable.outside_boundry_gray);
             checqueNoEdittextThird.setBackgroundResource(R.drawable.edittext_with_gray_background);//.edittex_with_white_background);
             BankSpinnerThird.setBackgroundResource(R.drawable.spinner_background_with_rectangle);
@@ -1258,17 +1301,17 @@ Double OverAllAmountCollected=0.0;
 
 
                                        butClickForGPS=3;
-                                       dbengine.open();
+                                       //dbengine.open();
                                        if ((dbengine.PrevLocChk(storeID.trim(),StoreVisitCode)) )
                                        {
-                                           dbengine.close();
+                                           //dbengine.close();
 
                                            FullSyncDataNow task = new FullSyncDataNow(CollectionActivityNew.this);
                                            task.execute();
                                        }
                                        else
                                        {
-                                           dbengine.close();
+                                           //dbengine.close();
                                          appLocationService=new AppLocationService();
 
 								/* pm = (PowerManager) getSystemService(POWER_SERVICE);
@@ -1441,7 +1484,7 @@ Double OverAllAmountCollected=0.0;
         if(!TextUtils.isEmpty(amountEdittextFirst.getText().toString()) || !TextUtils.isEmpty(amountEdittextSecond.getText().toString()) || !TextUtils.isEmpty(amountEdittextThird.getText().toString()))
         {
             CollectionCode=getCollectionCode();
-            dbengine.open();
+            //dbengine.open();
             dbengine.deleteWhereStoreId(storeIDGlobal,strGlobalOrderID,TmpInvoiceCodePDA);
 
             if(!AmountFirstString.equals("0")){
@@ -1461,7 +1504,7 @@ Double OverAllAmountCollected=0.0;
                     ChequeNoSecondString, DateSecondString, BankSecondString,
                     paymentModeThirdString, AmountThirdString,
                     ChequeNoThirdString, DateThirdString, BankThirdString,strGlobalOrderID);*/
-            dbengine.close();
+            //dbengine.close();
         }
         else
         {
@@ -1545,12 +1588,11 @@ Double OverAllAmountCollected=0.0;
         OverAllAmountCollectedLimit=Double.parseDouble(new DecimalFormat("##.##").format(OverAllAmountCollectedLimit));
         OverAllAmountCollected=Double.parseDouble(new DecimalFormat("##.##").format(OverAllAmountCollected));
 
-      /*  Double MinCollectionvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
+        Double MinCollectionvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
         MinCollectionvalue=Double.parseDouble(new DecimalFormat("##.##").format(MinCollectionvalue));
-*/
 
 
-        Double cntInvoceValue=dbengine.fetch_Store_InvValAmount(storeID,TmpInvoiceCodePDA);
+       /* Double cntInvoceValue=dbengine.fetch_Store_InvValAmount(storeID,TmpInvoiceCodePDA);
         cntInvoceValue=Double.parseDouble(new DecimalFormat("##.##").format(cntInvoceValue));
 
 
@@ -1578,7 +1620,7 @@ Double OverAllAmountCollected=0.0;
             valSelfCreditNote=Double.parseDouble(et_SelfCreditNote.getText().toString());
             valSelfCreditNote=Double.parseDouble(new DecimalFormat("##.##").format(valSelfCreditNote));
         }
-
+*/
 
         if(ll_collectionMandatory.getVisibility()==View.VISIBLE && cb_collection.isChecked()==false && lnCollection.getVisibility()==View.VISIBLE && OverAllAmountCollected==0.0)
         {
@@ -1590,26 +1632,26 @@ Double OverAllAmountCollected=0.0;
         }
         else
         {
-           // if(Math.ceil(OverAllAmountCollected) < Math.ceil(MinCollectionvalue))
-            if(Math.ceil(OverAllAmountCollected) < Math.ceil(totOutstandingValue))
+            if(Math.ceil(OverAllAmountCollected) < Math.ceil(MinCollectionvalue))
+            //if(Math.ceil(OverAllAmountCollected) < Math.ceil(totOutstandingValue))
             {
                 // showAlertSingleButtonError("Collection Amount can not be less then "+MinCollectionvalue);
                 showAlertSingleAfterCostumValidationForAmountCollection("Collected amount is less than the minimum collection amount , current invoice cannot be made.\nClick CANCEL & EXIT to close Invoice and exit current visit. \nClick on UPDATE PAYMENT to update Collection amount.");
                 return false;
             }
-            //else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(MinCollectionvalue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
+            else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(MinCollectionvalue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
             //else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(totOutstandingValue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
-            else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(totOutstandingValue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
+            //else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(totOutstandingValue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
             {
-                if(Math.ceil(valSelfCreditNote)<=Math.ceil(totOutstandingValue))
+             /*   if(Math.ceil(valSelfCreditNote)<=Math.ceil(totOutstandingValue))
                 {
                     return true;
                 }
                 else
-                {
+                {*/
                     showAlertSingleButtonError("Self Credit Amt can not be greater then overall Total Outstanding.");
                     return false;
-                }
+               // }
 
             }
             else
@@ -1991,6 +2033,34 @@ Double OverAllAmountCollected=0.0;
 
     }
 
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+
+        if(hasFocus)
+        {
+            mCustomKeyboardNumWithoutDecimal.hideCustomKeyboardNum(v);
+            mCustomKeyboardNum.hideCustomKeyboardNum(v);
+            if(v instanceof EditText)
+            {
+                EditText edtBox= (EditText) v;
+                if(v.getId()==R.id.amountEdittextFirst || v.getId()==R.id.amountEdittextSecond || v.getId()==R.id.amountEdittextThird || v.getId()==R.id.et_SelfCreditNote)
+                {
+                    mCustomKeyboardNum.registerEditText(edtBox);
+                    mCustomKeyboardNum.showCustomKeyboard(v);
+                }
+                else if(v.getId()==R.id.checqueNoEdittextSecond )
+                {
+                    mCustomKeyboardNumWithoutDecimal.registerEditText(edtBox);
+                    mCustomKeyboardNumWithoutDecimal.showCustomKeyboard(v);
+                }
+
+
+            }
+        }
+
+
+    }
+
 
     private class FullSyncDataNow extends AsyncTask<Void, Void, Void> {
 
@@ -2022,9 +2092,9 @@ Double OverAllAmountCollected=0.0;
 
             int Outstat=1;
            flgTransferStatus=1;
-            dbengine.open();
+            //dbengine.open();
             dbengine.fnUpdateflgTransferStatusInInvoiceHeader(storeID,StoreVisitCode,TmpInvoiceCodePDA,flgTransferStatus);
-            dbengine.close();
+            //dbengine.close();
             //InvoiceTableDataDeleteAndSaving(Outstat,flgTransferStatus);
             //TransactionTableDataDeleteAndSaving(Outstat);
             Double cntInvoceValue=dbengine.fetch_Store_InvValAmount(storeID,TmpInvoiceCodePDA);
@@ -2067,7 +2137,7 @@ Double OverAllAmountCollected=0.0;
             String StampEndsTime = df.format(dateobj);
 
 
-            dbengine.open();
+            //dbengine.open();
             dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
             dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3",strGlobalOrderID,TmpInvoiceCodePDA);
             dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"3",strGlobalOrderID,TmpInvoiceCodePDA);
@@ -2079,7 +2149,7 @@ Double OverAllAmountCollected=0.0;
 
             //dbengine.UpdateStoreReturnphotoFlag(storeID.trim(), 5);
 
-            dbengine.close();
+            //dbengine.close();
 
             Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
             outstandingvalue=Double.parseDouble(new DecimalFormat("##.##").format(outstandingvalue));
@@ -2093,15 +2163,15 @@ Double OverAllAmountCollected=0.0;
                 String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
                 if(!strDefaultPaymentStageForStore.equals(""))
                 {
-                    dbengine.open();
+                    //dbengine.open();
                     dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"3",TmpInvoiceCodePDA);
-                    dbengine.close();
+                    //dbengine.close();
                 }
             }
 
-            dbengine.open();
+            //dbengine.open();
             String presentRoute=dbengine.GetActiveRouteID();
-            dbengine.close();
+            //dbengine.close();
 
 
 			/*long syncTIMESTAMP = System.currentTimeMillis();
@@ -2158,13 +2228,31 @@ Double OverAllAmountCollected=0.0;
             {
                 StoreSelection.flgChangeRouteOrDayEnd=0;
                 DayStartActivity.flgDaySartWorking=0;
-                Intent syncIntent = new Intent(CollectionActivityNew.this, SyncMaster.class);
+                String presentRoute = dbengine.GetActiveRouteID();
+                Intent mMyServiceIntent = new Intent(getCtx(), MyService.class);
+                mMyServiceIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
+                mMyServiceIntent.putExtra("storeID", storeID);
+                mMyServiceIntent.putExtra("OrigZipFileName", newfullFileName);
+                mMyServiceIntent.putExtra("whereTo", "Regular");//
+                if (!isMyServiceRunning(MyService.class)) {
+                    startService(mMyServiceIntent);
+                }
+
+                Intent prevP2 = new Intent(CollectionActivityNew.this, StoreSelection.class);
+                //Location_Getting_Service.closeFlag = 0;
+                prevP2.putExtra("imei", imei);
+                prevP2.putExtra("userDate", date);
+                prevP2.putExtra("pickerDate", pickerDate);
+                prevP2.putExtra("rID", presentRoute);
+                startActivity(prevP2);
+                finish();
+               /* Intent syncIntent = new Intent(CollectionActivityNew.this, SyncMaster.class);
                 //syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/RSPLSFAXml/" + newfullFileName + ".xml");
                 syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
                 syncIntent.putExtra("OrigZipFileName", newfullFileName);
                 syncIntent.putExtra("whereTo", "Regular");
                 startActivity(syncIntent);
-                finish();
+                finish();*/
             } catch (Exception e) {
 
                 e.printStackTrace();
@@ -2450,7 +2538,7 @@ Double OverAllAmountCollected=0.0;
                 String FusedAccuracy="0";
                 String FusedAddress="0";
                 checkHighAccuracyLocationMode(CollectionActivityNew.this);
-                dbengine.open();
+                //dbengine.open();
                 dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview,StoreVisitCode,VisitTimeInSideStore);
 
 
@@ -2846,11 +2934,11 @@ Double OverAllAmountCollected=0.0;
     public void UpdateLocationAndProductAllData()
     {
         checkHighAccuracyLocationMode(CollectionActivityNew.this);
-        dbengine.open();
+        //dbengine.open();
         dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview,StoreVisitCode,VisitTimeInSideStore);
 
 
-        dbengine.close();
+        //dbengine.close();
 
         if(butClickForGPS==3)
         {
@@ -2890,5 +2978,16 @@ Double OverAllAmountCollected=0.0;
 
         // Showing Alert Message
         alertDialog.show();
+    }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("isMyServiceRunning?", true+"");
+                return true;
+            }
+        }
+        Log.i ("isMyServiceRunning?", false+"");
+        return false;
     }
 }

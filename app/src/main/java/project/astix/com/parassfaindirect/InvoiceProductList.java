@@ -125,9 +125,9 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 			try
 			{
 
-			dbengine.open();
+			//dbengine.open();
 			String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-			dbengine.close();
+			//dbengine.close();
 			System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 			if(!Noti_textWithMsgServerID.equals("Null"))
 			{
@@ -181,13 +181,13 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String Noti_ReadDateTime = df.format(dateobj);
 					    	
-								dbengine.open();
+								//dbengine.open();
 								dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-								dbengine.close();
+								//dbengine.close();
 								
 								try
 								{
-									dbengine.open();
+									//dbengine.open();
 								    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
 								    if(checkleftNoti>0)
 								    {
@@ -200,7 +200,7 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 												MsgServerID= Integer.parseInt(token.nextToken().trim());
 												Noti_text= token.nextToken().trim();
 												
-												dbengine.close();
+												//dbengine.close();
 												if(Noti_text.equals("") || Noti_text.equals("Null"))
 												{
 													
@@ -224,7 +224,7 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 								}
 					            finally
 					            {
-					            	dbengine.close();
+					            	//dbengine.close();
 								   
 					            }
 				            
@@ -288,12 +288,12 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 		System.out.println("Dangi new  testing SelectStoreTag on Invoice ProductList :"+SelectStoreTag);
 		
 		 tl2 = (TableLayout) findViewById(R.id.dynprodtable);
-		 dbengine.open();
+		 //dbengine.open();
 		String Distname=dbengine.FetchDistNameBasedDistID(TagDistID);
 		Storename=dbengine.FetchStoreNameBasedStoreID(TagStoreID,TagDate);
 		CATID=dbengine.FetchCategoryID(); 
 		CATDesc=dbengine.FetchCategoryDesc();
-		dbengine.close();
+		//dbengine.close();
 			
 			DistriName.setText(Distname);
 			StrName.setText(Storename);
@@ -304,7 +304,7 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 			if(CATID.length>0)
 			{
 				System.out.println("Sameer 2");
-				dbengine.open();
+				//dbengine.open();
 				PID = dbengine.FetchPidInvoice(TagStoreID,TagDate,TagOrderID);
 				System.out.println("Singh Testing PID one:");
 				System.out.println("Singh Testing PID :"+PID.length);
@@ -336,7 +336,7 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 				//Oqty=dbengine.FetchOrderQtyInvoice(StoreID);
 				
 				CATIDFomProduct=dbengine.FetchCategoryIDfromInvoiceProduct(); 
-				dbengine.close();
+				//dbengine.close();
 				
 				
 				ProductID = new String[PID.length];
@@ -380,9 +380,9 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 						final EditText et4 = (EditText)row.findViewById(R.id.tvDiscountVal);
 						
 						tv1.setTag(current);
-						dbengine.open();
+						//dbengine.open();
 						String PName=dbengine.FetchPNameInvoice(ProductID[current]);
-						dbengine.close();
+						//dbengine.close();
 						tv1.setText(PName);
 						tv1.setTextSize(12);
 						et1.setTag(current);
@@ -429,7 +429,7 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 				// TODO Auto-generated method stub
 				
 				int picsCHK = 0;//dbengine.getExistingPicNos(fStoreID);
-				//dbengine.close();
+				////dbengine.close();
 				
 				if(picsCHK <= 0 && isOnline()){
 					
@@ -468,10 +468,10 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 									
 									
 				                      dbengine.UpdateProductCancelStoreFlag(TagOrderID.trim(),1);
-				                      dbengine.open();
+				                      //dbengine.open();
 				                      dbengine.saveInvoiceButtonStoreTransac("NA",TagDate,TagStoreID,"0","0",0.0, 0,
 				                              0, 0,TagOrderID,"","9",1,0.0,TagRouteID,"0");
-				                      dbengine.close();
+				                      //dbengine.close();
 									Intent fireBackDetPg = new Intent(InvoiceProductList.this, InvoiceStoreSelection.class);
 								
 								
@@ -624,11 +624,11 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 				       
 					//	dialog.dismiss();
 						
-						dbengine.open();
+						//dbengine.open();
 						// change by sunil
 						dbengine.deleteOldInvoiceButtonStoreTransac(StoreID);
 						//dbengine.deleteOldStoreInvoice(fStoreID);
-						dbengine.close();
+						//dbengine.close();
 						//for(int countRow = 0; countRow <= tl2.getChildCount()-1; countRow++){
 						for (int countRow = 0; countRow <= (ProductID.length - 1); countRow++)
 						{
@@ -684,7 +684,7 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 								dVal[countRow] = 0.0;
 							}
 							
-							dbengine.open();
+							//dbengine.open();
 							// change by sunil
 							//String OrderID=dbengine.FetchOrderIDInvoice(ProductID[countRow]);
 							//String OrderID=dbengine.FetchOrderIDInvoiceStoremstr(StoreID);
@@ -696,7 +696,7 @@ public class InvoiceProductList  extends BaseActivity implements OnItemSelectedL
 									TagStoreID,ProductID[countRow],pName[countRow],rte[countRow], oQty[countRow],
 									DelQty[countRow], fQty[countRow],TagOrderID,CurrentRowCategoryId,"9",0,dVal[countRow],TagRouteID,additionalDiscountValue);
 							//dbengine.saveStoreTransac(imei, pickerDate, StoreID, ProductID[countRow], stk[countRow], oQty[countRow], oVal[countRow], fQty[countRow], dVal[countRow], AppliedSchemeID, AppliedSlab, AppliedAbsVal, newSampleQty, pName[countRow], rte[countRow],CurrentRowCategoryId);//, DisplayName
-							dbengine.close();
+							//dbengine.close();
 						}
 						
 						

@@ -67,9 +67,9 @@ public class DetailReportSummaryActivity extends BaseActivity
 	{
 		// TODO Auto-generated method stub
 		super.onResume();
-		dbengine.open();
+		//dbengine.open();
 		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		//dbengine.close();
 
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -78,7 +78,7 @@ public class DetailReportSummaryActivity extends BaseActivity
 			MsgServerID= Integer.parseInt(token.nextToken().trim());
 			Noti_text= token.nextToken().trim();
 
-			dbengine.close();
+			//dbengine.close();
 			if(Noti_text.equals("") || Noti_text.equals("Null"))
 			{
 
@@ -98,10 +98,10 @@ public class DetailReportSummaryActivity extends BaseActivity
 								SimpleDateFormat df = new SimpleDateFormat(
 										"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String Noti_ReadDateTime = df.format(dateobj);
-								dbengine.open();
+								//dbengine.open();
 
 								dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-								dbengine.close();
+								//dbengine.close();
 								dialog.dismiss();
 
 							}
@@ -274,9 +274,9 @@ public class DetailReportSummaryActivity extends BaseActivity
 		{
 			super.onPreExecute();
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateAllSummaryDayDataTable();
-			dbengine.close();
+			//dbengine.close();
 
 
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -320,12 +320,12 @@ public class DetailReportSummaryActivity extends BaseActivity
 			{
 				pDialogGetStores.dismiss();
 			}
-			dbengine.open();
+			//dbengine.open();
 
 			getDataFromDatabase();
 
 
-			dbengine.close();
+			//dbengine.close();
 
 
 

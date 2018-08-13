@@ -74,9 +74,9 @@ public class StoreWiseFragmentTwoTab<Context> extends Fragment
 		
 		//'868087024619932','29-10-2015'  
 		int flgReportFromTmpOrPermanent=0;
-		dbengine.open();
+		//dbengine.open();
       int check=dbengine.fnCountToDisplayDailySummaryDetailsStoreWiseLines(1,flgReportFromTmpOrPermanent);
-      dbengine.close();
+      //dbengine.close();
 		System.out.println("lucky value check :"+check);
 		
 		if(check==0)
@@ -86,9 +86,9 @@ public class StoreWiseFragmentTwoTab<Context> extends Fragment
 		}
 		else
 		{
-			//dbengine.open();
+			////dbengine.open();
 			hmapAll_details=dbengine.fnGetDailySummaryDetailsStoreWise(1,flgReportFromTmpOrPermanent);
-			//dbengine.close();
+			////dbengine.close();
             intializeFields();
 		}
 		

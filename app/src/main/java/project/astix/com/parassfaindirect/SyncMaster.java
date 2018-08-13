@@ -216,7 +216,7 @@ public class SyncMaster extends Activity
 
 					dialog.dismiss();
 
-					db.open();
+					//db.open();
 					//System.out.println("Indubati flgChangeRouteOrDayEnd :"+StoreSelection_Old.flgChangeRouteOrDayEnd);
 					/*if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 					{
@@ -225,7 +225,7 @@ public class SyncMaster extends Activity
 
 
 					db.reCreateDB();
-					db.close();
+					//db.close();
 
 					Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
 					startActivity(submitStoreIntent);
@@ -346,18 +346,18 @@ public class SyncMaster extends Activity
 			   if(serverResponseCode==200)
 			    {
 				// System.out.println("Ajay delete file from sdcard"+ new File(dir, fileUri).delete());
-				   dbengine.open();
+				   //dbengine.open();
 				   dbengine.upDateTextFileFlag(fileUri, 1);
-				   dbengine.close();
+				   //dbengine.close();
 				   		new File(dir, fileUri).delete();
 			           // System.out.println("Ajay file deleted");
-			         //   dbengine.open();
+			         //   //dbengine.open();
 			           // System.out.println("Ajay  delete file from our database start");
-				   		dbengine.open();
+				   		//dbengine.open();
 			            dbengine.deleteTextFileRow(fileUri);
-			            dbengine.close();
+			            //dbengine.close();
 			           // System.out.println("Ajay delete file from our database end");
-			          //  dbengine.close();
+			          //  //dbengine.close();
 
 
 			        //}
@@ -455,19 +455,19 @@ public class SyncMaster extends Activity
 			 String[] fp2s; // = "/mnt/sdcard/NMPphotos/1539_24-05-2013_1.jpg";
 
 				try {
-					db.open();
+					//db.open();
 					String[] sySTidS = db.getStoreIDTblSelectedStoreIDinChangeRouteCase();
 					//String date= db.GetPickerDate();
-					db.close();
+					//db.close();
 					/*for(int chkCountstore=0; chkCountstore < sySTidS.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int syUPlimit = db.getExistingPicNos(sySTidS[chkCountstore].toString());
 						String[] syP2F = db.getImgsPath(sySTidS[chkCountstore].toString());
 						String[] syC4P = db.getImgsComment(sySTidS[chkCountstore].toString());
 
 						String actRid = db.GetActiveRouteID();
-						db.close();
+						//db.close();
 
 						//fp2s = new String[syUPlimit];
 						fp2s = new String[5];
@@ -507,11 +507,11 @@ public class SyncMaster extends Activity
 				} catch (Exception e)
 				{
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				} /*catch (ExecutionException e) {
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				}*/
 
@@ -654,9 +654,9 @@ public class SyncMaster extends Activity
 						if(whereTo.contentEquals("11"))
 						{
 							int chkSct=0;
-							/*db.open();
+							/*//db.open();
 							chkSct=db.getExistingPicNosOnRemStoreOnChangeRoute();
-							db.close();*/
+							//db.close();*/
 							if(chkSct>0)
 							{
 								whereTo = "";
@@ -675,14 +675,14 @@ public class SyncMaster extends Activity
 								deleteFolderFiles(dirORIGimg);*/
 
 
-								db.open();
+								//db.open();
 								if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 								{
 									db.reTruncateRouteTbl();
 									//db.reTruncateRouteMstrTbl();
 								}
 								db.reCreateDB();
-								db.close();
+								//db.close();
 
 								Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
 								startActivity(submitStoreIntent);
@@ -918,7 +918,7 @@ public class SyncMaster extends Activity
 
 	    						dialog.dismiss();
 
-	    					//	db.open();
+	    					//	//db.open();
 	    						//System.out.println("Indubati flgChangeRouteOrDayEnd :"+StoreSelection_Old.flgChangeRouteOrDayEnd);
 	    						if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 	    						{
@@ -927,7 +927,7 @@ public class SyncMaster extends Activity
 
 
 	    					//	db.reCreateDB();
-	    					//	db.close();
+	    					//	//db.close();
 	    						ProductOrderSearch pd=new ProductOrderSearch();
 	    						Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
 	    						startActivity(submitStoreIntent);
@@ -970,9 +970,9 @@ public class SyncMaster extends Activity
 		  {
 			    super.onPreExecute();
 
-			    dbengine.open();
+			    //dbengine.open();
 			    routeID=dbengine.GetActiveRouteID();
-				dbengine.close();
+				//dbengine.close();
 
 
 			    pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -1044,22 +1044,22 @@ public class SyncMaster extends Activity
 
 					  try
 						{
-							db.open();
+							//db.open();
 							NoOfOutletID = db.getAllStoreIDIntblStoreMaterialPhotoDetail();
-							db.close();
+							//db.close();
 
 						} catch (Exception e)
 						{
 							// TODO Auto-generated catch block
-							db.close();
+							//db.close();
 							e.printStackTrace();
 						}
 				for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 				{
-					db.open();
+					//db.open();
 					int NoOfImages = db.getExistingPicNos(NoOfOutletID[chkCountstore].toString());
 					String[] NoOfImgsPath = db.getImgsPath(NoOfOutletID[chkCountstore].toString());
-					db.close();
+					//db.close();
 
 					fp2s = new String[2];
 
@@ -1203,23 +1203,23 @@ public class SyncMaster extends Activity
 					  try
 						{
 
-							db.open();
+							//db.open();
 							NoOfOutletID = db.getAllStoreIDIntblStoreReturnPhotoDetail();
-							db.close();
+							//db.close();
 
 						} catch (Exception e)
 						{
 							// TODO Auto-generated catch block
-							db.close();
+							//db.close();
 							e.printStackTrace();
 						}
 
 						for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 						{
-							db.open();
+							//db.open();
 							int NoOfImages = db.getExistingPicNosForReturn(NoOfOutletID[chkCountstore].toString());
 							String[] NoOfImgsPath = db.getImgsPathForReturn(NoOfOutletID[chkCountstore].toString());
-							db.close();
+							//db.close();
 
 							fp2s = new String[2];
 
@@ -1361,23 +1361,23 @@ public class SyncMaster extends Activity
 					try
 					{
 
-						db.open();
+						//db.open();
 						NoOfOutletID = db.getAllStoreClosePhotoDetail();
-						db.close();
+						//db.close();
 
 					} catch (Exception e)
 					{
 						// TODO Auto-generated catch block
-						db.close();
+						//db.close();
 						e.printStackTrace();
 					}
 
 					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int NoOfImages = db.getExistingPicNosForStoreClose(NoOfOutletID[chkCountstore].toString());
 						String[] NoOfImgsPath = db.getImgsPathForStoreClose(NoOfOutletID[chkCountstore].toString());
-						db.close();
+						//db.close();
 
 						fp2s = new String[2];
 
@@ -1521,23 +1521,23 @@ public class SyncMaster extends Activity
 					try
 					{
 
-						db.open();
+						//db.open();
 						NoOfOutletID = db.getAllStoreIDIntblNewAddedStorePhotoDetail();
-						db.close();
+						//db.close();
 
 					} catch (Exception e)
 					{
 						// TODO Auto-generated catch block
-						db.close();
+						//db.close();
 						e.printStackTrace();
 					}
 
 					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int NoOfImages = db.getExistingPicNosForNewAddedStore(NoOfOutletID[chkCountstore].toString());
 						String[] NoOfImgsPath = db.getImgsPathForNewAddedStore(NoOfOutletID[chkCountstore].toString());
-						db.close();
+						//db.close();
 
 						fp2s = new String[2];
 
@@ -1680,23 +1680,23 @@ public class SyncMaster extends Activity
 					try
 					{
 
-						db.open();
+						//db.open();
 						NoOfOutletID = db.getAllStoreIDIntblStoreCheckIn();
-						db.close();
+						//db.close();
 
 					} catch (Exception e)
 					{
 						// TODO Auto-generated catch block
-						db.close();
+						//db.close();
 						e.printStackTrace();
 					}
 
 					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int NoOfImages = db.getExistingPicNosForStoreCheckIn(NoOfOutletID[chkCountstore].toString());
 						String[] NoOfImgsPath = db.getImgsPathForStoreCheckIn(NoOfOutletID[chkCountstore].toString());
-						db.close();
+						//db.close();
 
 						fp2s = new String[2];
 
@@ -1839,24 +1839,24 @@ public class SyncMaster extends Activity
 					try
 					{
 
-						db.open();
+						//db.open();
 						NoOfOutletID = db.getAllDSRSignatureAndSelfi();
-						db.close();
+						//db.close();
 
 					} catch (Exception e)
 					{
 						// TODO Auto-generated catch block
-						db.close();
+						//db.close();
 						e.printStackTrace();
 					}
 if(NoOfOutletID.length>0)
 {
 	for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 	{
-		db.open();
+		//db.open();
 		int NoOfImages = db.getExistingPicNosForSignatureAndSelfi();
 		String[] NoOfImgsPath = db.getImgsPathForSignatureAndSelfi();
-		db.close();
+		//db.close();
 
 		fp2s = new String[2];
 
@@ -2028,10 +2028,10 @@ if(NoOfOutletID.length>0)
 					}
 					else
 					{
-						db.open();
+						//db.open();
 
 			    		db.updateImageRecordsSyncd();
-			    		db.close();
+			    		//db.close();
 
 						//showSyncSuccess();
 
@@ -2460,9 +2460,9 @@ if(NoOfOutletID.length>0)
 							}
 
 				/*	int Sstat=6;
-					db.open();
+					//db.open();
 					db.updateRecordsSyncd(Sstat);		// update syncd' records
-					db.close();*/
+					//db.close();*/
 							db.UpdateStoreVisitWiseTablesAfterSync(4);
 
 
@@ -2661,17 +2661,17 @@ if(NoOfOutletID.length>0)
 				if(whereTo.contentEquals("11"))
 				{
 					int Sstat=4;
-					db.open();
+					//db.open();
 					db.updateRecordsSyncd(Sstat);		// update syncd' records
-					db.close();
+					//db.close();
 					Date pdaDate=new Date();
 					SimpleDateFormat	sdfPDaDate = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
 					String getPDADate = sdfPDaDate.format(pdaDate).toString().trim();
 
-					db.open();
+					//db.open();
 					String getServerDate=db.fnGetServerDate();
 					db.reCreateDB();
-					db.close();
+					//db.close();
 
 					if(!getPDADate.equals(""))
 					{
@@ -2725,9 +2725,9 @@ if(NoOfOutletID.length>0)
 				else
 				{
 				/*	int Sstat=6;
-					db.open();
+					//db.open();
 					db.updateRecordsSyncd(Sstat);		// update syncd' records
-					db.close();*/
+					//db.close();*/
 					//db.UpdateStoreVisitWiseTablesAfterSync(4);
 					showSyncSuccess();
 

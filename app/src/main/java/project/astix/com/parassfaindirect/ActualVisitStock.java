@@ -83,7 +83,7 @@ public class ActualVisitStock extends Activity implements CategoryCommunicator {
     LinkedHashMap<String ,String> hmapPhotoDetailsForSaving=new LinkedHashMap<>();
 
 LinearLayout lLayout_main;
-PRJDatabase dbengine;
+PRJDatabase dbengine = new PRJDatabase(this);
 Button btnNext;
     public EditText   ed_search;
     public ImageView  btn_go;
@@ -258,7 +258,7 @@ LinkedHashMap<String,String> hmapProductStockFromPurchaseTable=new LinkedHashMap
       //---------------********Video page open code
     /*            dbengine.open();
                String VideoData=      dbengine.getVideoNameByStoreID(storeID,"2");
-                dbengine.close();
+                //dbengine.close();
                 int flagPlayVideoForStore=0;
                 String Video_Name="0";
                 String VIDEO_PATH="0";
@@ -394,7 +394,7 @@ public void passIntentToProductOrderFilter(){
 
 
     public void fetchDataFromDatabase(){
-        dbengine.open();
+        //dbengine.open();
         hmapPrdctData=dbengine.fetchProductDataForActualVisit();
         hmapFetchPDASavedData=dbengine.fetchActualVisitData(storeID);
         hmapProductStockFromPurchaseTable=dbengine.fetchProductStockFromPurchaseTable(storeID);
@@ -418,7 +418,7 @@ public void passIntentToProductOrderFilter(){
             btnClickPic.setText("Add Stock Pic");
         }
 
-        dbengine.close();
+        //dbengine.close();
 
         getCategoryDetail();
 

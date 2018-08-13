@@ -635,9 +635,9 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 						{
 							if(!hmapProductManufractureIDList.get(entry.getKey().toString().trim()).equals(ManufacturerIDText))
 							{
-								dbengine.open();
+								//dbengine.open();
 								dbengine.deletetblSalesQuoteProductsMstr(entry.getKey().toString().trim(),QuotationActivity.SalesQuoteId);
-								dbengine.close();
+								//dbengine.close();
 								
 								LinearLayout ll=	(LinearLayout) dynamcDtaContnrScrollview.findViewWithTag(entry.getKey().toString().trim());
 								ll.setVisibility(View.GONE);
@@ -684,9 +684,9 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 			textRateDistribution.setText("");
 			multipleCheckBoxflag=false;
 			multipleCheckBoxflagcopy=false;
-			dbengine.open();
+			//dbengine.open();
 			dbengine.deletetblRateDistribution(QuotationActivity.SalesQuoteId, QuotationActivity.storeID);
-			dbengine.close();
+			//dbengine.close();
 		}
 
 	}
@@ -1032,9 +1032,9 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 			pDialogGetStores.setCancelable(false);
 			pDialogGetStores.setCanceledOnTouchOutside(false);
 			pDialogGetStores.show();
-			dbengine.open();
+			//dbengine.open();
 			StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
-			dbengine.close();
+			//dbengine.close();
 		}
 
 		@Override
@@ -1216,9 +1216,9 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 			pDialogGetStores.setCancelable(false);
 			pDialogGetStores.setCanceledOnTouchOutside(false);
 			pDialogGetStores.show();
-			dbengine.open();
+			//dbengine.open();
 			StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
-			dbengine.close();
+			//dbengine.close();
 		}
 
 		@Override
@@ -1574,9 +1574,9 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 					            public void onClick(DialogInterface dialog,int which) {
 					            	dialog.dismiss();
 					            	
-					            	dbengine.open();
+					            	//dbengine.open();
 									dbengine.deletetblSalesQuoteProductsMstr(prdID,QuotationActivity.SalesQuoteId);
-									dbengine.close();
+									//dbengine.close();
 									
 									
 									LinearLayout ll=	(LinearLayout) dynamcDtaContnrScrollview.findViewWithTag(prdID);//(R.id.posdata1);
@@ -1622,9 +1622,9 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 										textRateDistribution.setText("");
 										multipleCheckBoxflag=false;
 										multipleCheckBoxflagcopy=false;
-										dbengine.open();
+										//dbengine.open();
 										dbengine.deletetblRateDistribution(QuotationActivity.SalesQuoteId, QuotationActivity.storeID);
-										dbengine.close();
+										//dbengine.close();
 									}
 									
 					           
@@ -1774,13 +1774,13 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 					if(CommonInfo.prcID.equals("2")){
 						SalesQuotePrcsForUpdate=	hmapPrcDetailsFromDataBase.get("3");
 						SalesQuotePrcsIdForUpdate="3";
-						dbengine.open();
+						//dbengine.open();
 						 dbengine.UpdateQuotePrcsAgainstQuotationId(QuotationActivity.SalesQuoteId, SalesQuotePrcsIdForUpdate, SalesQuotePrcsForUpdate);
-						 dbengine.close();
+						 //dbengine.close();
 					}	 
 				}
 				
-				dbengine.open();
+				//dbengine.open();
 			  for(Map.Entry<String, String> entry:hashmapForDynamicViewFromDataBase.entrySet())
 			   {
 				  String UOMID="0";
@@ -1890,7 +1890,7 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 				
 		
 				}
-			  dbengine.close();
+			  //dbengine.close();
 			  
 			  savingRateDistributionDataToDatabase();
 			}
@@ -1918,7 +1918,7 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 	}
 	
 	public void savingRateDistributionDataToDatabase() {
-		dbengine.open();
+		//dbengine.open();
 		dbengine.deletetblRateDistribution(QuotationActivity.SalesQuoteId, QuotationActivity.storeID);
 		if(CB_rateDistibution.isChecked()){
 			if(hashmapForDatabaseRateDistributer!=null && !hashmapForDatabaseRateDistributer.isEmpty()){
@@ -1963,7 +1963,7 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 			}
 			
 		}
-		dbengine.close();
+		//dbengine.close();
 		
 
 	}
@@ -2049,7 +2049,7 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 				SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 				String StampEndsTime = df.format(dateobj);
 				
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreEndVisit(QuotationActivity.storeID, StampEndsTime);
 				//dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3",strGlobalOrderID);
 				//dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"3",strGlobalOrderID);
@@ -2061,7 +2061,7 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 				
 				String presentRoute=dbengine.GetActiveRouteID();
 
-				dbengine.close();
+				//dbengine.close();
 				dbengine.updateStoreQuoteSubmitFlgInStoreMstr(QuotationActivity.storeID.trim(), 1,StoreVisitCode);
 			/*long syncTIMESTAMP = System.currentTimeMillis();
 			Date dateobj = new Date(syncTIMESTAMP);*/
@@ -2091,11 +2091,11 @@ if(hashmapForDynamicViewFromDataBase!=null && !hashmapForDynamicViewFromDataBase
 				
 				//dbengine.deleteAllXmlDataTable( "4");
 				dbengine.savetbl_XMLfiles(newfullFileName,"3","1");
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreFlagQoutation(QuotationActivity.storeID.trim(), 4);
 				
 			
-				dbengine.close();
+				//dbengine.close();
 				
 				
 

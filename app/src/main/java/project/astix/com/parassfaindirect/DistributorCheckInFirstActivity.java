@@ -134,7 +134,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
     public String fnLongi="0";
     public Double fnAccuracy=0.0;
 
-    PRJDatabase helperDb;
+    PRJDatabase helperDb=new PRJDatabase(this);
 
     public String AccuracyFromLauncher="NA";
     String AddressFromLauncher="NA";
@@ -519,10 +519,10 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
 
     public void fnGetDistributorList()
     {
-        helperDb.open();
+        //helperDb.open();
 
         Distribtr_list=helperDb.getDistributorDataMstr();
-        helperDb.close();
+        //helperDb.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             String value=Distribtr_list[i];
@@ -1095,10 +1095,10 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
             // fnAccurateProvider="";
             if(fnAccurateProvider.equals(""))
             {
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-                helperDb.close();
+                //helperDb.close();
 
                 if(pDialog2STANDBY.isShowing())
                 {
@@ -1203,10 +1203,10 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                 ft.show(mapFrag);
 
 
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                helperDb.close();
+                //helperDb.close();
                 //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
                 if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
                 {
@@ -1935,7 +1935,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         String finalCity=etCity.getText().toString().trim();
         String finalState=etState.getText().toString().trim();
 
-        helperDb.open();
+        //helperDb.open();
         helperDb.savetblDistributorMappingData(UniqueDistribtrMapId,""+DistribtrId_Global,""+DistributorNodeType_Global,flgGSTCapture,flgGSTCompliance,
                 GSTNumber,finalAddress,finalPinCode,finalCity,finalState,SOLattitudeFromLauncher,SOLongitudeFromLauncher,
                 SOAccuracyFromLauncer,"0",SOProviderFromLauncher,SOAllProvidersLocationFromLauncher,fnAddressFromLauncher,
@@ -1950,7 +1950,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         //  By Nitika dbengine.savetblDistributorSavedData(header,Short_name,pID,Date, Et_value,DistID,DistNodeType,ProductNodeType,StockDate,Sstat,EntryType,StockPcsCaseType);
 
 
-        helperDb.close();
+        //helperDb.close();
         try
         {
            // FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInFirstActivity.this);

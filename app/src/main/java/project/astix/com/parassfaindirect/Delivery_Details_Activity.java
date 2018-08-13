@@ -73,7 +73,7 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 
 	 View convertView;
 	TextView Delivery_Location_Spinner;
-	 PRJDatabase helperDb;
+	 PRJDatabase helperDb=new PRJDatabase(this);
 	 ArrayAdapter<String> adapterDeliveryAddress,adapterBillingAddress;
 	 ArrayList<LinkedHashMap<String, String>> arrgetStoreBillToAddressAndDiliverToAddress;
 	 LinkedHashMap<String, String> hmapStoreBillTogAddresse;
@@ -118,7 +118,7 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.delivery_details_activity);
-		helperDb=new PRJDatabase(this);
+		//helperDb=new PRJDatabase(this);
 		arrowHeaderSelection();
 		StoreVisitCode=helperDb.fnGetStoreVisitCode(storeID);
 		timeSelection();
@@ -596,9 +596,9 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		
 		fullstring=string_Delivery_Location_Spinner+"^"+string_Delivery_Time_From+"^"+string_Delivery_Time_To+"^"+string_DoNotDeliverTime_From+"^"+string_DoNotDeliverTime_To+"^"+string_RequiredDeliveryDate+"^"+string_biltocustomernameSpinner;
 		helperDb.fndeleteStoreOrderBillAddressDetails(storeID, OrderPDAID);
-		helperDb.open();
+		//helperDb.open();
 		helperDb.fnsaveStoreOrderBillAddressDetails(storeID, OrderPDAID, string_biltocustomernameSpinner, string_Delivery_Location_Spinner+"^"+string_Delivery_Time_From+"^"+string_Delivery_Time_To+"^"+string_DoNotDeliverTime_From+"^"+string_DoNotDeliverTime_To+"^"+string_RequiredDeliveryDate, "1");
-		helperDb.close();
+		//helperDb.close();
 		//"1"+"^"+string_biltocustomernameSpinner=Bill To Customer
 
 		}
@@ -787,11 +787,11 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		
 		
 		
-		helperDb.open();
+		//helperDb.open();
 		helperDb.fndeleteStoreSalesOrderPaymentDetails(storeIDString,OrderPDAID,strGlobalInvoiceNumber);
 		helperDb.fnsaveStoreSalesOrderPaymentDetails(storeIDString,OrderPDAID,PAYMENT_STAGEID_Values,"1",strGlobalInvoiceNumber);
 	
-		helperDb.close();
+		//helperDb.close();
 		
 		 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 		 Intent fireBackDetPg=new Intent(Delivery_Details_Activity.this,ProductOrderReview.class);

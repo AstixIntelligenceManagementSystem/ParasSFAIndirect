@@ -124,9 +124,9 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 		{
 			super.onPreExecute();
 			
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateSKUDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -170,9 +170,9 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblSKUWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}

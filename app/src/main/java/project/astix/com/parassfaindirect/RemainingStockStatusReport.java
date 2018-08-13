@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class RemainingStockStatusReport extends BaseActivity
 {
@@ -115,8 +116,14 @@ if(hmapStore_details!=null && hmapStore_details.size()>0)
 		TextView tv_product_name=(TextView) viewProduct.findViewById(R.id.tvProdctName);
 		tv_product_name.setText(me2.getKey().toString());
 
+		TextView tvOpnStk=(TextView) viewProduct.findViewById(R.id.tvOpnStk);
+		tvOpnStk.setText(me2.getValue().toString().split(Pattern.quote("^"))[1]);
+
+		TextView tvSales=(TextView) viewProduct.findViewById(R.id.tvRemaingStock);
+		tvSales.setText(me2.getValue().toString().split(Pattern.quote("^"))[2]);
+
 		TextView tv_Remaningstock=(TextView) viewProduct.findViewById(R.id.tvRemaingStock);
-		tv_Remaningstock.setText(me2.getValue().toString());
+		tv_Remaningstock.setText(me2.getValue().toString().split(Pattern.quote("^"))[0]);
 
 		listView.addView(viewProduct);
 		index=index+1;
