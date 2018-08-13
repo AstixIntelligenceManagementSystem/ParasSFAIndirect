@@ -34366,7 +34366,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         ArrayList<String> arrProductInvoiceDetailsForPrint=new ArrayList<String>();
         Cursor cursor21=null;
         try {
-            cursor21 = db.rawQuery("SELECT ProdID,0 AS HSNCode,ifnull(ProductShortName,'NA') AS ProductShortName,ifnull(ProductPrice,'0') AS ProductPrice,ifnull(TaxRate,'0') AS TaxRate,ifnull(OrderQty,'0') AS OrderQty,ifnull(LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails Where StoreID='"+StoreID+"' AND StoreVisitCode='"+StoreVisitCode+"' AND OrderQty>0", null);
+            cursor21 = db.rawQuery("SELECT tblInvoiceDetails.ProdID,0 AS HSNCode,ifnull(tblInvoiceDetails.ProductShortName,'NA') AS ProductShortName,ifnull(tblInvoiceDetails.ProductPrice,'0') AS ProductPrice,ifnull(tblProductSegementMap.RetMarginPer,'0') AS RetMarginPer,ifnull(tblInvoiceDetails.OrderQty,'0') AS OrderQty,ifnull(tblInvoiceDetails.LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails inner join tblProductSegementMap on tblInvoiceDetails.ProdID=tblProductSegementMap.ProductID Where StoreID='"+StoreID+"' AND tblInvoiceDetails.StoreVisitCode='"+StoreVisitCode+"' AND tblInvoiceDetails.OrderQty>0", null);
             if(cursor21.getCount()>0)
             {
                 if (cursor21.moveToFirst())
@@ -34376,7 +34376,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(1));
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(2));
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(3));
-                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(4));
+                        arrProductInvoiceDetailsForPrint.add(cursor21.getString(4)+"%");
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(5));
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(6));
                         hmapInvoiceRecodsToPrint.put(cursor21.getString(0).toString().trim(),arrProductInvoiceDetailsForPrint);
