@@ -1649,10 +1649,10 @@ ctx=this;
                 }
                 else
                 {*/
-                    showAlertSingleButtonError("Self Credit Amt can not be greater then overall Total Outstanding.");
-                    return false;
+                   /* showAlertSingleButtonError("Self Credit Amt can not be greater then overall Total Outstanding.");
+                    return false;*/
                // }
-
+                return true;
             }
             else
             {
