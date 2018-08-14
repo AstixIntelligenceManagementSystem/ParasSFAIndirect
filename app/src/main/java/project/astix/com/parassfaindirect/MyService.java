@@ -1597,13 +1597,6 @@ public class MyService extends Service {
             }
             if(result!=200)
             {
-
-
-
-
-
-
-
                 if (timer!=null)
                 {
                     timer.cancel();
@@ -1625,13 +1618,12 @@ public class MyService extends Service {
                 }
                 else
                 {
-/*
-                        Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
+
+                        /*   Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
                         startActivity(submitStoreIntent);
                         finish();*/
                     stopSelf();
                 }
-
             }
             else
             {
@@ -1663,9 +1655,11 @@ public class MyService extends Service {
                     timer2.cancel();
                     timer2 = null;
                 }
-                int Sstat=6;
+              /*  int Sstat=6;
 
                 db.updateRecordsSyncd(Sstat);
+               // db.UpdateStoreVisitWiseTablesAfterSync(4);*/
+                db.UpdateStoreVisitWiseTablesAfterSync(4);
 
            /* if(!isFinishing())
             {

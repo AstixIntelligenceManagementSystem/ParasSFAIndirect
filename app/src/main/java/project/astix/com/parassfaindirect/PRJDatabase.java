@@ -30288,8 +30288,8 @@ String fetchdate=fnGetDateTimeString();
 //tv_GrossInvVal
         //open();
         Double dblMaxCollectionAmount = 0.0;
-        //Cursor   cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
-        Cursor cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader", null); //order by AutoIdOutlet Desc
+        Cursor   cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
+        //Cursor cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader", null); //order by AutoIdOutlet Desc
         try
         {
             if(cursor.getCount()>0)
@@ -34230,17 +34230,30 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
 
         LinkedHashMap<String,ArrayList<String>> hmapStoreBasicDetails=fnGetStoreDetailsDataForPrint(VisitCode,StoreID);
 
-        //--------------Store Details Starts Here--------------------------------
+        //--------------Store Details Ends Here--------------------------------
 
         //--------------Store Invoice  Details Starts Here--------------------------------
 
         LinkedHashMap<String,ArrayList<String>> hmapInvoiceRecodsToPrint=fnGetInvoiceListForPrint(VisitCode,StoreID);
 
-        //--------------Store Invoice Details Starts Here--------------------------------
+        //--------------Store Invoice Details Ends Here--------------------------------
+
+        //--------------Store Invoice  Before Tax And After Tax Starts Here--------------------------------
+
+        LinkedHashMap<String,ArrayList<String>> hmapTotalBfrAftrTaxVal=fnGetTotalBfrAftrTaxVal(VisitCode,StoreID);
+
+        //--------------Store Invoice Before Tax And After Tax Ends Here--------------------------------
+
+        //--------------Store Invoice  Tax wise Product Details Starts Here--------------------------------
+
+        LinkedHashMap<String,ArrayList<String>> hmapTaxWisePrdctDtlt=fnGetTaxWisePrdctDtl(VisitCode,StoreID);
+
+        //--------------Store Invoice Tax wise Product Details  Ends Here--------------------------------
 
         arrResult.add(hmapWareHouseDetails);
         arrResult.add(hmapStoreBasicDetails);
         arrResult.add(hmapInvoiceRecodsToPrint);
+        arrResult.add(hmapTotalBfrAftrTaxVal);
         return arrResult;
     }
 
@@ -34334,14 +34347,16 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
     public static LinkedHashMap<String,ArrayList<String>> fnGetStoreDetailsDataForPrint(String StoreVisitCode,String StoreID)
     {
         LinkedHashMap<String,ArrayList<String>> hmapStoreBasicDetails=new LinkedHashMap<String,ArrayList<String>>();
-        ArrayList<String> arrStoreDetails=new ArrayList<String>();
+
         Cursor cursor2=null;
+        ArrayList<String> arrStoreDetails=new ArrayList<String>();
         try {
             cursor2 = db.rawQuery("SELECT StoreName,ifnull(StoreAddress,'') AS StoreAddress,ifnull(StoreState,'') AS StoreState,ifnull(StoreCity,'') AS StoreCity,ifnull(StorePinCode,'') AS StorePinCode,ifnull(StoreContactNo,'') AS StoreContactNo,ifnull(GSTNumber,'NA') AS GSTNumber FROM tblStoreList Where StoreID='"+StoreID+"'", null);
             if(cursor2.getCount()>0)
             {
                 if (cursor2.moveToFirst())
                 {
+
                     arrStoreDetails.add(cursor2.getString(0));
                     arrStoreDetails.add(cursor2.getString(1));
                     arrStoreDetails.add(cursor2.getString(2));
@@ -34363,7 +34378,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
     public static LinkedHashMap<String,ArrayList<String>> fnGetInvoiceListForPrint(String StoreVisitCode,String StoreID)
     {
         LinkedHashMap<String,ArrayList<String>> hmapInvoiceRecodsToPrint=new LinkedHashMap<String,ArrayList<String>>();
-        ArrayList<String> arrProductInvoiceDetailsForPrint=new ArrayList<String>();
+
         Cursor cursor21=null;
         try {
             cursor21 = db.rawQuery("SELECT tblInvoiceDetails.ProdID,ifnull(tblProductList.HSNCode,'') AS HSNCode,ifnull(tblInvoiceDetails.ProductShortName,'NA') AS ProductShortName,ifnull(tblInvoiceDetails.ProductPrice,'0') AS ProductPrice,ifnull(tblProductSegementMap.VatTax,'0') AS VatTax,ifnull(tblInvoiceDetails.OrderQty,'0') AS OrderQty,ifnull(tblInvoiceDetails.LineValAftrTxAftrDscnt,'0') AS OrdValue FROM tblInvoiceDetails inner join tblProductSegementMap on tblInvoiceDetails.ProdID=tblProductSegementMap.ProductID inner join tblProductList on tblProductList.ProductID=tblInvoiceDetails.ProdID Where StoreID='"+StoreID+"' AND tblInvoiceDetails.StoreVisitCode='"+StoreVisitCode+"' AND tblInvoiceDetails.OrderQty>0", null);
@@ -34373,6 +34388,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
                 {
                     for(int i=0;i<cursor21.getCount();i++)
                     {
+                        ArrayList<String> arrProductInvoiceDetailsForPrint=new ArrayList<String>();
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(1));
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(2));
                         arrProductInvoiceDetailsForPrint.add(cursor21.getString(3));
@@ -34386,6 +34402,99 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
             }
 
             return hmapInvoiceRecodsToPrint;
+        } finally {
+            if(cursor21!=null)
+            {
+                cursor21.close();
+            }
+        }
+    }
+
+
+
+    public static LinkedHashMap<String,ArrayList<String>> fnGetTotalBfrAftrTaxVal(String StoreID,String storeVisitCode)
+    {
+        LinkedHashMap<String,ArrayList<String>> hmapTotalBfrAftrTaxVal=new LinkedHashMap<String,ArrayList<String>>();
+        // ArrayList<String> arrTaxWisePrdctDtlt=new ArrayList<String>();
+        Cursor cursor21=null;
+        try {
+            cursor21 = db.rawQuery("Select tblInvoiceHeader.TotalBeforeTaxDis,tblInvoiceHeader.InvoiceVal from tblInvoiceHeader where StoreID='"+StoreID+"' AND StoreVisitCode='"+storeVisitCode+"' group by tblProductSegementMap.VatTax Order by tblProductSegementMap.VatTax ASC"
+                    , null);
+            if(cursor21.getCount()>0)
+            {
+                if (cursor21.moveToFirst())
+                {
+
+                    // arrTaxWisePrdctDtlt.add(cursor21.getString(0));
+                    ArrayList arrTaxWisePrdctDtlt=new ArrayList<String>();
+                    arrTaxWisePrdctDtlt.add(cursor21.getString(0));
+                    arrTaxWisePrdctDtlt.add(cursor21.getString(1));
+
+                    hmapTotalBfrAftrTaxVal.put("TotalInvoiceBeforeAfterTax",arrTaxWisePrdctDtlt);
+
+                }
+            }
+
+            return hmapTotalBfrAftrTaxVal;
+        } finally {
+            if(cursor21!=null)
+            {
+                cursor21.close();
+            }
+        }
+    }
+    public static LinkedHashMap<String,ArrayList<String>> fnGetTaxWisePrdctDtl(String StoreID,String StoreVisitCode)
+    {
+        LinkedHashMap<String,ArrayList<String>> hmapTaxWisePrdctDtlt=new LinkedHashMap<String,ArrayList<String>>();
+        // ArrayList<String> arrTaxWisePrdctDtlt=new ArrayList<String>();
+        Cursor cursor21=null;
+        try {
+            cursor21 = db.rawQuery("Select DISTINCT tblProductSegementMap.VatTax,ifnull(Sum(tblInvoiceDetails.LineValBfrTxAftrDscnt),'0') As BfrtaxOrdrVal from tblProductSegementMap inner join tblInvoiceDetails On tblProductSegementMap.ProductID=tblInvoiceDetails.ProdID inner join tblInvoiceHeader.InvoiceNumber=tblInvoiceDetails.InvoiceNumber where tblInvoiceDetails.StoreID='"+StoreID+"' AND tblInvoiceHeader.StoreVisitCode='"+StoreVisitCode+"' AND tblInvoiceDetails.OrderQty>0 group by tblProductSegementMap.VatTax Order by tblProductSegementMap.VatTax ASC"
+                    , null);
+            if(cursor21.getCount()>0)
+            {
+                if (cursor21.moveToFirst())
+                {
+                    for(int i=0;i<cursor21.getCount();i++)
+                    {
+                        // arrTaxWisePrdctDtlt.add(cursor21.getString(0));
+                        ArrayList arrTaxWisePrdctDtlt=new ArrayList<String>();
+                        arrTaxWisePrdctDtlt.add(cursor21.getString(1));
+
+                        hmapTaxWisePrdctDtlt.put(cursor21.getString(0).toString().trim()+"%",arrTaxWisePrdctDtlt);
+                        cursor21.moveToNext();
+                    }
+                }
+            }
+
+            return hmapTaxWisePrdctDtlt;
+        } finally {
+            if(cursor21!=null)
+            {
+                cursor21.close();
+            }
+        }
+    }
+
+
+
+    public static Double fnCollectionDetailsToPrint(String StoreID,String StoreVisitCode)
+    {
+        Double valCollectionDetailsToPrint=0.0;
+        // ArrayList<String> arrTaxWisePrdctDtlt=new ArrayList<String>();
+        Cursor cursor21=null;
+        try {
+            cursor21 = db.rawQuery("Select DISTINCT ifnull(Sum(tblAllCollectionData.Amount),'0.0') As Amount from tblAllCollectionData where tblAllCollectionData.StoreID='"+StoreID+"' AND tblAllCollectionData.StoreVisitCode='"+StoreVisitCode+"'", null);
+            if(cursor21.getCount()>0)
+            {
+                if (cursor21.moveToFirst())
+                {
+                        valCollectionDetailsToPrint=Double.parseDouble(cursor21.getString(0).toString().trim());
+                        cursor21.moveToNext();
+                }
+            }
+
+            return valCollectionDetailsToPrint;
         } finally {
             if(cursor21!=null)
             {

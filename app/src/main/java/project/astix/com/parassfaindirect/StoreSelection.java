@@ -2299,7 +2299,7 @@ public void DayEndWithoutalert()
 			imei=CommonInfo.imei.trim();
 		}
 
-		if(CommonInfo.VanLoadedUnloaded==1)
+if(CommonInfo.VanLoadedUnloaded==1)
 {
 	showAlertSingleWareHouseStockconfirButtonInfo("Stock is updated, please confirm the warehouse stock first.");
 

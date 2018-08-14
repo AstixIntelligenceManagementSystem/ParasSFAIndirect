@@ -119,7 +119,7 @@ if(hmapStore_details!=null && hmapStore_details.size()>0)
 		TextView tvOpnStk=(TextView) viewProduct.findViewById(R.id.tvOpnStk);
 		tvOpnStk.setText(me2.getValue().toString().split(Pattern.quote("^"))[1]);
 
-		TextView tvSales=(TextView) viewProduct.findViewById(R.id.tvRemaingStock);
+		TextView tvSales=(TextView) viewProduct.findViewById(R.id.tvSales);
 		tvSales.setText(me2.getValue().toString().split(Pattern.quote("^"))[2]);
 
 		TextView tv_Remaningstock=(TextView) viewProduct.findViewById(R.id.tvRemaingStock);
