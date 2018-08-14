@@ -3022,6 +3022,7 @@ ctx=this;
     public ArrayList<String> fnGetOutStandingDetailsForPrint()
     {
 
+
         ArrayList<String> arrCollectionDetailsForPrint=new ArrayList<String>();
 
         if(!TextUtils.isEmpty(totaltextview.getText().toString()))
