@@ -30288,8 +30288,8 @@ String fetchdate=fnGetDateTimeString();
 //tv_GrossInvVal
         //open();
         Double dblMaxCollectionAmount = 0.0;
-        Cursor   cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
-        //Cursor cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader", null); //order by AutoIdOutlet Desc
+       // Cursor   cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null); //order by AutoIdOutlet Desc
+        Cursor cursor = db.rawQuery("SELECT tblTmpInvoiceHeader.InvoiceVal from tblTmpInvoiceHeader WHERE tblTmpInvoiceHeader.StoreID='"+StoreID+"'", null); //order by AutoIdOutlet Desc
         try
         {
             if(cursor.getCount()>0)
@@ -30548,6 +30548,7 @@ String fetchdate=fnGetDateTimeString();
     {
 
         //open();
+        //
         try
         {
             db.execSQL("Update tblLastOutstanding Set  Outstanding="+OutStandingAmt+" WHERE StoreID='"+StoreID+"'");
@@ -34484,6 +34485,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         // ArrayList<String> arrTaxWisePrdctDtlt=new ArrayList<String>();
         Cursor cursor21=null;
         try {
+
             cursor21 = db.rawQuery("Select DISTINCT ifnull(Sum(tblAllCollectionData.Amount),'0.0') As Amount from tblAllCollectionData where tblAllCollectionData.StoreID='"+StoreID+"' AND tblAllCollectionData.StoreVisitCode='"+StoreVisitCode+"'", null);
             if(cursor21.getCount()>0)
             {
